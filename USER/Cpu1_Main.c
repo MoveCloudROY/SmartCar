@@ -23,6 +23,8 @@
 
 extern uint16 cpu1_5ms_flag;
 extern uint8 mt9v03x_image[MT9V03X_H][MT9V03X_W];
+extern uint8 imageBin[HEIGHT][WIDTH];
+extern uint16 delay_20ms_flag, delay_100ms_flag, delay_1000ms_flag;
 void core1_main(void)
 {
 	disableInterrupts();
@@ -39,19 +41,25 @@ void core1_main(void)
     enableInterrupts();
     while (TRUE)
     {
-        if(cpu1_5ms_flag)
+        if(mt9v03x_finish_flag)
         {
-            cpu1_5ms_flag = 0;
-            if(mt9v03x_finish_flag)
+            if(cpu1_5ms_flag)
             {
-                mt9v03x_finish_flag = 0;
                 img_preProcess(OTSU);
-                img_process();
-                my_sendimg_03x(UART_0, mt9v03x_image[0], MT9V03X_W, MT9V03X_H);
+//                img_process();
 
+                cpu1_5ms_flag = 0;
             }
-        }
+            if(delay_100ms_flag)
+            {
+//                gpio_set(P21_4,1);
+                gpio_toggle(P21_4);
+                my_sendimg_03x(UART_0, mt9v03x_image, MT9V03X_W, MT9V03X_H);
 
+                delay_100ms_flag = 0;
+            }
+            mt9v03x_finish_flag = 0;
+        }
     }
 }
 

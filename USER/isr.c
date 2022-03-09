@@ -43,7 +43,7 @@ IFX_INTERRUPT(cc60_pit_ch0_isr, 0, CCU6_0_CH0_ISR_PRIORITY)
 	if(delay_100ms_cnt == 20)
 	{
 	    delay_100ms_cnt = 0;
-	    delay_100ms_flag = 0;
+	    delay_100ms_flag = 1;
 	}
 	if(delay_1000ms_cnt == 200)
 	{
@@ -161,17 +161,17 @@ IFX_INTERRUPT(dma_ch5_isr, 0, ERU_DMA_INT_PRIO)
 
 
 //串口中断函数  示例
-IFX_INTERRUPT(uart0_tx_isr, 0, UART0_TX_INT_PRIO)
+IFX_INTERRUPT(uart0_tx_isr, 1, UART0_TX_INT_PRIO)
 {
 	enableInterrupts();//开启中断嵌套
     IfxAsclin_Asc_isrTransmit(&uart0_handle);
 }
-IFX_INTERRUPT(uart0_rx_isr, 0, UART0_RX_INT_PRIO)
+IFX_INTERRUPT(uart0_rx_isr, 1, UART0_RX_INT_PRIO)
 {
 	enableInterrupts();//开启中断嵌套
     IfxAsclin_Asc_isrReceive(&uart0_handle);
 }
-IFX_INTERRUPT(uart0_er_isr, 0, UART0_ER_INT_PRIO)
+IFX_INTERRUPT(uart0_er_isr, 1, UART0_ER_INT_PRIO)
 {
 	enableInterrupts();//开启中断嵌套
     IfxAsclin_Asc_isrError(&uart0_handle);

@@ -266,6 +266,8 @@ void uart_init(UARTN_enum uartn, uint32 baud, UART_PIN_enum tx_pin, UART_PIN_enu
     pins.pinDriver = IfxPort_PadDriver_cmosAutomotiveSpeed1;
     uart_config.pins = &pins;
 
+    uart_config.interrupt.typeOfService = IfxSrc_Tos_cpu1;
+
     IfxAsclin_Asc_initModule(uart_get_handle(uartn), &uart_config);
 
     restoreInterrupts(interrupt_state);

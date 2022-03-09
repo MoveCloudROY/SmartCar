@@ -397,18 +397,39 @@ void seekfree_sendimg_03x(UARTN_enum uartn, uint8 *image, uint16 width, uint16 h
     uart_putbuff(uartn, image, width*height);  //·¢ËÍÍ¼Ïñ
 }
 
-void my_sendimg_03x(UARTN_enum uartn, uint8 *image, uint16 width, uint16 height)
+void my_sendimg_03x(UARTN_enum uartn, uint8 (*image)[MT9V03X_W], uint16 width, uint16 height)
 {
     uart_putchar(uartn,'A');uart_putchar(uartn,'I');
     for(int i = 0; i < height; ++i)
     {
         for(int j = 0; j < width; ++j)
         {
-            if (mt9v03x_image[i][j] == 'A')  //·ÀÖ¹´íÎó·¢ËÍ°üÍ·
+            if (image[i][j] == 'A')  //·ÀÖ¹´íÎó·¢ËÍ°üÍ·
             {
-                mt9v03x_image[i][j] = 'B';
+                image[i][j] = 'B';
             }
-            uart_putchar(uartn, mt9v03x_image[i][j]);
+            uart_putchar(uartn, image[i][j]);
         }
     }
 }
+#define ROW MT9V03X_W
+#define COL MT9V03X_H
+void a_sendimg_03x(UARTN_enum uartn, uint8 (*src)[MT9V03X_W], uint16 width, uint16 height)
+{
+    uart_putchar(uartn,0x21); uart_putchar(uartn,0x7A);
+    uart_putchar(uartn,(uint8)width);uart_putchar(uartn,(uint8)height);
+    uart_putchar(uartn,0x21);uart_putchar(uartn,0x7A);
+    uint8 line=0,col=0;
+    for(line=0;line<ROW;++line)
+    {
+        uart_putchar(uartn,21);
+        uart_putchar(uartn,line);
+        uart_putchar(uartn,133);
+        for(col=0;col<COL;++col)
+        {
+            uart_putchar(uartn,src[col][line]);
+        }
+    }
+}
+#undef ROW
+#undef COL

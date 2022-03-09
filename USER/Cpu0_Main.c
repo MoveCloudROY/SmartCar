@@ -1,3 +1,11 @@
+/*
+ * @Author: ROY1994
+ * @Date: 2022-03-02 20:21:29
+ * @LastEditors: ROY1994
+ * @LastEditTime: 2022-03-08 15:41:56
+ * @FilePath: \Seekfree_TC264_Opensource_Library\USER\Cpu0_Main.c
+ * @Description: 
+ */
 /*********************************************************************************************************************
  * COPYRIGHT NOTICE
  * Copyright (c) 2020,逐飞科技
@@ -36,11 +44,11 @@ int core0_main(void)
 	//用户在此处调用各种初始化函数等
 
 
-	gpio_init(P20_8, GPO, 0, PUSHPULL);
-	gpio_init(P21_4, GPO, 0, PUSHPULL);
+	gpio_init(P20_8, GPO, 0, PUSHPULL);//状态提示灯
+	gpio_init(P21_4, GPO, 0, PUSHPULL);//DEBUG灯
 
-	uart_init(UART_0, 2000000, UART0_TX_P14_0, UART0_RX_P14_1);
-	systick_delay_ms(STM0, 500);
+	uart_init(UART_0, 2000000, UART0_TX_P14_0, UART0_RX_P14_1);//图像发送串口
+	systick_delay_ms(STM0, 500);//延时0.5ms
 	seekfree_wireless_init();
 
 	mt9v03x_init();

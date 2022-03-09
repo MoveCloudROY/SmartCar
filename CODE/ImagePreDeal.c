@@ -77,9 +77,9 @@ uint8 otsu(void)
     int u0_sum = 0,u1_sum = 0,sum_i_mult_h = 0,n0 = 0,n1 = 0;
     float max_value = 0.0,n_value = 0.0,u0 = 0.0,u1 = 0.0;
     uint8 th = 0,minn = 255,maxn = 0;
-
     uint8 * p_pixel = mt9v03x_image[0];
     
+
     for(int i=0; i<total; ++i)//计算灰度直方图
     {
         histogram[p_pixel[i]]++;
@@ -93,8 +93,8 @@ uint8 otsu(void)
         i_mult_histogram[i] = i*histogram[i];
         sum_i_mult_h += i_mult_histogram[i];//求总和,方便之后处理
     }
-    
-    for (int i=minn; i<maxn; ++i)//从最小开始遍历，寻找最合适的阈值
+
+    for (uint8 i=minn; i<maxn; ++i)//从最小开始遍历，寻找最合适的阈值
 	{
         //计算前景、后景像素点个数
 		n0 += histogram[i]; 
@@ -107,7 +107,7 @@ uint8 otsu(void)
         u0 = u0_sum / (float)n0;
         u1 = u1_sum / (float)n1;
         
-        n_value = (u0 - u1) * (u0 - u1) * (float)n0 * n1 ;//float在前，保证显式转化
+        n_value = (float)(u0 - u1) * (u0 - u1) * (float)n0 * n1 ;//float在前，保证显式转化
 
 		if (n_value>max_value)
 		{
@@ -115,6 +115,7 @@ uint8 otsu(void)
 			th = i;
 		}
 	}
+
     return th;
 }
 
