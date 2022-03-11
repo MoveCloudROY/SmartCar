@@ -72,10 +72,10 @@ void motor_control(void)
 //    oldParaR = nowParaR;
 
     //设定PWM值
-    pwm_duty(MOTOR_LA, 5000+pwmL);
-    pwm_duty(MOTOR_LB, 5000-pwmL);
-    pwm_duty(MOTOR_RA, 5000+pwmR);
-    pwm_duty(MOTOR_RB, 5000-pwmR);
+//    pwm_duty(MOTOR_LA, 5000+pwmL);
+//    pwm_duty(MOTOR_LB, 5000-pwmL);
+//    pwm_duty(MOTOR_RA, 5000+pwmR);
+//    pwm_duty(MOTOR_RB, 5000-pwmR);
 
 
     //vofa发送

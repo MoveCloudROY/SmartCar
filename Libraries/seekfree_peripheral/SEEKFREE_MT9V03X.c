@@ -412,24 +412,56 @@ void my_sendimg_03x(UARTN_enum uartn, uint8 (*image)[MT9V03X_W], uint16 width, u
         }
     }
 }
-#define ROW MT9V03X_W
-#define COL MT9V03X_H
-void a_sendimg_03x(UARTN_enum uartn, uint8 (*src)[MT9V03X_W], uint16 width, uint16 height)
+void a_sendimg_wifi(UARTN_enum uartn, uint8 (*image)[MT9V03X_H], uint16 width, uint16 height)
 {
     uart_putchar(uartn,0x21); uart_putchar(uartn,0x7A);
     uart_putchar(uartn,(uint8)width);uart_putchar(uartn,(uint8)height);
     uart_putchar(uartn,0x21);uart_putchar(uartn,0x7A);
-    uint8 line=0,col=0;
-    for(line=0;line<ROW;++line)
+//    uint8 line=0,col=0;
+    for(int i = 0; i < width; ++i)
     {
         uart_putchar(uartn,21);
-        uart_putchar(uartn,line);
+        uart_putchar(uartn,(uint8)i);
         uart_putchar(uartn,133);
-        for(col=0;col<COL;++col)
+        for(int j = 0; j < height; ++j)
         {
-            uart_putchar(uartn,src[col][line]);
+            uart_putchar(uartn,image[i][j]);
         }
     }
+
+}
+
+
+void a_sendimg_uart(UARTN_enum uartn, uint8 *image, uint16 width, uint16 height)
+{
+    uart_putchar(uartn,0x21);uart_putchar(uartn,0x7A);
+    uart_putchar(uartn,(uint8)width);uart_putchar(uartn,(uint8)height);
+    uart_putchar(uartn,0x21);uart_putchar(uartn,0x7A);
+    uart_putbuff(uartn, image, width*height);  //·¢ËÍÍ¼Ïñ
+}
+
+#define ROW MT9V03X_W
+#define COL MT9V03X_H
+void a_sendimgbin_uart(UARTN_enum uartn, uint8 (*src)[MT9V03X_H], uint16 width, uint16 height,uint8 otu)
+{
+
+    uart_putchar(uartn,0x7A);uart_putchar(uartn,0x21);
+    uart_putchar(uartn,(uint8)width);uart_putchar(uartn,(uint8)height);
+    uart_putchar(uartn,0x7A);uart_putchar(uartn,0x21);
+    int databool=255;char lon=1;int data=255;
+    uint8 line=0,col=0;
+    for(line=0;line<ROW;line++)
+        {
+           for(col=0;col<COL;col++)
+           {
+              if(src[line][col]>otu)data=255;
+              else data=0;
+              if(data==databool)
+              {lon++;}else{uart_putchar(uartn, lon);lon=1;}
+              if(lon==100){uart_putchar(uartn, lon-1);uart_putchar(uartn,0);lon=1;}
+             databool=data;
+           }
+        }
 }
 #undef ROW
 #undef COL

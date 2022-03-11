@@ -50,13 +50,13 @@ void core1_main(void)
 
                 cpu1_5ms_flag = 0;
             }
-            if(delay_100ms_flag)
+            if(delay_20ms_flag)
             {
 //                gpio_set(P21_4,1);
                 gpio_toggle(P21_4);
+//                a_sendimg_wifi(UART_0, mt9v03x_image, MT9V03X_W, MT9V03X_H);
                 my_sendimg_03x(UART_0, mt9v03x_image, MT9V03X_W, MT9V03X_H);
-
-                delay_100ms_flag = 0;
+                delay_20ms_flag = 0;
             }
             mt9v03x_finish_flag = 0;
         }
