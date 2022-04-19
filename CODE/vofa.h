@@ -2,7 +2,9 @@
 #define _VOFA_H_
 #include "headfile.h"
 
-void vofa_sendFloat(float f);
+void general_sendFloat(float f);
 void vofa_sendTail(void);
+void shanWai_sendHead(void);
+void shanWai_sendTail(void);
 
 #endif /*_VOFA_H_*/

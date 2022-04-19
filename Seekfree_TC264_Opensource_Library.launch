@@ -2,7 +2,7 @@
 <launchConfiguration type="com.tasking.cdt.launch.localCLaunch">
     <booleanAttribute key="com.tasking.debug.cdt.core.BREAK_ON_EXIT" value="true"/>
     <stringAttribute key="com.tasking.debug.cdt.core.COMMUNICATION" value="Universal Debug Access Server"/>
-    <stringAttribute key="com.tasking.debug.cdt.core.CONFIGURATION" value="TC26xB"/>
+    <stringAttribute key="com.tasking.debug.cdt.core.CONFIGURATION" value="TC26x"/>
     <booleanAttribute key="com.tasking.debug.cdt.core.DOWNLOAD" value="true"/>
     <booleanAttribute key="com.tasking.debug.cdt.core.FLASH_ALLOW_CUSTOMIZATION" value="false"/>
     <stringAttribute key="com.tasking.debug.cdt.core.FSS_ROOT" value="${project_loc}\${build_config}"/>
@@ -27,7 +27,6 @@
     <stringAttribute key="debugger_configuration.gdi.resource.Frequency" value="5000000"/>
     <stringAttribute key="debugger_configuration.gdi.resource.TerminateServer" value="1"/>
     <stringAttribute key="debugger_configuration.gdi.resource.gdi2mcd.reset.class_vector" value="0x4"/>
-    <stringAttribute key="debugger_configuration.gdi.resource.user.ConnectedServerName" value="DAS JDS TriBoard TC2XX V2.3 BY BT TB4ZMG25"/>
     <stringAttribute key="debugger_configuration.goto_label" value="core0_main"/>
     <stringAttribute key="org.eclipse.cdt.launch.DEBUGGER_ID" value="dwn"/>
     <stringAttribute key="org.eclipse.cdt.launch.DEBUGGER_START_MODE" value="run"/>

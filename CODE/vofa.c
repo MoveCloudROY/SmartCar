@@ -2,7 +2,7 @@
 
 float data[8];
 
-void vofa_sendFloat(float f)
+void general_sendFloat(float f)
 {
     uint8*  p;
     p = (uint8*)&f;
@@ -24,4 +24,12 @@ void vofa_sendTail(void)
 {
     uart_putchar(WIRELESS_UART, 0x00);uart_putchar(WIRELESS_UART, 0x00);
     uart_putchar(WIRELESS_UART, 0x80);uart_putchar(WIRELESS_UART, 0x7f);
+}
+void shanWai_sendHead(void)
+{
+    uart_putchar(WIRELESS_UART, 0x03);uart_putchar(WIRELESS_UART, 0xFC);
+}
+void shanWai_sendTail(void)
+{
+    uart_putchar(WIRELESS_UART, 0xFC);uart_putchar(WIRELESS_UART, 0x03);
 }

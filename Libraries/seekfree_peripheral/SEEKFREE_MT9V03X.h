@@ -109,7 +109,7 @@ void mt9v03x_dma(void);
 void seekfree_sendimg_03x(UARTN_enum uartn, uint8 *image, uint16 width, uint16 height);
 void seekfree_sendimg_03x_usb_cdc(uint8 *image, uint16 width, uint16 height);
 
-void my_sendimg_03x(UARTN_enum uartn, uint8 (*image)[MT9V03X_W], uint16 width, uint16 height);
+void my_sendimg_wifi(UARTN_enum uartn, uint8 (*image)[MT9V03X_W], uint16 width, uint16 height);
 void a_sendimg_wifi(UARTN_enum uartn, uint8 (*image)[MT9V03X_H], uint16 width, uint16 height);
 void a_sendimg_uart(UARTN_enum uartn, uint8 *image, uint16 width, uint16 height);
 void a_sendimgbin_uart(UARTN_enum uartn, uint8 (*src)[MT9V03X_H], uint16 width, uint16 height,uint8 otu);

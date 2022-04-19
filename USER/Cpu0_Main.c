@@ -27,10 +27,11 @@
 
 
 #include "headfile.h"
+#include "system.h"
 #pragma section all "cpu0_dsram"
 //将本语句与#pragma section all restore语句之间的全局变量都放在CPU0的RAM中
 
-extern PID PID_L, PID_R;
+
 //工程导入到软件之后，应该选中工程然后点击refresh刷新一下之后再编译
 //工程默认设置为关闭优化，可以自己右击工程选择properties->C/C++ Build->Setting
 //然后在右侧的窗口中找到C/C++ Compiler->Optimization->Optimization level处设置优化等级
@@ -43,38 +44,7 @@ int core0_main(void)
 	get_clk();//获取时钟频率  务必保留
 	//用户在此处调用各种初始化函数等
 
-
-	gpio_init(P20_8, GPO, 0, PUSHPULL);//状态提示灯
-	gpio_init(P21_4, GPO, 0, PUSHPULL);//DEBUG灯
-
-	uart_init(UART_0, 2000000, UART0_TX_P14_0, UART0_RX_P14_1);//图像发送串口
-	systick_delay_ms(STM0, 500);//延时0.5ms
-	seekfree_wireless_init();
-
-	mt9v03x_init();
-
-
-	servo_init();
-	motor_init();
-
-	// 500 enc
-	//1000 enc 90   90
-	//1100 enc 105  98
-	//1200 enc 119
-	//1300 enc 130  140
-	//1400 enc 146
-	//1500 enc 160  172
-	//2000 enc 223
-	//2500 enc 290  295
-	//3000 enc 360  381
-	//4000 enc 504
-//	int t = 1100;
-//	pwm_duty(MOTOR_RA, 5000+t);
-//	pwm_duty(MOTOR_RB, 5000-t);
-
-	pit_init(CCU6_0, PIT_CH0, 5000);
-	pit_init(CCU6_0, PIT_CH1, 5000);
-
+	car_init();
 
 	//等待所有核心初始化完毕
 	IfxCpu_emitEvent(&g_cpuSyncEvent);
@@ -92,7 +62,7 @@ int core0_main(void)
 	while (TRUE)
 	{
 		//用户在此处编写任务代码
-
+	    car_backstage();
 	}
 }
 

@@ -20,8 +20,6 @@
 #ifndef _headfile_h
 #define _headfile_h
 
-//调试define
-#define DEBUG_MOTOR_PID
 
 
 
@@ -69,15 +67,9 @@
 #include "SEEKFREE_7725_UART.h"
 #include "SEEKFREE_BLUETOOTH_CH9141.h"
 
-//----------------MY
-#include "stack.h"
-#include "ImageDeal.h"
-#include "ImagePreDeal.h"
-#include "motor.h"
-#include "pid.h"
+/*========MY=========*/
+/*===只有不变的写在这里===*/
 #include "vofa.h"
-
-
 
 
 

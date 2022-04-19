@@ -18,22 +18,17 @@
  ********************************************************************************************************************/
 
 #include "headfile.h"
+#include "ImagePreDeal.h"
+#include "system.h"
 #pragma section all "cpu1_dsram"
 //将本语句与#pragma section all restore语句之间的全局变量都放在CPU1的RAM中
 
-extern uint16 cpu1_5ms_flag;
-extern uint8 mt9v03x_image[MT9V03X_H][MT9V03X_W];
-extern uint8 imageBin[HEIGHT][WIDTH];
-extern uint16 delay_20ms_flag, delay_100ms_flag, delay_1000ms_flag;
+
 void core1_main(void)
 {
 	disableInterrupts();
     IfxScuWdt_disableCpuWatchdog(IfxScuWdt_getCpuWatchdogPassword());
     //用户在此处调用各种初始化函数等
-
-
-
-
 
 	//等待所有核心初始化完毕
 	IfxCpu_emitEvent(&g_cpuSyncEvent);
@@ -41,25 +36,7 @@ void core1_main(void)
     enableInterrupts();
     while (TRUE)
     {
-        if(mt9v03x_finish_flag)
-        {
-            if(cpu1_5ms_flag)
-            {
-                img_preProcess(OTSU);
-//                img_process();
-
-                cpu1_5ms_flag = 0;
-            }
-            if(delay_20ms_flag)
-            {
-//                gpio_set(P21_4,1);
-                gpio_toggle(P21_4);
-//                a_sendimg_wifi(UART_0, mt9v03x_image, MT9V03X_W, MT9V03X_H);
-                my_sendimg_03x(UART_0, mt9v03x_image, MT9V03X_W, MT9V03X_H);
-                delay_20ms_flag = 0;
-            }
-            mt9v03x_finish_flag = 0;
-        }
+        img_backstage();
     }
 }
 

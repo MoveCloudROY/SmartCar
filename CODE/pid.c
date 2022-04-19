@@ -1,76 +1,7 @@
 #include "pid.h"
 #include "math.h"
 #include "string.h"
-/*
-    .targetPoint = 300,
-    .P = 8.5,
-    .I = 0.83,
-    .D = 5.0,
-    .alphaDev = 0.7,
-    .alphaOut = 0.7,
 
-    .feedForwardK = 7.3236,
-    .feedForwardB = 342.28,
-
- */
-PID PID_L = {
-    .targetPoint = 100,
-    .P = 8.5,
-    .I = 0.83,
-    .D = 5.0,
-    .alphaDev = 0.05,//0.3
-    .alphaOut = 0.1,//0.2
-
-    .feedForwardK = 7.3236,
-    .feedForwardB = 342.28,
-
-    .para = 0,
-    .lastError = 0,
-    .prevError = 0,
-    .integralError = 0,
-
-    .lastResult = 0,
-    .result = 0,
-};
-PID PID_R = {
-    .targetPoint = 100,
-        .P = 9.0,
-        .I = 0.9,
-        .D = 5.0,
-        .alphaDev = 0.05,
-        .alphaOut = 0.1,
-
-        .feedForwardK = 6.9979,
-        .feedForwardB = 361.75,
-
-        .para = 0,
-        .lastError = 0,
-        .prevError = 0,
-        .integralError = 0,
-
-        .lastResult = 0,
-        .result = 0,
-};
-
-PID PID_Servo = {
-    .targetPoint = 200,
-    .P = 8.5,
-    .I = 0.83,
-    .D = 5.0,
-    .alphaDev = 0.05,//0.3
-    .alphaOut = 1.0,//0.2
-
-    .feedForwardK = 7.3236,
-    .feedForwardB = 342.28,
-
-    .para = 0,
-    .lastError = 0,
-    .prevError = 0,
-    .integralError = 0,
-
-    .lastResult = 0,
-    .result = 0,
-};
 void PID_initParam(PID *pid)
 {
     memset(pid, 0, sizeof(pid));

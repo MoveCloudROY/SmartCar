@@ -1,8 +1,47 @@
 #include "motor.h"
+#include "pid.h"
 #include "stdlib.h"
 #include "math.h"
+#include "vofa.h"
 
-extern PID PID_L, PID_R;
+PID PID_L = {
+    .targetPoint = 60,
+    .P = 8.5,
+    .I = 0.83,
+    .D = 5.0,
+    .alphaDev = 0.05,//0.3
+    .alphaOut = 0.1,//0.2
+
+    .feedForwardK = 7.3236,
+    .feedForwardB = 342.28,
+
+    .para = 0,
+    .lastError = 0,
+    .prevError = 0,
+    .integralError = 0,
+
+    .lastResult = 0,
+    .result = 0,
+};
+PID PID_R = {
+    .targetPoint = 60,
+        .P = 9.0,
+        .I = 0.9,
+        .D = 5.0,
+        .alphaDev = 0.05,
+        .alphaOut = 0.1,
+
+        .feedForwardK = 6.9979,
+        .feedForwardB = 361.75,
+
+        .para = 0,
+        .lastError = 0,
+        .prevError = 0,
+        .integralError = 0,
+
+        .lastResult = 0,
+        .result = 0,
+};
 
 void motor_init(void)
 {
@@ -19,10 +58,7 @@ void motor_init(void)
 	gpt12_init(GPT12_T2, GPT12_T2INB_P33_7, GPT12_T2EUDB_P33_6);//左
 	gpt12_init(GPT12_T4, GPT12_T4INA_P02_8, GPT12_T4EUDA_P00_9);//右
 }
-void servo_init(void)
-{
-    gtm_pwm_init(SERVO_PIN, 50, SERVO_MID);
-}
+
 
 void motor_control(void)
 {
@@ -72,10 +108,10 @@ void motor_control(void)
 //    oldParaR = nowParaR;
 
     //设定PWM值
-//    pwm_duty(MOTOR_LA, 5000+pwmL);
-//    pwm_duty(MOTOR_LB, 5000-pwmL);
-//    pwm_duty(MOTOR_RA, 5000+pwmR);
-//    pwm_duty(MOTOR_RB, 5000-pwmR);
+    pwm_duty(MOTOR_LA, 5000+pwmL);
+    pwm_duty(MOTOR_LB, 5000-pwmL);
+    pwm_duty(MOTOR_RA, 5000+pwmR);
+    pwm_duty(MOTOR_RB, 5000-pwmR);
 
 
     //vofa发送
@@ -89,10 +125,6 @@ void motor_control(void)
     vofa_sendFloat(speedR);
     vofa_sendTail();
 #endif
-
-}
-void servo_control(void)
-{
 
 }
 

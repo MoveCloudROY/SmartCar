@@ -266,7 +266,7 @@ void uart_init(UARTN_enum uartn, uint32 baud, UART_PIN_enum tx_pin, UART_PIN_enu
     pins.pinDriver = IfxPort_PadDriver_cmosAutomotiveSpeed1;
     uart_config.pins = &pins;
 
-//    uart_config.interrupt.typeOfService = IfxSrc_Tos_cpu1;
+//    if(uartn == UART_0) uart_config.interrupt.typeOfService = IfxSrc_Tos_cpu1;
 
     IfxAsclin_Asc_initModule(uart_get_handle(uartn), &uart_config);
 
@@ -355,7 +355,7 @@ uint8 uart_query(UARTN_enum uartn, uint8 *dat)
 
 #if(1 == PRINTF_ENABLE)
 //-------------------------------------------------------------------------------------------------------------------
-//  @brief      重定义printf 到串口
+//  @brie5f      重定义printf 到串口
 //  @param      ch      需要打印的字节
 //  @param      stream  数据流
 //  @note       此函数由编译器自带库里的printf所调用

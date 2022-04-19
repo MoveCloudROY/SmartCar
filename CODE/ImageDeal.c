@@ -2,38 +2,43 @@
  * @Author: ROY1994
  * @Date: 2022-02-04 14:01:30
  * @LastEditors: ROY1994
- * @LastEditTime: 2022-03-05 11:40:18
- * @FilePath: \myImageDeal_v0.1\ImageDeal.cpp
+ * @LastEditTime: 2022-04-14 20:56:37
+ * @FilePath: \myImageDeal\ImageDeal.cpp
  * @Description: ËÑÏß£¬ÔªËØÅÐ¶ÏµÈÖ÷Òª´¦Àíº¯Êý
  */
 #include "ImageDeal.h"
 
-//#define DEBUG
 
-extern uint8 mt9v03x_image[HEIGHT][WIDTH];//Ô­»Ò¶ÈÍ¼
-extern uint8 imageBin[HEIGHT][WIDTH];//¶þÖµ»¯Í¼Ïñ
+int LineEdgeScanWindow_Cross = 2;  //Ê®×ÖÉ¨Ïß·¶Î§
+int LineEdgeScanWindow = 5;    //Ö±µÀ·½²îãÐÖµ
 
-pixel leftLineSerial[HEIGHT<<1],rightLineSerial[HEIGHT<<1];//ÖÖ×ÓÉú³¤·¨ËùÐè²ÎÊý
-int16 leftLineTmpCnt,rightLineTmpCnt;//ÖÖ×ÓÉú³¤·¨ËùÐè²ÎÊý
+uint8_t needExternL = 0;  //ÊÇ·ñ×óÑÓ³¤±êÖ¾
+uint8_t needExternR = 0;  //ÊÇ·ñÓÒÑÓ³¤±êÖ¾
 
-int16 leftLine[HEIGHT] = {0}, rightLine[HEIGHT] = {WIDTH - 1}, midLine[HEIGHT] = {0}, width[HEIGHT] = {0};//Ã¿¸ö¸ß¶ÈµÄ×ó/ÓÒ/ÖÐÏß¼°¿í¶È
+extern uint8_t mt9v30x_image[120][188];//Ô­»Ò¶ÈÍ¼
+extern uint8_t imageBin[HEIGHT][WIDTH];//¶þÖµ»¯Í¼Ïñ
 
-int16 regWidth[HEIGHT] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,23,29,36,39,51,53,56,64,67,73,79,89,97,100,105,110,116,121,129,137,143,146,153,159,166,171,176,182,188,194,200,206,212,217,223,229,235,239,245,251,257,263,271,277,283,289,295,301,307,313,318,324,330,336,341,347,353,359,365,371,377,383,389,395,401,407,413,419,425,431,437,443,449,455,461,467,473,479,485,491,497,};
+PixelTypedef leftLineSerial[HEIGHT<<1],rightLineSerial[HEIGHT<<1];//ÖÖ×ÓÉú³¤·¨ËùÐè²ÎÊý
+int16_t leftLineSeriesCnt,rightLineSeriesCnt;//ÖÖ×ÓÉú³¤·¨ËùÐè²ÎÊý
+
+RowInfoTypedef rowInfo[HEIGHT];//ÐÐÐÅÏ¢
+
+int16_t regWidth[HEIGHT] = {0,0,0,0,0,0,0,0,0,0,0,28,28,28,30,31,33,33,35,36,37,38,39,40,42,42,44,46,46,48,49,50,52,52,54,54,56,58,58,60,61,62,64,64,66,67,68,69,71,71,73,74,75,77,79,79,80,81,83,84,85,86,88,88,90,91,93,94,95,96,97,98,99,101,102,103,105,105,107,107,109,110,111,113,114,115,115,117,117,119,119,121,122,123,124,125,127,127,129,130,131,133,133,135,136,137,139,139,141,141,143,144,145,146,148,149,150,151,152,153,};
 //Ô¤´¦ÀíµÄÃ¿ÐÐ¿í¶È£¨ÃãÇ¿ÄÜÓÃ£©
 
-uint8 leftExist[HEIGHT], rightExist[HEIGHT];//×óÏß¼°ÓÒÏßµÄ´æÔÚ×´Ì¬£¨Èç¹ûÒªÖØ¹¹»»³Éxxxline[]¸³ÖµMISS£©
-uint8 allFindCnt = 0,allLostCnt = 0, leftLostCnt = 0, rightLostCnt = 0;//×óÓÒÏßÈ«ÕÒµ½¼ÆÊý£¬×óÓÒÏßÈ«¶ªÊ§¼ÆÊý£¬×óÏß¶ªÊ§¼ÆÊý£¬ÓÒÏß¶ªÊ§¼ÆÊý
-uint8 leftDownJump, rightDownJump, leftUpJump, rightUpJump, leftDownStart, rightDownStart, leftUpStart, rightUpStart;
+//×óÏß¼°ÓÒÏßµÄ´æÔÚ×´Ì¬£¨Èç¹ûÒªÖØ¹¹»»³Éxxxline[]¸³ÖµMISS£©
+uint8_t allFindCnt = 0,allLostCnt = 0, leftLostCnt = 0, rightLostCnt = 0;//×óÓÒÏßÈ«ÕÒµ½¼ÆÊý£¬×óÓÒÏßÈ«¶ªÊ§¼ÆÊý£¬×óÏß¶ªÊ§¼ÆÊý£¬ÓÒÏß¶ªÊ§¼ÆÊý
+uint8_t leftDownJump, rightDownJump, leftUpJump, rightUpJump, leftDownStart, rightDownStart, leftUpStart, rightUpStart;
 // ×óÏÂ/ÓÒÏÂ/×óÉÏ/ÓÒÉÏ¹Õµã          ×óÏÂ/ÓÒÏÂ/×óÉÏ/ÓÒÉÏ±ß½ç´æÔÚÆðÊ¼µã
+uint8_t leftSeriesBreak, rightSeriesBreak;
 
-RoadTypeEnum RoadType;//µ±Ç°µÀÂ·ÀàÐÍ
 
-int16 ThreeForkCnt = 0; // 0-Î´½øÈë 1-½øÈë1´Î,Ä¿Ç°ÕýÔÚÈý²íÄÚ 2-½øÈë2´Î,Ä¿Ç°ÒÑ¾­¹ýÒ»´Î 3-½øÈë3´Î,Ä¿Ç°ÕýÔÚÈý²íÄÚ 4-ÒÑÍê³ÉÈý²í
+int16_t ThreeForkCnt = 0; // 0-Î´½øÈë 1-½øÈë1´Î,Ä¿Ç°ÕýÔÚÈý²íÄÚ 2-½øÈë2´Î,Ä¿Ç°ÒÑ¾­¹ýÒ»´Î 3-½øÈë3´Î,Ä¿Ç°ÕýÔÚÈý²íÄÚ 4-ÒÑÍê³ÉÈý²í
                           //Ä¬ÈÏÈý²í×ó×ª
 
 float parameterA, parameterB;//²ÎÊý£¨»òÒÑ·ÏÆú£©
 
-imgInfo img_info;//Í¼Ïñ»ù´¡²ÎÊý½á¹¹Ìå£¨Èç¹ûÖØ¹¹°ÑÉÏÃæÒÔHEIGHT´óÐ¡µÄ¿ª³É½á¹¹Ìå£©
+ImgInfoTypedef imgInfo;//Í¼Ïñ»ù´¡²ÎÊý½á¹¹Ìå£¨Èç¹ûÖØ¹¹°ÑÉÏÃæÒÔHEIGHT´óÐ¡µÄ¿ª³É½á¹¹Ìå£©
 
 
 /**
@@ -43,12 +48,16 @@ imgInfo img_info;//Í¼Ïñ»ù´¡²ÎÊý½á¹¹Ìå£¨Èç¹ûÖØ¹¹°ÑÉÏÃæÒÔHEIGHT´óÐ¡µÄ¿ª³É½á¹¹Ìå£©
  */
 void img_process(void)
 {
-	params_init();
+    params_init();
     // RoadType = Cross;
-	basic_searchLine();
-    basic_getSpecialParams(img_info.top, img_info.bottom);
-
-	road_judge();
+    basic_searchLine(HEIGHT-1,HEIGHT-6);
+    advance_searchLine(HEIGHT-7);
+    advance_repairLine();
+    advacnde_midLineFilter();
+    series_searchLine();
+    basic_getSpecialParams(imgInfo.top, imgInfo.bottom);
+    // series_getSpecialParams();
+    road_judge();
     get_error();
 }
 
@@ -59,85 +68,101 @@ void img_process(void)
  */
 void params_init(void)
 {
-    leftLineTmpCnt = 0; rightLineTmpCnt = 0;
+    leftLineSeriesCnt = 0; rightLineSeriesCnt = 0;
     allFindCnt = 0; allLostCnt = 0; leftLostCnt = 0; rightLostCnt = 0;
     leftDownJump = MISS; rightDownJump = MISS; leftUpJump = MISS; rightUpJump = MISS; leftDownStart = 0; rightDownStart = 0;
     leftUpStart = 0; rightUpStart = 0;
-    memset(leftExist, 0, sizeof(leftExist));
-    memset(rightExist, 0, sizeof(rightExist));
+    memset(rowInfo, 0, sizeof(rowInfo));
+    memset(rowInfo, 0, sizeof(rowInfo));
     // memset(leftLine, 0, sizeof(leftLine));
-    // memset(rightLine, WIDTH - 1, sizeof(rightLine));
-	img_info.top = 0;//UP_LIMIT;
-	img_info.bottom = HEIGHT - 1;//DOWN_LIMIT;
+    // memset(rowInfo, WIDTH - 1, sizeof(rowInfo));
+    imgInfo.top = 8;//UP_LIMIT;
+    imgInfo.bottom = HEIGHT - 1;//DOWN_LIMIT;
 
     // for(int i = 1;)
 }
 
 /**
- * @description: »ù´¡É¨Ïßº¯Êý
+ * @description: »ù´¡É¨Ïßº¯Êý(Ç°nÐÐ)
  *               »ñÈ¡Í¼ÏñµÄ×óÓÒÏß´æÔÚÓë·ñ£¬×óÓÒÏß×ø±ê£¬ÓÐ¼ÛÖµµÄÍ¼Ïñ·¶Î§µÈ²ÎÊý
  * @param {*}
  * @return {*}
  */
-void basic_searchLine(void)
+void basic_searchLine(int bottom,int top)
 {
-	/**********************************ÖÐÏßËÑÏß*********************************/
-	
-	int m = WIDTH / 2, tmpTop=0;
-	for(int i = img_info.bottom; i>img_info.top; --i)
-	{
-		int l, r;
-		for(l = m; l>=0; --l)
-		{
-			if(!imageBin[i][l] && !imageBin[i][l+1])
-			{
-				leftLine[i] = l + 1;
-				leftExist[i] = 1;
-				break;
-			}
-		}
-		for(r = m; r<WIDTH; ++r)
-		{
-			if(!imageBin[i][r] && !imageBin[i][r-1])
-			{
-				rightLine[i] = r - 1;
-				rightExist[i] = 1;
-				break;
-			}
-		} 
-        if(!rightExist[i]) rightLine[i] = WIDTH;
-		
-		midLine[i] = (leftLine[i] + rightLine[i]) / 2;
+    /**********************************ÖÐÏßËÑÏß*********************************/
 
-		if (rightLine[i] < leftLine[i] ||( imageBin[i][midLine[i]] == 0 && imageBin[i - 1][midLine[i]] == 0))
-		{
-			tmpTop = i;
-			
-			if (tmpTop >= 20)    //·ÀÖ¹ÔÚÒ»¿ªÊ¼¾Íbreak
-				break;
-		}
-        width[i] = rightLine[i] - leftLine[i];
-        m = midLine[i];
-	}
+    int whiteSum = 0, whiteCnt = 0, whiteAveMid;
+    for(int i = 0; i < WIDTH; ++i)
+    {
+        if(imageBin[bottom][i])
+        {
+            whiteSum += i;
+            ++whiteCnt;
+        }
+    }
+    whiteAveMid = whiteSum / whiteCnt;
+    int m = whiteAveMid;
+    for(int i = bottom; i >= top; --i)
+    {
+        int l, r;
+        for(l = m; l>=0; --l)
+        {
+            if(!imageBin[i][l] && !imageBin[i][l+1])
+            {
+                rowInfo[i].leftLine = l + 1;
+                rowInfo[i].leftStatus = EXIST;
+                break;
+            }
+        }
+        for(r = m; r<WIDTH; ++r)
+        {
+            if(!imageBin[i][r] && !imageBin[i][r-1])
+            {
+                rowInfo[i].rightLine = r - 1;
+                rowInfo[i].rightStatus = EXIST;
+                break;
+            }
+        }
+        if(rowInfo[i].rightStatus != EXIST)
+        {
+            rowInfo[i].rightLine= WIDTH - 1;
+            rowInfo[i].rightStatus = EXIST;
+        }
+        if(rowInfo[i].leftStatus != EXIST)
+        {
+            rowInfo[i].leftLine = 0;
+            rowInfo[i].leftStatus = EXIST;
+        }
 
-    img_info.top = tmpTop;
+        rowInfo[i].midLine = (rowInfo[i].leftLine + rowInfo[i].rightLine) / 2;
+        rowInfo[i].width = rowInfo[i].rightLine - rowInfo[i].leftLine;
+        m = rowInfo[i].midLine;
 
-	/******************************************************************/
+    }
+}
+/**
+ * @description: °ËÁÚÓòÉ¨Ïß
+ * @param {*}
+ * @return {*}
+ */
+void series_searchLine(void)
+{
+    /******************************************************************/
     //               TODO ÖÖ×ÓÉú³¤·¨(under construction)
-	/*******************************************************************/
-	#if 1
-	int dx[8] = {1, 1, 0,-1,-1,-1, 0, 1,};
-	int dy[8] = {0,-1,-1,-1, 0, 1, 1, 1,};
+    /*******************************************************************/
+    int dx[8] = {1, 1, 0,-1,-1,-1, 0, 1,};
+    int dy[8] = {0,-1,-1,-1, 0, 1, 1, 1,};
     /**
      * ¶¨Òå # ÖÜÎ§Îª
-     * 
+     *
      *   3 2 1
      *   4 # 0
      *   5 6 7
-     * 
+     *
      */
-	int16 start = HEIGHT - 1;
-	int16 x, y, tx, ty, s, SearchCompleteFlag, SearchDisruptFlag;
+    int16_t start = HEIGHT - 1;
+    int16_t x, y, tx, ty, s, SearchCompleteFlag, SearchDisruptFlag;
 
     //¼ÆËãÆðÊ¼ÐÐ°×µãÆ½¾ùÎ»ÖÃ
     int whiteSum = 0, whiteCnt = 0, whiteAveMid;
@@ -150,137 +175,153 @@ void basic_searchLine(void)
         }
     }
     whiteAveMid = whiteSum / whiteCnt;
-    
-    //»ñÈ¡×óÓÒÏßÆðÊ¼Î»ÖÃ
-	leftLineSerial[leftLineTmpCnt].y = start;
-	rightLineSerial[rightLineTmpCnt].y = start;
-	for(int l = whiteAveMid; l >= 0; --l)
-	{
-		if(!imageBin[start][l] && !imageBin[start][l+1])
-		{
-			leftLineSerial[leftLineTmpCnt].x = l + 1;
-            leftLine[start] = leftLineSerial[leftLineTmpCnt].x;
-			leftExist[start] = 1;
-		}
-	}
-	for(int r = whiteAveMid; r < WIDTH; ++r)
-	{
-		if(!imageBin[start][r] && !imageBin[start][r-1])
-		{
-			rightLineSerial[rightLineTmpCnt].x = r - 1;
-            rightLine[start] = rightLineSerial[rightLineTmpCnt].x;
-			rightExist[start] = 1;
-		}
-	}
-    leftLineSerial[leftLineTmpCnt].y = start;
-    rightLineSerial[rightLineTmpCnt].y = start;
 
-    //ÖÖ×ÓÉú³¤·¨»ñµÃ×óÏß
-	s = 0;
-    x = leftLineSerial[leftLineTmpCnt].x;
+    //»ñÈ¡×óÓÒÏßÆðÊ¼Î»ÖÃ
+    ++leftLineSeriesCnt;
+    ++rightLineSeriesCnt;
+    leftLineSerial[leftLineSeriesCnt].x = 0;
+    rightLineSerial[rightLineSeriesCnt].x = WIDTH - 1;
+    leftLineSerial[leftLineSeriesCnt].y = start;
+    rightLineSerial[rightLineSeriesCnt].y = start;
+    for(int l = whiteAveMid; l >= 0; --l)
+    {
+        if(!imageBin[start][l] && !imageBin[start][l+1])
+        {
+            leftLineSerial[leftLineSeriesCnt].x = l + 1;
+            break;
+        }
+    }
+    for(int r = whiteAveMid; r < WIDTH; ++r)
+    {
+        if(!imageBin[start][r] && !imageBin[start][r-1])
+        {
+            rightLineSerial[rightLineSeriesCnt].x = r - 1;
+            break;
+        }
+    }
+
+    /*-------------------ÖÖ×ÓÉú³¤·¨»ñµÃ×óÏß-------------------*/
+    s = 0;
+    x = leftLineSerial[leftLineSeriesCnt].x;
     y = start;
-    SearchCompleteFlag = 0;
-    SearchDisruptFlag = 0;
+    SearchCompleteFlag = 0; // ËÑË÷Íê³É±êÖ¾Î»
+    SearchDisruptFlag = 0;  // ËÑË÷ÖÐÍ¾¿ÕÐÐ±êÖ¾Î»
+
     while(1)
     {
-        //Ç¿ÖÆ½áÊø,·ÀÖ¹É¨¹ýÍ·ÅÐ¶ÏÌõ¼þ
-//        if()
-
+        //Ç¿ÖÆ½áÊø,·ÀÖ¹É¨¹ýÍ·
+        if(y <= imgInfo.top)
+            break;
+        // printf(" $%d %d$ \n", x, y);
         //ÄæÊ±ÕëÐý×ªÉ¨Ïß
-        for(int i = s; ; ++i)
+        for( ; ; ++s)
         {
-            if(i == 8) i = 0;
-            tx = x + dx[i];
-			ty = y + dy[i];
+            s = (s + 8) % 8;
+            // if(s == 8) s = 0;
 
-            if(ty < 0 || ty >= HEIGHT || tx >= WIDTH)//É¨µ½±ß½ç,Ö±½ÓÍË³ö
+            tx = x + dx[s];// ÖÜÎ§ÔªËØµÄ×ø±ê
+            ty = y + dy[s];
+            if(ty < 0 || ty >= HEIGHT || tx >= WIDTH)// É¨µ½±ß½ç£¬ËÑË÷Íê³É
             {
                 SearchCompleteFlag = 1;
                 break;
             }
-			if(tx < 0)//¶Ïµã,x=0
+            if(tx < 0)// ÔÚ¿ÕÐÐÄÚ£¬ÉÏ´ÎµÄxÖµ²»±ä£¬ty¼ÌÐøÒÆ¶¯
             {
                 SearchDisruptFlag = 1;
                 y = ty;
+                s =  (s - 1 + 8) % 8;
                 break;
             }
-            if(!imageBin[ty][tx])//ºÚÉ«
+            if(!imageBin[ty][tx])// ºÚÉ«£¨×óÏßÌø±ä£©¸üÐÂxºÍy
             {
+                SearchDisruptFlag = 0;//ÍË³ö¿ÕÐÐ×´Ì¬
                 x = tx;
                 y = ty;
+                s =  (s - 2 + 8) % 8;
                 break;
             }
         }
 
-        if(SearchCompleteFlag == 1)
+        if(SearchCompleteFlag == 1)// ËÑË÷Íê³ÉÍË³ö
         {
             break;
         }
-        if(SearchDisruptFlag == 1)
+        if(SearchDisruptFlag == 1)// Óöµ½ÖÐ¶Ï¼ÌÐø
         {
-            continue;
+            continue;// TODO ¼ÓÈë·Ö¸ô·û
         }
-        ++leftLineTmpCnt;
-        leftLineSerial[leftLineTmpCnt].x = tx;
-        leftLineSerial[leftLineTmpCnt].y = ty;
-        leftExist[ty] = 1;
-        if(!leftLine[ty]) leftLine[ty] = tx;
+
+        ++leftLineSeriesCnt;// ¼ÌÐøÔö¼Óµ±Ç°ÏßµÄ³¤¶È
+        leftLineSerial[leftLineSeriesCnt].x = tx;
+        leftLineSerial[leftLineSeriesCnt].y = ty;
     }
 
+    /*-------------------ÖÖ×ÓÉú³¤·¨»ñµÃÓÒÏß-------------------*/
+    //×¢Òâ£¬´ËÊ±Ó¦µ±»»ÎªË³Ê±Õë·½ÏòËÑË÷
+    s = 4;
+    x = rightLineSerial[rightLineSeriesCnt].x;
+    y = start;
+    SearchCompleteFlag = 0; // ËÑË÷Íê³É±êÖ¾Î»
+    SearchDisruptFlag = 0;  // ËÑË÷ÖÐÍ¾¿ÕÐÐ±êÖ¾Î»
 
-	// while(!leftLine[y])//Ã»ÓÐËã¹ýÕâ¸ö¸ß¶ÈµÄÖµ£¨Èç¹ûºóÐøÒªÓÃÍêÕûµÄÂ·¾¶¾ÍÁí¿ª¸öÊý×é£©
-	// {
-	// 	if( x == WIDTH || y == 0) break; //É¨µ½Í·ÁË
-	// 	for(int i = s; ; ++i)//ÄæÊ±ÕëÐý×ª
-	// 	{        
-	// 		if(i == 8) i = 0;
-	// 		tx = x + dx[i];
-	// 		ty = y + dy[i];
-	// 		if(tx<0 || ty>=HEIGHT) break; // Èç¹ûÔ½½çÁË
-	// 		if(tx == 0)
-	// 		{
-	// 			x = 0;
-	// 			y = ty;
-	// 			leftLine[ty] = tx;
-	// 			break;
-	// 		}
-	// 		if(tx == WIDTH - 1)
-	// 		{
-	// 			x = WIDTH;
-	// 			y = ty;
-	// 			leftLine[ty] = tx;
-	// 			break;
-	// 		}
-	// 		if(ty == 0)
-	// 		{
-	// 			x = tx;
-	// 			y = 0;
-	// 			leftLine[ty] = tx;
-	// 			break;
-	// 		}
-	// 		if(!imageBin[tx][ty])
-	// 		{
-	// 			x = tx;
-	// 			y = ty;
-	// 			leftLine[ty] = tx;
-	// 			leftExist[ty] = 1;
-	// 			break;
-	// 		}
-	// 	}
-	// 	s-=2;//µ¹»ØÒ»¸ö90¶È
-	// }
-	
-	#endif
-	
+    while(1)
+    {
+        //Ç¿ÖÆ½áÊø,·ÀÖ¹É¨¹ýÍ·
+        if(y <= imgInfo.top)
+            break;
+        // printf(" $%d %d$ \n", x, y);
+        //Ë³Ê±ÕëÐý×ªÉ¨Ïß
+        for( ; ; --s)
+        {
+            s = (s + 8) % 8;
+            // if(s == 8) s = 0;
+
+            tx = x + dx[s];// ÖÜÎ§ÔªËØµÄ×ø±ê
+            ty = y + dy[s];
+            if(ty < 0 || ty >= HEIGHT || tx < 0)// É¨µ½±ß½ç£¬ËÑË÷Íê³É
+            {
+                SearchCompleteFlag = 1;
+                break;
+            }
+            if(tx >= WIDTH)// ÔÚ¿ÕÐÐÄÚ£¬ÉÏ´ÎµÄxÖµ²»±ä£¬ty¼ÌÐøÒÆ¶¯
+            {
+                SearchDisruptFlag = 1;
+                y = ty;
+                s =  (s + 1 + 8) % 8;
+                break;
+            }
+            if(!imageBin[ty][tx])// ºÚÉ«£¨ÓÒÏßÌø±ä£©¸üÐÂxºÍy
+            {
+                SearchDisruptFlag = 0;
+                x = tx;
+                y = ty;
+                s =  (s + 2 + 8) % 8;
+                break;
+            }
+        }
+
+        if(SearchCompleteFlag == 1)// ËÑË÷Íê³ÉÍË³ö
+        {
+            break;
+        }
+        if(SearchDisruptFlag == 1)// Óöµ½ÖÐ¶Ï¼ÌÐø
+        {
+            continue;// TODO ¼ÓÈë·Ö¸ô·û
+        }
+
+        ++rightLineSeriesCnt;// ¼ÌÐøÔö¼Óµ±Ç°ÏßµÄ³¤¶È
+        rightLineSerial[rightLineSeriesCnt].x = tx;
+        rightLineSerial[rightLineSeriesCnt].y = ty;
+    }
 }
-
 /**
  * @description: »ñÈ¡¹ÕµãºÍÆðÊ¼µã²ÎÊý (ÈëÊ®×Ö¼°»·µº¹ÕµãÑ°ÕÒËùÐè)
- * @param {uint8} select_top
- * @param {uint8} select_bottom
+ * @param {uint8_t} select_top
+ * @param {uint8_t} select_bottom
  * @return {*}
  */
-void basic_getSpecialParams(uint8 select_top, uint8 select_bottom)//TODO »ùÓÚÖÖ×ÓÉú³¤·¨µÄ¹ÕµãÑ°ÕÒ
+void basic_getSpecialParams(uint8_t select_top, uint8_t select_bottom)//TODO »ùÓÚÖÖ×ÓÉú³¤·¨µÄ¹ÕµãÑ°ÕÒ
 {
     int i;
     leftDownJump = MISS;
@@ -292,24 +333,24 @@ void basic_getSpecialParams(uint8 select_top, uint8 select_bottom)//TODO »ùÓÚÖÖ×
     for (i = select_bottom; i >= select_top; --i)//»ñµÃ×óÓÒÏßÆðÊ¼Î»ÖÃºÍÈ±Ê§Çé¿ö
     {
         //×óÏß²Ù×÷
-        if(leftExist[i] && !leftDownStart)     //É¨µ½Ïß
+        if(rowInfo[i].leftStatus == EXIST && !leftDownStart)     //É¨µ½Ïß
         {
             leftDownStart = i;
         }
         //ÓÒÏß²Ù×÷
-        else if(rightExist[i] && !rightDownStart)    //É¨µ½Ïß
+        else if(rowInfo[i].rightStatus == EXIST && !rightDownStart)    //É¨µ½Ïß
         {
             rightDownStart = i;
         }
     }
     
     // leftLastDiff = abs(leftLine[leftDownStart - 1] - leftLine[leftDownStart]);
-    // rightLastDiff = abs(rightLine[rightDownStart - 1] - rightLine[rightDownStart]);
+    // rightLastDiff = abs(rowInfo[rightDownStart - 1] - rowInfo[rightDownStart]);
     //Ñ°ÕÒÏÂ²à¹Õµã
     for (i = leftDownStart - 1; i > select_top; --i)
     {
         //Ö±½ÓÅÐ¶ÏÒ»¸öµãµÄ²îÖµ´óÓÚãÐÖµ£¬ÆÕÊÊÐÔ²»ÊÇºÜºÃ
-        if(leftLine[i - 1] - leftLine[i] < -3 && leftLine[i] - leftLine[i + 1] < 5)
+        if(rowInfo[i - 1].leftLine - rowInfo[i].leftLine < -3 && rowInfo[i].leftLine - rowInfo[i + 1].leftLine < 5)
         {
             leftDownJump = i;
             break;
@@ -317,7 +358,7 @@ void basic_getSpecialParams(uint8 select_top, uint8 select_bottom)//TODO »ùÓÚÖÖ×
     }
     for (i = rightDownStart - 1 ; i > select_top; --i)
     {
-        if(rightLine[i - 1] - rightLine[i] > 3 && rightLine[i + 1] - rightLine[i]  < 5)
+        if(rowInfo[i - 1].rightLine - rowInfo[i].rightLine > 3 && rowInfo[i + 1].rightLine - rowInfo[i].rightLine  < 5)
         {
             rightDownJump = i;
             break;
@@ -328,12 +369,12 @@ void basic_getSpecialParams(uint8 select_top, uint8 select_bottom)//TODO »ùÓÚÖÖ×
     for (i = select_top; i <= select_bottom; ++i)//»ñµÃ×óÓÒÏßÆðÊ¼Î»ÖÃºÍÈ±Ê§Çé¿ö
     {
         //×óÏß²Ù×÷
-        if(leftExist[i] && !leftUpStart)     //É¨µ½Ïß
+        if(rowInfo[i].leftStatus == EXIST && !leftUpStart)     //É¨µ½Ïß
         {
             leftUpStart = i;
         }  
         //ÓÒÏß²Ù×÷
-        if(rightExist[i] && !rightUpStart)    //É¨µ½Ïß
+        if(rowInfo[i].rightStatus == EXIST && !rightUpStart)    //É¨µ½Ïß
         {
             rightUpStart = i;
         }
@@ -341,7 +382,7 @@ void basic_getSpecialParams(uint8 select_top, uint8 select_bottom)//TODO »ùÓÚÖÖ×
     //Ñ°ÕÒÉÏ²à¹Õµã
     for (i = leftUpStart + 2; i < select_bottom; ++i)//¼Ó2±Ü¿ªÖÕÖ¹Ïß¸ÉÈÅ
     {
-        if(leftLine[i + 1] - leftLine[i] < -5 && leftLine[i - 1] - leftLine[i] <= 5)
+        if(rowInfo[i + 1].leftLine - rowInfo[i].leftLine < -5 && rowInfo[i - 1].leftLine - rowInfo[i].leftLine <= 5)
         {
             leftUpJump = i;
             break;
@@ -349,7 +390,7 @@ void basic_getSpecialParams(uint8 select_top, uint8 select_bottom)//TODO »ùÓÚÖÖ×
     }
     for (i = rightUpStart + 2; i < select_bottom; ++i)
     {
-        if(rightLine[i + 1] - rightLine[i] > 5 && rightLine[i] - rightLine[i - 1] <= 5)
+        if(rowInfo[i + 1].rightLine - rowInfo[i].rightLine > 5 && rowInfo[i].rightLine - rowInfo[i - 1].rightLine <= 5)
         {
             rightUpJump = i;
             break;
@@ -358,20 +399,166 @@ void basic_getSpecialParams(uint8 select_top, uint8 select_bottom)//TODO »ùÓÚÖÖ×
 
     for(i = max(leftDownStart,rightDownStart); i > select_top; --i)
     {
-        if (leftExist[i] == 1 && rightExist[i] == 1) allFindCnt++;//i <= 50 && 
-        if (leftExist[i] == 0 && rightExist[i] == 0) allLostCnt++;//i <= 25 &&
-        if(leftExist[i])
+        // if (rowInfo[i].leftStatus == EXIST && rowInfo[i].rightStatus == EXIST) allFindCnt++;//i <= 50 &&
+        // if (rowInfo[i].leftStatus != EXIST && rowInfo[i].rightStatus != EXIST) allLostCnt++;//i <= 25 &&
+        if(rowInfo[i].leftStatus == EXIST)
         {
-            if(rightExist[i]) ++allFindCnt;
+            if(rowInfo[i].rightStatus == EXIST) ++allFindCnt;
             else ++rightLostCnt;
         }
         else
         {
-            if(rightExist[i]) ++leftLostCnt;
+            if(rowInfo[i].rightStatus == EXIST) ++leftLostCnt;
             else ++allLostCnt;
         }
     }
     return ;
+}
+
+
+void series_getSpecialParams(void)
+{
+    //ÆðÊ¼µãÖ±½ÓÈ¡¾ÍÍêÊÂÁË
+    leftDownStart = leftLineSerial[1].y;
+    rightDownStart = rightLineSerial[1].y;
+    leftUpStart = leftLineSerial[leftLineSeriesCnt].y;
+    rightUpStart = rightLineSerial[rightLineSeriesCnt].y;
+
+    //Ä¬ÈÏÇé¿öÏÂ¶ÏÐÐÎ»ÓÚ×îµ×ÏÂ
+    leftSeriesBreak = leftLineSeriesCnt;
+    rightSeriesBreak = rightLineSeriesCnt;
+
+    //prev4Îª×ó²àµÚ4¸öÔªËØ, next4ÎªÓÒ²àµÚËÄ¸öÔªËØ, nowÎªµ±Ç°ÔªËØ, leftMaxCosi rightMaxCosi Îª¼Ð½Ç×î´óÓàÏÒÖµ¶ÔÓ¦µÄÔªËØ
+    int prev4 = 1, next4 = 1, leftMaxCosi, rightMaxCosi;
+    //p1 p2 Îª Á½¸öÏòÁ¿Ä£³¤, cosTmp ÎªÓàÏÒÖµ, leftMaxCos rightMaxCos Îª¼Ð½Ç×î´óÓàÏÒÖµ
+    float cosTmp, leftMaxCos = -1.1, rightMaxCos = -1.1;
+
+
+    // ×óÏß
+    for (int i = 1; i <= leftLineSeriesCnt-4; ++i)
+    {
+        // ¿¼ÂÇÏßµÄÁ¬ÐøÇé¿ö£¬ÈôÁ¬Ðø£¬Ôò¸ÃµãÇ°ºóÁ½¸öÔªËØµÄx£¬y²îÓ¦¸ÃÔÚ1ÒÔÄÚ
+        // Èç¹û·ÇÁ¬ÐøÔò¿ÉÍÆ³ö£º
+        //      1. ´æÔÚ¿ÕÐÐ
+        //      2. ¿ÉÄÜ´æÔÚÉÏ¹Õµã
+
+        if(i <= leftSeriesBreak)// ÔÚ¶ÏÐÐÖ®ÏÂ
+        {
+            //ÒÆ¶¯prev4ºÍnext4
+            prev4 = max(1,i-4);
+            next4 = min(leftSeriesBreak,i+4);
+            //¶ÏÐÐÅÐ¶Ï
+            if(abs(leftLineSerial[next4].x - leftLineSerial[next4 + 1].x) > 1 ||
+            abs(leftLineSerial[next4].y - leftLineSerial[next4 + 1].y) > 1)
+            {
+                leftSeriesBreak = next4;
+            }
+
+            //¼ÆËã´Ë¿ÌÓàÏÒÖµ
+            cosTmp = cosAOB(leftLineSerial[prev4].x, leftLineSerial[prev4].y,
+                            leftLineSerial[i].x, leftLineSerial[i].y,
+                            leftLineSerial[next4].x, leftLineSerial[next4].y);
+            //¸üÐÂ
+            if(cosTmp > leftMaxCos)
+            {
+                leftMaxCosi = i;
+                leftMaxCos = cosTmp;
+            }
+        }
+        else//ÔÚ¶ÏÐÐÖ®ÉÏ
+        {
+            //µÚÒ»´Îµ½¶ÏÐÐÉÏ, Òª¸´Î»maxÖµ, Ë³´ø±£´æ¹Õµã
+            if(i == leftSeriesBreak + 1)
+            {
+                leftDownJump = leftLineSerial[leftMaxCosi].y;
+
+                leftMaxCos = -1.1;
+            }
+            //ÒÆ¶¯prev4ºÍnext4
+            prev4 = max(leftSeriesBreak+1,i-4);
+            next4 = min(leftLineSeriesCnt,i+4);
+            //¼ÆËã´Ë¿ÌÓàÏÒÖµ
+            cosTmp = cosAOB(leftLineSerial[prev4].x, leftLineSerial[prev4].y,
+                            leftLineSerial[i].x, leftLineSerial[i].y,
+                            leftLineSerial[next4].x, leftLineSerial[next4].y);
+            //¸üÐÂ
+            if(cosTmp > leftMaxCos)
+            {
+                leftMaxCosi = i;
+                leftMaxCos = cosTmp;
+                // printf("LD %d: %f\n",i, leftMaxCos);
+            }
+        }
+
+    }
+    //Èç¹ûleftSeriesBreak³öÏÖ±ä¸ü, ¿¼ÂÇÊÇ·ñ´æÔÚÉÏ¹Õµã
+    if(leftSeriesBreak != leftLineSeriesCnt)
+    {
+        leftUpJump = leftLineSerial[leftMaxCosi].y;
+        // printf("LU: %f\n", leftMaxCos);
+    }
+
+    // ÓÒÏß
+    prev4 = 1; next4 = 1;
+    for (int i = 1; i <= rightLineSeriesCnt-4; ++i)
+    {
+        // ¿¼ÂÇÏßµÄÁ¬ÐøÇé¿ö£¬ÈôÁ¬Ðø£¬Ôò¸ÃµãÇ°ºóÁ½¸öÔªËØµÄx£¬y²îÓ¦¸ÃÔÚ1ÒÔÄÚ
+        // Èç¹û·ÇÁ¬ÐøÔò¿ÉÍÆ³ö£º
+        //      1. ´æÔÚ¿ÕÐÐ
+        //      2. ¿ÉÄÜ´æÔÚÉÏ¹Õµã
+
+        if(i <= rightSeriesBreak)// ÔÚ¶ÏÐÐÖ®ÏÂ
+        {
+            //ÒÆ¶¯prev4ºÍnext4
+            prev4 = max(1,i-4);
+            next4 = min(rightSeriesBreak,i+4);
+            //¶ÏÐÐÅÐ¶Ï
+            if(abs(rightLineSerial[next4].x - rightLineSerial[next4 + 1].x) > 1 ||
+            abs(rightLineSerial[next4].y - rightLineSerial[next4 + 1].y) > 1)
+            {
+                rightSeriesBreak = next4;
+            }
+
+            //¼ÆËã´Ë¿ÌÓàÏÒÖµ
+            cosTmp = cosAOB(rightLineSerial[prev4].x, rightLineSerial[prev4].y,
+                            rightLineSerial[i].x, rightLineSerial[i].y,
+                            rightLineSerial[next4].x, rightLineSerial[next4].y);
+            //¸üÐÂ
+            if(cosTmp > rightMaxCos)
+            {
+                rightMaxCosi = i;
+                rightMaxCos = cosTmp;
+            }
+        }
+        else//ÔÚ¶ÏÐÐÖ®ÉÏ
+        {
+            //µÚÒ»´Îµ½¶ÏÐÐÉÏ, Òª¸´Î»maxÖµ, Ë³´ø±£´æ¹Õµã
+            if(i == rightSeriesBreak + 1)
+            {
+                rightDownJump = rightLineSerial[rightMaxCosi].y;
+                rightMaxCos = -1.1;
+            }
+            //ÒÆ¶¯prev4ºÍnext4
+            prev4 = max(rightSeriesBreak+1,i-4);
+            next4 = min(rightLineSeriesCnt,i+4);
+            //¼ÆËã´Ë¿ÌÓàÏÒÖµ
+            cosTmp = cosAOB(rightLineSerial[prev4].x, rightLineSerial[prev4].y,
+                            rightLineSerial[i].x, rightLineSerial[i].y,
+                            rightLineSerial[next4].x, rightLineSerial[next4].y);
+            //¸üÐÂ
+            if(cosTmp > rightMaxCos)
+            {
+                rightMaxCosi = i;
+                rightMaxCos = cosTmp;
+            }
+        }
+
+    }
+    //Èç¹ûrightSeriesBreak³öÏÖ±ä¸ü, ¿¼ÂÇÊÇ·ñ´æÔÚÉÏ¹Õµã
+    if(rightSeriesBreak != rightLineSeriesCnt)
+    {
+        rightUpJump = rightLineSerial[rightMaxCosi].y;
+    }
 }
 
 /**
@@ -382,23 +569,23 @@ void basic_getSpecialParams(uint8 select_top, uint8 select_bottom)//TODO »ùÓÚÖÖ×
 void basic_repairLine(void)//[x] ¸øÓè¸ü¶àÑ¡Ïî,µÀÂ·ÏÂ²à²¹Ïß,midLine¼ÆËã,[x]²ð·Ö³öÍäµÀÅÐ¶ÏÄ£¿é)
 {
     float k,b;
-    uint8 leftDownEnd, rightDownEnd;
+    uint8_t leftDownEnd, rightDownEnd;
 
     if(leftDownJump != MISS)
         leftDownEnd = leftDownJump;
     else 
-        leftDownEnd =  img_info.top;
+        leftDownEnd =  imgInfo.top;
 
     if(rightDownJump != MISS)
         rightDownEnd = rightDownJump;
     else
-        rightDownEnd = img_info.top;
+        rightDownEnd = imgInfo.top;
     //×óÏß
     float left_curvature = get_curvature(leftDownStart, leftDownEnd,LEFT);
     if (left_curvature > -0.1 && left_curvature < 0.4 && leftDownStart - leftDownEnd >= 7)// && leftDownStart <= 32 )
     {
         least_squares(&k, &b, leftDownEnd, leftDownStart, LEFT);
-        add_line(k, b, leftDownStart, img_info.bottom, LEFT);
+        add_line(k, b, leftDownStart, imgInfo.bottom, LEFT);
     }
 
     //ÓÒÏß
@@ -406,27 +593,433 @@ void basic_repairLine(void)//[x] ¸øÓè¸ü¶àÑ¡Ïî,µÀÂ·ÏÂ²à²¹Ïß,midLine¼ÆËã,[x]²ð·Ö³ö
     if (right_curvature > -0.4 && right_curvature < 0.1 && rightDownStart - rightDownEnd >= 7)// && rightDownStart <= 32 
     {
         least_squares(&k, &b, rightDownEnd, rightDownStart, RIGHT);
-        add_line(k, b, rightDownStart, img_info.bottom, RIGHT);
+        add_line(k, b, rightDownStart, imgInfo.bottom, RIGHT);
     }
 
     //¼ÆËãÐÞ²¹ºóµÄÖÐÏß
-    for(int i = img_info.bottom; i >= min(leftDownStart, rightDownStart); --i)
+    for(int i = imgInfo.bottom; i >= min(leftDownStart, rightDownStart); --i)
     {
-        midLine[i] = (leftLine[i] + rightLine[i]) / 2;
-        // width[i] = rightLine[i] - leftLine[i];
+        rowInfo[i].midLine = (rowInfo[i].leftLine + rowInfo[i].rightLine) / 2;
+        // rowInfo[i] = rowInfo[i] - leftLine[i];
     }
     return ;
 }
+#define LIMIT_L(x) (x = ( (x) < 1? 1 : (x)))
+#define LIMIT_R(x) (x = ((x) > WIDTH - 2? WIDTH - 2 : (x)))
+void advance_searchLine(int bottom)  //////²»ÓÃ¸ü¸Ä
+{
+    uint8_t isFindLk = 'F';  //È·¶¨ÎÞ±ßÐ±ÂÊµÄ»ù×¼ÓÐ±ßÐÐÊÇ·ñ±»ÕÒµ½µÄ±êÖ¾
+    uint8_t hasFindLk = 'F';  //ÊÇ·ñ³¢ÊÔ¹ýÕÒµ½ÕâÒ»Ö¡Í¼ÏñµÄ»ù×¼×óÐ±ÂÊ
+    uint8_t isFindRk = 'F';  //È·¶¨ÎÞ±ßÐ±ÂÊµÄ»ù×¼ÓÐ±ßÐÐÊÇ·ñ±»ÕÒµ½µÄ±êÖ¾
+    uint8_t hasFindRk = 'F';  //ÊÇ·ñ³¢ÊÔ¹ýÕÒµ½ÕâÒ»Ö¡Í¼ÏñµÄ»ù×¼ÓÒÐ±ÂÊ
+    float D_L = 0;           //ÑÓ³¤Ïß×ó±ßÏßÐ±ÂÊ
+    float D_R = 0;           //ÑÓ³¤ÏßÓÒ±ßÏßÐ±ÂÊ
+    int firstLostL;           //¼Ç×¡Ê×´Î×ó¶ª±ßÐÐ
+    int firstLostR;           //¼Ç×¡Ê×´ÎÓÒ¶ª±ßÐÐ
+    needExternR = 0;          //±êÖ¾Î»Çå0
+    needExternL = 0;
+    uint8_t tmpL = 0, tmpR = 0;
+    for (int row = bottom; row > imgInfo.top; row--)  //Ç°5ÐÐ´¦Àí¹ýÁË£¬ÏÂÃæ´Ó55ÐÐµ½£¨Éè¶¨µÄ²»´¦ÀíµÄÐÐtop£©
+    {  //Ì«Ô¶µÄÍ¼Ïñ²»ÎÈ¶¨£¬topÒÔºóµÄ²»´¦Àí
+        // picTemp = imageBin[row];
+
+        EdgePointTypedef EdgePoint[2];  // 0×ó1ÓÒ
+        if (imgInfo.RoadType != Cross)
+        {
+            tmpL = rowInfo[row + 1].rightLine - LineEdgeScanWindow;  //´ÓÉÏÒ»ÐÐÓÒ±ßÏß-5µÄµã¿ªÊ¼£¨È·¶¨É¨Ãè¿ªÊ¼µã£©
+            tmpR = rowInfo[row + 1].rightLine + LineEdgeScanWindow;  //µ½ÉÏÒ»ÐÐÓÒ±ßÏß+5µÄµã½áÊø£¨È·¶¨É¨Ãè½áÊøµã£©
+        }
+        else
+        {
+            tmpL = rowInfo[row + 1].leftLine - LineEdgeScanWindow_Cross;  //´ÓÉÏÒ»ÐÐÓÒ±ßÏß-5µÄµã¿ªÊ¼£¨È·¶¨É¨Ãè¿ªÊ¼µã£©
+            tmpR = rowInfo[row + 1].leftLine + LineEdgeScanWindow_Cross;
+        }
+
+        LIMIT_L(tmpL);   //È·¶¨×óÉ¨ÃèÇø¼ä²¢½øÐÐÏÞÖÆ
+        LIMIT_R(tmpR);  /////È·¶¨ÓÒÉ¨ÃèÇø¼ä²¢½øÐÐÏÞÖÆ
+
+        basic_getJumpPointFromDet(imageBin[row], tmpL, tmpR, &EdgePoint[1], RIGHT);  //É¨ÓÒ±ßÏß
+
+        tmpL = rowInfo[row + 1].leftLine - LineEdgeScanWindow;  //´ÓÉÏÒ»ÐÐ×ó±ßÏß-5µÄµã¿ªÊ¼£¨È·¶¨É¨Ãè¿ªÊ¼µã£©
+        tmpR = rowInfo[row + 1].leftLine + LineEdgeScanWindow;  //µ½ÉÏÒ»ÐÐ×ó±ßÏß+5µÄµã½áÊø£¨È·¶¨É¨Ãè½áÊøµã£©
+
+        LIMIT_L(tmpL);   //È·¶¨×óÉ¨ÃèÇø¼ä²¢½øÐÐÏÞÖÆ
+        LIMIT_R(tmpL);  //È·¶¨ÓÒÉ¨ÃèÇø¼ä²¢½øÐÐÏÞÖÆ
+
+        basic_getJumpPointFromDet(imageBin[row],tmpL, tmpR, &EdgePoint[0], LEFT);
+
+        if (EdgePoint[0].type == LOST)  //Èç¹û±¾ÐÐ×ó±ßÏß²»Õý³£Ìø±ä£¬¼´Õâ10¸öµã¶¼ÊÇ°×µÄ
+        {
+            rowInfo[row].leftLine = rowInfo[row + 1].leftLine;  //±¾ÐÐ×ó±ßÏßÓÃÉÏÒ»ÐÐµÄÊýÖµ
+        }
+        else //×ó±ßÏßÕý³£
+        {
+            rowInfo[row].leftLine = EdgePoint[0].posX;  //¼ÇÂ¼ÏÂÀ´À²
+        }
+
+        if (EdgePoint[1].type == LOST)  //Èç¹û±¾ÐÐÓÒ±ßÏß²»Õý³£Ìø±ä
+        {
+            rowInfo[row].rightLine = rowInfo[row + 1].rightLine;  //±¾ÐÐÓÒ±ßÏßÓÃÉÏÒ»ÐÐµÄÊýÖµ
+        }
+        else //ÓÒ±ßÏßÕý³£
+        {
+            rowInfo[row].rightLine = EdgePoint[1].posX;  //¼ÇÂ¼ÏÂÀ´À²
+        }
+
+        rowInfo[row].leftStatus = EdgePoint[0].type;  //¼ÇÂ¼±¾ÐÐÊÇ·ñÕÒµ½±ßÏß£¬¼´±ßÏßÀàÐÍ
+        rowInfo[row].rightStatus = EdgePoint[1].type;
+
+        ///////ÖØÐÂÈ·¶¨ÄÇÐ©´óÌø±äµÄ±ßÔµ
+        if (EdgePoint[0].type == JUMP || EdgePoint[1].type == JUMP)
+        {
+            if (EdgePoint[0].type == JUMP )  //Èç¹û×ó±ßÏß´óÌø±ä
+            {
+                for (int col = (rowInfo[row].leftLine + 1); col <= (rowInfo[row].rightLine - 1); col++)  //×óÓÒ±ßÏßÖ®¼äÖØÐÂÉ¨Ãè
+                {
+                    if (*(imageBin[row] + col) == 0 && *(imageBin[row] + col + 1) != 0)
+                    {
+                        rowInfo[row].leftLine = col;  ////Èç¹ûÉÏÒ»ÐÐ×ó±ßÏßµÄÓÒ±ßÓÐºÚ°×Ìø±äÔòÎª¾ø¶Ô±ßÏßÖ±½ÓÈ¡³ö
+                        rowInfo[row].leftStatus = EXIST;
+                        break;
+                    }
+                    else if (*(imageBin[row] + col) != 0)  ///Ò»µ©³öÏÖ°×µãÔòÖ±½ÓÌø³ö
+                        break;
+                    else if (col == (rowInfo[row].rightLine - 1))
+                    {  //??????????????Í¼ÏñÏòÓÒµ½µ×
+                        rowInfo[row].leftLine = col;
+                        rowInfo[row].leftStatus = EXIST;
+                        break;
+                    }
+                }
+            }
+            if ((rowInfo[row].rightLine - rowInfo[row].leftLine) <= 7)  ///////Í¼Ïñ¿í¶ÈÏÞ¶¨
+            {
+                imgInfo.top = row + 1;  //Èç¹ûÕâÐÐ±È7Ð¡ÁËºóÃæÖ±½Ó²»ÒªÁË
+                break;
+            }
+            if (EdgePoint[1].type == JUMP)
+                for (int col = (rowInfo[row].rightLine - 1); col >= (rowInfo[row].leftLine + 1); col--)
+                {
+                    if ((*(imageBin[row] + col) == 0) && (*(imageBin[row] + col - 1) != 0)) {
+                        rowInfo[row].rightLine = col;  ////Èç¹ûÓÒ±ßÏßµÄ×ó±ß»¹ÓÐºÚ°×Ìø±äÔòÎª¾ø¶Ô±ßÏßÖ±½ÓÈ¡³ö
+                        rowInfo[row].rightStatus = EXIST;
+                        break;
+                    }
+                    else if (*(imageBin[row] + col) != 0)
+                        break;
+                    else if (col == (rowInfo[row].leftLine + 1))  //?????
+                    {
+                        rowInfo[row].rightLine = col;
+                        rowInfo[row].rightStatus = EXIST;
+                        break;
+                    }
+                }
+        }
+
+        //        /***********ÖØÐÂÈ·¶¨ÎÞ±ßÐÐ************/
+        uint8_t L_found_point = 0;
+        uint8_t R_found_point = 0;
+
+
+        if (EdgePoint[1].type == LOST && row > 10 && row < HEIGHT-10) //×îÔç³öÏÖµÄÎÞ±ßÐÐ
+        {
+            if (hasFindRk == 'F') //ÕâÒ»Ö¡Í¼ÏñÃ»ÓÐÅÜ¹ýÕâ¸öÕÒ»ù×¼ÏßÑ­»·
+            {
+                hasFindRk = 'T';      //ÕÒÁË  Ò»Ö¡Í¼ÏñÖ»ÅÜÒ»´Î ÖÃÎªT
+                firstLostR = row + 2; //
+                for (int y = row + 1; y < row + 30; y++)
+                {
+                    if (rowInfo[y].rightStatus == EXIST) //ÍùÎÞ±ßÐÐÏÂÃæËÑË÷  Ò»°ã¶¼ÊÇÓÐ±ßµÄ
+                        R_found_point++;
+                }
+                if (R_found_point > 8) //ÕÒµ½»ù×¼Ð±ÂÊ±ß  ×öÑÓ³¤ÏßÖØÐÂÈ·¶¨ÎÞ±ß   µ±ÓÐ±ßµÄµãÊý´óÓÚ8
+                {
+                    D_R = ((float)(rowInfo[row + R_found_point].rightLine - rowInfo[row + 3].rightLine)) / ((float)(R_found_point - 3));
+                                                        //ÇóÏÂÃæÕâÐ©µãÁ¬ÆðÀ´µÄÐ±ÂÊ
+                                                        //ºÃ¸øÎÞ±ßÐÐ×öÑÓ³¤Ïß×ó¸ö»ù×¼
+                    if (D_R > 0)
+                    {
+                        isFindRk ='T';
+                            //Èç¹ûÐ±ÂÊ´óÓÚ0  ÄÇÃ´ÕÒµ½ÁËÕâ¸ö»ù×¼ÐÐ  ÒòÎªÌÝÐÎ»û±ä
+                            //ËùÒÔÒ»°ãÇé¿ö¶¼ÊÇÐ±ÂÊ´óÓÚ0 Ð¡ÓÚ0µÄÇé¿öÒ²²»ÓÃÑÓ³¤ Ã»±ØÒª
+                    }
+                    else
+                    {
+                        isFindRk = 'F'; //Ã»ÓÐÕÒµ½Õâ¸ö»ù×¼ÐÐ
+                        if (D_R < 0)
+                            needExternR = 'F'; //Õâ¸ö±êÖ¾Î»ÓÃÓÚÊ®×Ö½Çµã²¹Ïß  ·ÀÖ¹Í¼ÏñÎó²¹ÓÃµÄ
+                    }
+                }
+            }
+            if (isFindRk == 'T')
+                rowInfo[row].rightLine = rowInfo[firstLostR].rightLine - D_R * (firstLostR - row); //Èç¹ûÕÒµ½ÁË ÄÇÃ´ÒÔ»ù×¼ÐÐ×öÑÓ³¤Ïß
+
+            LIMIT_L(rowInfo[row].rightLine); //ÏÞ·ù
+            LIMIT_R(rowInfo[row].rightLine); //ÏÞ·ù
+        }
+
+        if (EdgePoint[0].type == LOST && row > 10 && row < HEIGHT-10) //ÏÂÃæÍ¬Àí  ×ó±ß½ç
+        {
+            if (hasFindLk == 'F')
+            {
+                hasFindLk = 'T';
+                firstLostL = row + 2;
+                for (int y = row + 1; y < row + 15; y++)
+                {
+                    if (rowInfo[y].leftStatus == EXIST)
+                        L_found_point++;
+                }
+                if (L_found_point > 8) //ÕÒµ½»ù×¼Ð±ÂÊ±ß  ×öÑÓ³¤ÏßÖØÐÂÈ·¶¨ÎÞ±ß
+                {
+                    D_L = ((float)(rowInfo[row + 3].leftLine - rowInfo[row + L_found_point].leftLine)) / ((float)(L_found_point - 3));
+                    if (D_L > 0)
+                    {
+                        isFindLk = 'T';
+                    }
+                    else
+                    {
+                        isFindLk = 'F';
+                        if (D_L < 0)
+                            needExternL = 'F';
+                    }
+                }
+            }
+
+            if (isFindLk == 'T')
+                rowInfo[row].leftLine = rowInfo[firstLostL].leftLine + D_L * (firstLostL - row);
+
+            LIMIT_L(rowInfo[row].leftLine); //ÏÞ·ù
+            LIMIT_R(rowInfo[row].leftLine); //ÏÞ·ù
+        }
+
+        if (rowInfo[row].leftStatus == LOST && rowInfo[row].rightStatus == LOST)
+                imgInfo.allLostCnt++; //ÒªÊÇ×óÓÒ¶¼ÎÞ±ß£¬¶ª±ßÊý+1
+
+        LIMIT_L(rowInfo[row].leftLine);  //ÏÞ·ù
+        LIMIT_R(rowInfo[row].leftLine);  //ÏÞ·ù
+        LIMIT_L(rowInfo[row].rightLine); //ÏÞ·ù
+        LIMIT_R(rowInfo[row].rightLine); //ÏÞ·ù
+
+        rowInfo[row].width =
+            rowInfo[row].rightLine - rowInfo[row].leftLine;
+        rowInfo[row].midLine =
+            (rowInfo[row].rightLine + rowInfo[row].leftLine) / 2;
+
+
+        if (rowInfo[row].width <= 7) //ÖØÐÂÈ·¶¨¿ÉÊÓ¾àÀë
+        {
+            imgInfo.top = row + 1;
+            break;
+        }
+        else if (rowInfo[row].rightLine <= 10 ||
+                rowInfo[row].leftLine >= WIDTH - 10)
+        {
+            imgInfo.top = row + 1;
+            break;
+        } //////µ±Í¼Ïñ¿í¶ÈÐ¡ÓÚ0»òÕß×óÓÒ±ß´ïµ½Ò»¶¨µÄÏÞÖÆÊ±£¬ÔòÖÕÖ¹Ñ²±ß
+
+    }
+
+    return;
+}
+
+void basic_getJumpPointFromDet(uint8_t *row, int L,int R, EdgePointTypedef *Q, LineTypeEnum type) //µÚÒ»¸ö²ÎÊýÊÇÒª²éÕÒµÄÊý×é
+{
+    if (type == LEFT) //É¨Ãè×ó±ßÏß
+    {
+        for (int i = R; i >= L; --i)
+        {
+            if (*(row + i)&& !(*(row + i - 1))) //ÓÉ°×±äºÚ
+            {
+                Q->posX = i;  //¼ÇÂ¼×ó±ßÏß
+                Q->type = EXIST; /////ÕýÈ·Ìø±ä
+                break;
+            }
+            else if (i == (L + 1)) //Èô¹ûÉ¨µ½×îºóÒ²Ã»ÕÒµ½
+            {
+                if (*(row + (L + R) / 2)) //Èç¹ûÖÐ¼äÊÇ°×µÄ
+                {
+                    Q->posX = (L + R) / 2; //ÈÏÎª×ó±ßÏßÊÇÖÐµã
+                    Q->type = LOST;          /////·ÇÕýÈ·Ìø±äÇÒÖÐ¼äÎª°×£¬ÈÏÎªÃ»ÓÐ±ß
+                    break;
+                }
+                else ////·ÇÕýÈ·Ìø±äÇÒÖÐ¼äÎªºÚ
+                {
+                    Q->posX = R;  //Èç¹ûÖÐ¼äÊÇºÚµÄ
+                    Q->type = JUMP; //×ó±ßÏßÖ±½Ó×î´óÖµ£¬ÈÏÎªÊÇ´óÌø±ä
+                    break;
+                }
+            }
+        }
+    }
+    else if (type == RIGHT)
+    {
+        for (int i = L; i <= R; ++i)
+        {
+            if (*(row + i) && !(*(row + i + 1))) //ÓÉºÚ±ä°×
+            {
+                Q->posX = i;  //¼ÇÂ¼ÓÒ±ßÏß
+                Q->type = EXIST; /////ÕýÈ·Ìø±ä
+                break;
+            }
+            else if (i == (R - 1)) //Èô¹ûÉ¨µ½×îºóÒ²Ã»ÕÒµ½
+            {
+                if (*(row + (L + R) / 2)) //Èç¹ûÖÐ¼äÊÇ°×µÄ
+                {
+                    Q->posX = (L + R) / 2; //ÈÏÎª×ó±ßÏßÊÇÖÐµã
+                    Q->type = LOST;          /////·ÇÕýÈ·Ìø±äÇÒÖÐ¼äÎª°×£¬ÈÏÎªÃ»ÓÐ±ß
+                    break;
+                }
+                else ////·ÇÕýÈ·Ìø±äÇÒÖÐ¼äÎªºÚ
+                {
+                    Q->posX = L;  //Èç¹ûÖÐ¼äÊÇºÚµÄ
+                    Q->type = JUMP; //ÓÒ±ßÏßÖ±½Ó×î´óÖµ£¬ÈÏÎªÊÇ´óÌø±ä
+                    break;
+                }
+            }
+        }
+    }
+}
+
+///////ÑÓ³¤Ïß»æÖÆ£¬ÀíÂÛÉÏÀ´ËµÊÇºÜ×¼È·µÄ
+void advance_repairLine(void) /////»æÖÆÑÓ³¤Ïß²¢ÖØÐÂÈ·¶¨ÖÐÏß //////°Ñ²¹Ïß²¹³ÉÐ±Ïß
+{
+    int FTSite = 0,TFSite = 0;
+    float kL = 0.0, kR = 0.0;
+    if (needExternL != 'F')
+        for (int row = HEIGHT-6; row >= (imgInfo.top + 4); row--)
+        //´ÓµÚÎåÐÐ¿ªÊ¼ÍøÉÏÉ¨É¨µ½¶¥±ßÏÂÃæÁ½ÐÐ   ¶à¶Î²¹Ïß
+                        //²»½ö½öÖ»ÓÐÒ»¶Î
+        {
+            if (rowInfo[row].leftStatus == LOST) //Èç¹û±¾ÐÐ×ó±ß½çÃ»É¨µ½µ«É¨µ½µÄÊÇ°×É«£¬ËµÃ÷±¾ÐÐÃ»ÓÐ×ó±ß½çµã
+            {
+                if (rowInfo[row + 1].leftLine >= WIDTH - 10) //Èç¹û×ó±ß½çÊµÔÚÊÇÌ«ÓÒ±ß
+                {
+                    imgInfo.top = row + 1;
+                    break; //Ö±½ÓÌø³ö£¨¼«¶ËÇé¿ö£©
+                }
+
+                while (row >= (imgInfo.top + 4)) //´ËÊ±»¹Ã»É¨µ½¶¥±ß
+                {
+                    row--; //¼ÌÐøÍùÉÏÉ¨
+                    if (rowInfo[row].leftStatus == EXIST &&
+                        rowInfo[row - 1].leftStatus == EXIST &&
+                        rowInfo[row - 2].leftStatus == EXIST &&
+                        rowInfo[row - 2].leftLine > 0 &&
+                        rowInfo[row - 2].leftLine < WIDTH - 10) //Èç¹ûÉ¨µ½±¾ÐÐ³öÏÖÁË²¢ÇÒ±¾ÐÐÒÔÉÏÁ¬ÐøÈýÐÐ¶¼ÓÐ×ó±ß½çµã£¨×ó±ß½çÔÚ¿Õ°×ÉÏ·½£©
+                    {
+                        FTSite = row - 2; //°Ñ±¾ÐÐÉÏÃæµÄµÚ¶þÐÐ´æÈëFTsite
+                        break;
+                    }
+                }
+
+                kL = ((float)(rowInfo[FTSite].leftLine - rowInfo[TFSite].leftLine)) / ((float)(FTSite - TFSite)); //×ó±ß½çµÄÐ±ÂÊ£ºÁÐµÄ×ø±ê²î/ÐÐµÄ×ø±ê²î
+                if (FTSite > imgInfo.top)
+                {
+                    for (int y = TFSite; y >= FTSite; y--)
+                         //´ÓµÚÒ»´ÎÉ¨µ½µÄ×ó±ß½çµÄÏÂÃæµÚ¶þÐÐµÄ×ø±ê¿ªÊ¼ÍùÉÏÉ¨Ö±µ½¿Õ°×ÉÏ·½µÄ×ó±ß½çµÄÐÐ×ø±êÖµ
+                    {
+                        rowInfo[y].leftLine = (int)(kL * ((float)(y - TFSite))) + rowInfo[TFSite].leftLine;
+                        //½«ÕâÆÚ¼äµÄ¿Õ°×´¦²¹Ïß£¨²¹Ð±Ïß£©£¬Ä¿µÄÊÇ·½±ãÍ¼Ïñ´¦Àí
+                    }
+                }
+            }
+            else
+                TFSite = row + 2; //Èç¹ûÉ¨µ½ÁË±¾ÐÐµÄ×ó±ß½ç£¬¸ÃÐÐ´æÔÚÕâÀïÃæ£¬£¨ËãÐ±ÂÊ£©
+        }
+
+
+    if (needExternR != 'F')
+        for (int row = HEIGHT-6; row >= (imgInfo.top + 4); row--) //´ÓµÚÎåÐÐ¿ªÊ¼ÍøÉÏÉ¨É¨µ½¶¥±ßÏÂÃæÁ½ÐÐ
+        {
+            if (rowInfo[row].rightStatus == LOST) //Èç¹û±¾ÐÐÓÒ±ß½çÃ»É¨µ½µ«É¨µ½µÄÊÇ°×É«£¬ËµÃ÷±¾ÐÐÃ»ÓÐÓÒ±ß½çµã£¬µ«ÊÇ´¦ÓÚÈüµÀÄÚµÄ
+            {
+                if (rowInfo[row + 1].rightLine <= 10) //Èç¹ûÓÒ±ß½çÊµÔÚÊÇÌ«×ó±ß
+                {
+                    imgInfo.top = row + 1; //Ö±½ÓÌø³ö£¬ËµÃ÷ÕâÖÖÇé¿öÈüµÀ¾ÍÄáÂêÀëÆ×
+                    break;
+                }
+                while (row >= (imgInfo.top + 4)) //´ËÊ±»¹Ã»É¨µ½¶¥±ßÏÂÃæÁ½ÐÐ
+                {
+                    row--;
+                    if (rowInfo[row].rightStatus == EXIST &&
+                        rowInfo[row - 1].rightStatus == EXIST &&
+                        rowInfo[row - 2].rightStatus == EXIST &&
+                        rowInfo[row - 2].rightLine < WIDTH-1 &&
+                        rowInfo[row - 2].rightLine > 10)
+                        //Èç¹ûÉ¨µ½±¾ÐÐ³öÏÖÁË²¢ÇÒ±¾ÐÐÒÔÉÏÁ¬ÐøÈýÐÐ¶¼ÓÐ×ó±ß½çµã£¨×ó±ß½çÔÚ¿Õ°×ÉÏ·½£©
+                    {
+                        FTSite = row - 2; // °Ñ±¾ÐÐÉÏÃæµÄµÚ¶þÐÐ´æÈëFTsite
+                        break;
+                    }
+                }
+
+                kR = ((float)(rowInfo[FTSite].rightLine - rowInfo[TFSite].rightLine)) / ((float)(FTSite - TFSite));
+                    //ÓÒ±ß½çµÄÐ±ÂÊ£ºÁÐµÄ×ø±ê²î/ÐÐµÄ×ø±ê²î
+                if (FTSite > imgInfo.top)
+                {
+                    for (int y = TFSite; y >= FTSite; y--) //´ÓµÚÒ»´ÎÉ¨µ½µÄÓÒ±ß½çµÄÏÂÃæµÚ¶þÐÐµÄ×ø±ê¿ªÊ¼ÍùÉÏÉ¨Ö±µ½¿Õ°×ÉÏ·½µÄÓÒ±ß½çµÄÐÐ×ø±êÖµ
+                    {
+                        rowInfo[y].rightLine = (int)(kR * ((float)(y - TFSite))) + rowInfo[TFSite].rightLine;
+                            //½«ÕâÆÚ¼äµÄ¿Õ°×´¦²¹Ïß£¨²¹Ð±Ïß£©£¬Ä¿µÄÊÇ·½±ãÍ¼Ïñ´¦Àí
+                    }
+                }
+            }
+            else
+                TFSite = row + 2; //Èç¹û±¾ÐÐµÄÓÒ±ß½çÕÒµ½ÁË£¬Ôò°Ñ¸ÃÐÐÏÂÃæµÚ¶þÐÐ×ø±êËÍ¸öTFsite
+        }
+    for (int row = HEIGHT-1; row >= imgInfo.top; row--)
+    {
+        rowInfo[row].midLine = (rowInfo[row].leftLine + rowInfo[row].rightLine) / 2; //É¨Ãè½áÊø£¬°ÑÕâÒ»¿é¾­ÓÅ»¯Ö®ºóµÄÖÐ¼äÖµ´æÈë
+        rowInfo[row].width = rowInfo[row].rightLine-rowInfo[row].leftLine; //°ÑÓÅ»¯Ö®ºóµÄ¿í¶È´æÈë
+    }
+}
+
+//³öÏÖ¶ª±ßµÄÊ±ºò  ÖØÐÂÈ·¶¨ÎÞ±ßÐÐµÄÖÐÏß
+void advacnde_midLineFilter(void)
+{
+    float kR = 0.0;
+    int y;
+    for (int row = HEIGHT - 2; row >= imgInfo.top + 5; --row) //´Ó¿ªÊ¼Î»µ½Í£Ö¹Î»
+    {
+        if( row <= HEIGHT - 15 &&
+            rowInfo[row].leftStatus == LOST &&
+            rowInfo[row].rightStatus == LOST &&
+            rowInfo[row - 1].leftStatus == LOST &&
+            rowInfo[row - 1].rightStatus == LOST) //µ±Ç°ÐÐ×óÓÒ¶¼ÎÞ±ß£¬¶øÇÒÔÚÇ°105ÐÐ   ÂË²¨
+        {
+            y = row;
+            while (y >= (imgInfo.top + 5))
+            {
+                y--;
+                if (rowInfo[y].leftStatus == 'T' && rowInfo[y].rightStatus == 'T') //Ñ°ÕÒÁ½±ß¶¼Õý³£µÄ£¬ÕÒµ½Àë±¾ÐÐ×î½üµÄ¾Í²»ÕÒÁË
+                {
+                    kR = (float)(rowInfo[y - 1].midLine - rowInfo[row + 2].midLine) / (float)(y - 1 - row - 2); //ËãÐ±ÂÊ
+                    int CenterTemp = rowInfo[row + 2].midLine;
+                    int LineTemp = row + 2;
+                    while (row >= y)
+                    {
+                        rowInfo[row].midLine = (int)(CenterTemp + kR * (float)(row - LineTemp)); //ÓÃÐ±ÂÊ²¹
+                        row--;
+                    }
+                    break;
+                }
+            }
+        }
+        rowInfo[row].midLine = (rowInfo[row - 1].midLine + 2 * rowInfo[row].midLine) / 3; //ÇóÆ½¾ù£¬Ó¦¸Ã»á±È½Ï»¬  ±¾À´ÊÇÉÏÏÂÁ½µãÆ½¾ù
+    }
+}
+
 /**
  * @description: ¸ù¾ÝÑ¡Ôñ·¶Î§µÄÊý¾Ý¶ÔÓ¦ÓÃ·¶Î§²¹Ïß,Ö§³Ö×óÖÐÓÒÏß
- * @param {uint8} select_top
- * @param {uint8} select_bottom
- * @param {uint8} apply_top
- * @param {uint8} apply_bottom
+ * @param {uint8_t} select_top
+ * @param {uint8_t} select_bottom
+ * @param {uint8_t} apply_top
+ * @param {uint8_t} apply_bottom
  * @param {RoadTypeEnum} type
  * @return {*}
  */
-void advance_repairLine(uint8 select_top, uint8 select_bottom, uint8 apply_top, uint8 apply_bottom, LineTypeEnum type)
+void custom_repairLine(uint8_t select_top, uint8_t select_bottom, uint8_t apply_top, uint8_t apply_bottom, LineTypeEnum type)
 {
     float k,b;
 
@@ -471,21 +1064,21 @@ void road_judge(void)
     //¾É×´Ì¬»ú´¦Àí
 
     //Ê®×ÖÈë×´Ì¬
-    if(RoadType == Cross && leftUpJump != MISS && rightUpJump !=MISS)
+    if(imgInfo.RoadType == Cross && leftUpJump != MISS && rightUpJump !=MISS)
     {
         #ifdef DEBUG
                 std::cout<< "#In Cross#" <<std::endl;
-        #endif
+            #endif
         float leftK, rightK, leftB, rightB;
-        least_squares(&leftK, &leftB,max(img_info.top, leftUpJump - 7), leftUpJump, LEFT);
-        least_squares(&rightK, &rightB,max(img_info.top,rightUpJump - 7),rightUpJump, RIGHT);
+        least_squares(&leftK, &leftB,max(imgInfo.top, leftUpJump - 7), leftUpJump, LEFT);
+        least_squares(&rightK, &rightB,max(imgInfo.top,rightUpJump - 7),rightUpJump, RIGHT);
 
-        add_line(leftK, leftB, leftUpJump, img_info.bottom, LEFT);
-        add_line(rightK,rightB,rightUpJump,img_info.bottom,RIGHT);
+        add_line(leftK, leftB, leftUpJump, imgInfo.bottom, LEFT);
+        add_line(rightK,rightB,rightUpJump,imgInfo.bottom,RIGHT);
         
-        for(int i = img_info.bottom;i > min(leftUpJump, rightUpJump); --i)
+        for(int i = imgInfo.bottom;i > min(leftUpJump, rightUpJump); --i)
         {
-            midLine[i] = (leftLine[i] + rightLine[i]) / 2;
+            rowInfo[i].midLine = (rowInfo[i].leftLine + rowInfo[i].rightLine) / 2;
         }
         return ;
     }
@@ -493,27 +1086,27 @@ void road_judge(void)
     //ÐÂ×´Ì¬»úÆôÓÃ
     
 
-    //ÍäµÀ
-    if(allFindCnt <= 5 && allLostCnt <= 5)
-    {
-        if(leftLostCnt > rightLostCnt) //×ó±ß¶ªµÄ±ÈÓÒ±ß¶à,×óÍä
-        {
-            #ifdef DEBUG
-                std::cout<< "#Turn Left#" <<std::endl;
-            #endif
-            RoadType = Turn_Left;
-            turn_searchLine();
-        }
-        else //ÓÒ±ß±È×ó±ß¶à,ÓÒÍä
-        {
-            #ifdef DEBUG
-                std::cout<< "#Turn Right#" <<std::endl;
-            #endif
-            RoadType = Turn_Right;
-            turn_searchLine();
-        }
-        return ;
-    }
+    // //ÍäµÀ
+    // if(allFindCnt <= 5 && allLostCnt <= 5)
+    // {
+    //     if(leftLostCnt > rightLostCnt) //×ó±ß¶ªµÄ±ÈÓÒ±ß¶à,×óÍä
+    //     {
+    //         #ifdef DEBUG
+    //             std::cout<< "#Turn Left#" <<std::endl;
+    //         #endif
+    //         RoadType = Turn_Left;
+    //         turn_searchLine();
+    //     }
+    //     else //ÓÒ±ß±È×ó±ß¶à,ÓÒÍä
+    //     {
+    //         #ifdef DEBUG
+    //             std::cout<< "#Turn Right#" <<std::endl;
+    //         #endif
+    //         RoadType = Turn_Right;
+    //         turn_searchLine();
+    //     }
+    //     return ;
+    // }
 
     //Ö±µÀ(±ØÐëÔÚÍäµÀºóÃæÅÐ¶Ï)
     if((leftDownJump != MISS) + (rightDownJump != MISS) + (leftUpJump != MISS) + (rightUpJump != MISS) <= 1)
@@ -521,18 +1114,18 @@ void road_judge(void)
         #ifdef DEBUG
                 std::cout<< "#Straight#" <<std::endl;
         #endif
-        RoadType = Straight;
+        imgInfo.RoadType = Straight;
         basic_repairLine();
         return ;
     }
 
     // ÕýÈëÊ®×Ö
-    if(leftDownJump != MISS && leftUpJump != MISS && rightDownJump != MISS  && rightUpJump != MISS && RoadType != Three_Fork_Road)
+    if(leftDownJump != MISS && leftUpJump != MISS && rightDownJump != MISS  && rightUpJump != MISS && imgInfo.RoadType != Three_Fork_Road)
     {
         #ifdef DEBUG
             std::cout<< "#Passing Cross Straightly#" <<std::endl;
         #endif
-        RoadType = Cross;
+        imgInfo.RoadType = Cross;
         cross_searchLine();
         return ;
     }
@@ -542,7 +1135,7 @@ void road_judge(void)
         #ifdef DEBUG
             std::cout<< "#Passing Cross With Left#" <<std::endl;
         #endif
-        RoadType = Cross;
+        imgInfo.RoadType = Cross;
         cross_searchLine_withLeft();
     }
     else if(rightDownJump != MISS && rightUpJump != MISS )
@@ -550,7 +1143,7 @@ void road_judge(void)
         #ifdef DEBUG
             std::cout<< "#Passing Cross With Right#" <<std::endl;
         #endif
-        RoadType = Cross;
+        imgInfo.RoadType = Cross;
         cross_searchLine_withRight();
     }
 
@@ -565,21 +1158,21 @@ void road_judge(void)
  */
 void turn_searchLine(void)
 {
-    for(int i = max(leftDownStart,rightDownStart); i > img_info.top; --i)
+    for(int i = max(leftDownStart,rightDownStart); i > imgInfo.top; --i)
     {
-        if(leftExist[i])
+        if(rowInfo[i].leftStatus == EXIST)
         {
-            if(rightExist[i])
-                midLine[i] = (leftLine[i] + rightLine[i]) / 2;
+            if(rowInfo[i].rightStatus == EXIST)
+                rowInfo[i].midLine = (rowInfo[i].leftLine + rowInfo[i].rightLine) / 2;
             else
-                midLine[i] = leftLine[i] + regWidth[i] / 2;
+                rowInfo[i].midLine = rowInfo[i].leftLine + regWidth[i] / 2;
         }
         else
         {
-            if(rightExist[i])
-                midLine[i] = rightLine[i] - regWidth[i] / 2;
+            if(rowInfo[i].rightStatus == EXIST)
+                rowInfo[i].midLine = rowInfo[i].rightLine - regWidth[i] / 2;
             else
-                midLine[i] = midLine[i+1] + midLine[i+1] - midLine[i+2];
+                rowInfo[i].midLine = rowInfo[i+1].midLine + rowInfo[i+1].midLine - rowInfo[i+2].midLine;
         }
     }
     return ;
@@ -593,47 +1186,47 @@ void turn_searchLine(void)
 void cross_searchLine(void)
 {
     //×óÏß
-    float k = (float)(leftLine[leftUpJump] - leftLine[leftDownJump]) / (leftUpJump - leftDownJump);
-    float b = (float)leftLine[leftDownJump] - k * leftDownJump;
+    float k = (float)(rowInfo[leftUpJump].leftLine - rowInfo[leftDownJump].leftLine) / (leftUpJump - leftDownJump);
+    float b = (float)rowInfo[leftDownJump].leftLine - k * leftDownJump;
     // leftLine[leftDownJump] = k * leftDownJump + b;
 
     add_line(k, b, leftUpJump, leftDownJump, LEFT);
 
     //ÓÒÏß
-    k = (float)(rightLine[rightUpJump] - rightLine[rightDownJump]) / (rightUpJump - rightDownJump);
-    b = (float)rightLine[rightDownJump] - k * rightDownJump;
+    k = (float)(rowInfo[rightUpJump].rightLine - rowInfo[rightDownJump].rightLine) / (rightUpJump - rightDownJump);
+    b = (float)rowInfo[rightDownJump].rightLine - k * rightDownJump;
 
     add_line(k, b, rightUpJump, rightDownJump, RIGHT);
 
     for(int i = min(leftUpJump, rightUpJump); i <= max(leftDownJump, rightDownJump); ++i)
     {
-        midLine[i] = (leftLine[i] + rightLine[i]) / 2;
+        rowInfo[i].midLine = (rowInfo[i].leftLine + rowInfo[i].rightLine) / 2;
     }
-    advance_repairLine(leftUpJump,leftDownStart,leftDownStart,img_info.bottom, LEFT);
-    advance_repairLine(rightUpJump,rightDownStart,rightDownStart,img_info.bottom, RIGHT);
-    for(int i = min(rightDownStart, leftDownStart); i <= img_info.bottom; ++i)
+    custom_repairLine(leftUpJump,leftDownStart,leftDownStart,imgInfo.bottom, LEFT);
+    custom_repairLine(rightUpJump,rightDownStart,rightDownStart,imgInfo.bottom, RIGHT);
+    for(int i = min(rightDownStart, leftDownStart); i <= imgInfo.bottom; ++i)
     {
-        midLine[i] = (leftLine[i] + rightLine[i] ) / 2;
+        rowInfo[i].midLine = (rowInfo[i].leftLine + rowInfo[i].rightLine ) / 2;
     }
     return ;
 }
 void cross_searchLine_withLeft(void)
 {
     float leftK, leftB;
-    leftK = (float)(leftLine[leftUpJump] - leftLine[leftDownJump]) / (leftUpJump - leftDownJump);
-    leftB = (float)leftLine[leftUpJump] - leftK * leftUpJump;
-    // least_squares(&rightK, &rightB, max(img_info.top,rightUpJump - 4), rightUpJump, RIGHT);
+    leftK = (float)(rowInfo[leftUpJump].leftLine - rowInfo[leftDownJump].leftLine) / (leftUpJump - leftDownJump);
+    leftB = (float)rowInfo[leftUpJump].leftLine - leftK * leftUpJump;
+    // least_squares(&rightK, &rightB, max(imgInfo.top,rightUpJump - 4), rightUpJump, RIGHT);
     add_line(leftK, leftB, leftUpJump, leftDownJump, LEFT);
 
-    for(int i = img_info.bottom; i >= img_info.top; --i)
+    for(int i = imgInfo.bottom; i >= imgInfo.top; --i)
     {
-        if(!rightExist[i])
+        if(rowInfo[i].rightStatus != EXIST)
         {
-            midLine[i] = leftLine[i] + regWidth[i] / 2;
+            rowInfo[i].midLine = rowInfo[i].leftLine + regWidth[i] / 2;
         }
-        else if(!leftExist[i])
+        else if(rowInfo[i].leftStatus != EXIST)
         {
-            midLine[i] = rightLine[i] - regWidth[i] / 2;
+            rowInfo[i].midLine = rowInfo[i].rightLine - regWidth[i] / 2;
         }
     }
     basic_repairLine();
@@ -642,20 +1235,20 @@ void cross_searchLine_withLeft(void)
 void cross_searchLine_withRight(void)
 {
     float rightK, rightB;
-    rightK = (float)(rightLine[rightUpJump] - rightLine[rightDownJump]) / (rightUpJump - rightDownJump);
-    rightB = (float)rightLine[rightUpJump] - rightK * rightUpJump;
-    // least_squares(&leftK, &leftB, max(img_info.top,leftUpJump - 4), leftUpJump, LEFT);
+    rightK = (float)(rowInfo[rightUpJump].rightLine - rowInfo[rightDownJump].rightLine) / (rightUpJump - rightDownJump);
+    rightB = (float)rowInfo[rightUpJump].rightLine - rightK * rightUpJump;
+    // least_squares(&leftK, &leftB, max(imgInfo.top,leftUpJump - 4), leftUpJump, LEFT);
     add_line(rightK, rightB, rightUpJump, rightDownJump, RIGHT);
     
-    for(int i = img_info.bottom; i >= img_info.top; --i)
+    for(int i = imgInfo.bottom; i >= imgInfo.top; --i)
     {
-        if(!leftExist[i])
+        if(rowInfo[i].leftStatus != EXIST)
         {
-            midLine[i] = rightLine[i] - regWidth[i] / 2;
+            rowInfo[i].midLine = rowInfo[i].rightLine - regWidth[i] / 2;
         }
-        else if(!rightExist[i])
+        else if(rowInfo[i].rightStatus != EXIST)
         {
-            midLine[i] = leftLine[i] + regWidth[i] / 2;
+            rowInfo[i].midLine = rowInfo[i].leftLine + regWidth[i] / 2;
         }
     }
     basic_repairLine();
@@ -669,31 +1262,41 @@ void cross_searchLine_withRight(void)
  */
 void get_error(void)//TODO ÊµÏÖ¶¯Ì¬µ÷ÕûÇ°Õ°
 {
-    int avePos, predictedPass;
+    int avePos = 0, predictedPass = 0;
     float spd = 2.5;// = get_speed() Ö®ºóÐ´³ÉÓÉspeed¶¯Ì¬Ñ¡ÔñÇ°Õ°µÄÄ£Ê½
-    predictedPass = min(spd * 2, img_info.top - 4); //Ö®ºó¸ù¾ÝÊµ¼ÊÇé¿öÐ´³ö¹ØÏµÊ½
-    if (predictedPass < 0)
-    {
-        for(int i = img_info.bottom; i>img_info.top ; --i)
-        {
-            avePos += midLine[i];
-        }
-        avePos /= img_info.bottom - img_info.top;
-    }
-    else
-    {
-        avePos = (midLine[predictedPass] + midLine[predictedPass + 1] + midLine[predictedPass + 2]) / 3;
-    }
-    img_info.error = avePos-(WIDTH/2);
+    predictedPass = max (imgInfo.bottom - (int)(spd * 10), imgInfo.top + 3); //Ö®ºó¸ù¾ÝÊµ¼ÊÇé¿öÐ´³ö¹ØÏµÊ½
+    avePos = (rowInfo[predictedPass].midLine + rowInfo[predictedPass + 1].midLine + rowInfo[predictedPass + 2].midLine) / 3;
+
+    imgInfo.error = avePos-(WIDTH/2);
+    // printf("%d :   %d\n", predictedPass, rowInfo[predictedPass].midLine);
+    // printf("avePos = %d\nimgInfo.error = %d\n", avePos, imgInfo.error);
+
+    // int avePos, predictedPass;
+    // float spd = 2.5;// = get_speed() Ö®ºóÐ´³ÉÓÉspeed¶¯Ì¬Ñ¡ÔñÇ°Õ°µÄÄ£Ê½
+    // predictedPass = min(spd * 2, imgInfo.top - 4); //Ö®ºó¸ù¾ÝÊµ¼ÊÇé¿öÐ´³ö¹ØÏµÊ½
+    // if (predictedPass < 0)
+    // {
+    //     for(int i = imgInfo.bottom; i>imgInfo.top ; --i)
+    //     {
+    //         avePos += rowInfo[i].midLine;
+    //     }
+    //     avePos /= imgInfo.bottom - imgInfo.top;
+    // }
+    // else
+    // {
+    //     avePos = (rowInfo[predictedPass].midLine + rowInfo[predictedPass + 1].midLine + rowInfo[predictedPass + 2].midLine) / 3;
+    // }
+    // imgInfo.error = avePos-(WIDTH/2);
+
 }
 /**
  * @description: ÅÐ¶Ï×ó/ÖÐ/ÓÒÏßµÄÁ¬ÐøÐÔ
- * @param {uint8} select_top
- * @param {uint8} select_bottom
+ * @param {uint8_t} select_top
+ * @param {uint8_t} select_bottom
  * @param {LineTypeEnum} type
  * @return {*}
  */
-uint8 judge_lineContinuity(uint8 select_top, uint8 select_bottom, LineTypeEnum type)
+uint8_t judge_lineContinuity(uint8_t select_top, uint8_t select_bottom, LineTypeEnum type)
 {
     int delta;
     switch (type)
@@ -701,7 +1304,7 @@ uint8 judge_lineContinuity(uint8 select_top, uint8 select_bottom, LineTypeEnum t
         case LEFT:
             for (int j = select_top; j < select_bottom; ++j)//´ÓµÚ10ÐÐ¿ªÊ¼£¬·ÀÖ¹ÏÂÃæÌáÔç¶Ïµô£¬Ó°ÏìÅÐ¶Ï
             {
-                delta = leftLine[j + 1] - leftLine[j];       //leftÏßµÄÆ«²î
+                delta = rowInfo[j + 1].leftLine - rowInfo[j].leftLine;       //leftÏßµÄÆ«²î
                 if (delta >= TH_ContinuityDelta || delta <= -TH_ContinuityDelta)
                 {
                     return j;
@@ -713,7 +1316,7 @@ uint8 judge_lineContinuity(uint8 select_top, uint8 select_bottom, LineTypeEnum t
         case MID:
             for (int j = select_top; j < select_bottom; ++j)//´ÓµÚ10ÐÐ¿ªÊ¼£¬·ÀÖ¹ÏÂÃæÌáÔç¶Ïµô£¬Ó°ÏìÅÐ¶Ï
             {
-                delta = midLine[j + 1] - midLine[j];       //leftÏßµÄÆ«²î
+                delta = rowInfo[j + 1].midLine - rowInfo[j].midLine;       //leftÏßµÄÆ«²î
                 if (delta >= TH_ContinuityDelta || delta <= -TH_ContinuityDelta)
                 {
                     return j;
@@ -725,7 +1328,7 @@ uint8 judge_lineContinuity(uint8 select_top, uint8 select_bottom, LineTypeEnum t
         case RIGHT:
             for (int j = select_top; j < select_bottom; ++j)//´ÓµÚ10ÐÐ¿ªÊ¼£¬·ÀÖ¹ÏÂÃæÌáÔç¶Ïµô£¬Ó°ÏìÅÐ¶Ï
             {
-                delta = rightLine[j + 1] - rightLine[j];       //leftÏßµÄÆ«²î
+                delta = rowInfo[j + 1].rightLine - rowInfo[j].rightLine;       //leftÏßµÄÆ«²î
                 if (delta >= TH_ContinuityDelta || delta <= -TH_ContinuityDelta)
                 {
                     return j;
@@ -741,26 +1344,26 @@ uint8 judge_lineContinuity(uint8 select_top, uint8 select_bottom, LineTypeEnum t
     return 0;
 }
 
-float get_curvature(uint8 select_top, uint8 select_bottom, LineTypeEnum type)
+float get_curvature(uint8_t select_top, uint8_t select_bottom, LineTypeEnum type)
 {
-    uint8 select_mid = (select_top + select_bottom) / 2;
+    uint8_t select_mid = (select_top + select_bottom) / 2;
     float ret;
     switch (type)
     {
         case LEFT:
-            ret = calc_curvature(select_top, leftLine[select_top], 
-                                      select_mid, leftLine[select_mid], 
-                                      select_bottom, leftLine[select_bottom]);
+            ret = calc_curvature(select_top, rowInfo[select_top].leftLine,
+                                      select_mid, rowInfo[select_mid].leftLine,
+                                      select_bottom, rowInfo[select_bottom].leftLine);
             break;
         case RIGHT:
-            ret = calc_curvature(select_top, rightLine[select_top], 
-                                      select_mid, rightLine[select_mid], 
-                                      select_bottom, rightLine[select_bottom]);
+            ret = calc_curvature(select_top, rowInfo[select_top].rightLine,
+                                      select_mid, rowInfo[select_mid].rightLine,
+                                      select_bottom, rowInfo[select_bottom].rightLine);
             break;
         case MID:
-            ret = calc_curvature(select_top, midLine[select_top], 
-                                      select_mid, midLine[select_mid], 
-                                      select_bottom, midLine[select_bottom]);
+            ret = calc_curvature(select_top, rowInfo[select_top].midLine,
+                                      select_mid, rowInfo[select_mid].midLine,
+                                      select_bottom, rowInfo[select_bottom].midLine);
             break;
         default:
             break;
@@ -770,25 +1373,25 @@ float get_curvature(uint8 select_top, uint8 select_bottom, LineTypeEnum type)
 
 /**
  * @description: Èýµã¼ÆËãÇúÂÊ
- * @param {uint8} x1
- * @param {uint8} y1
- * @param {uint8} x2
- * @param {uint8} y2
- * @param {uint8} x3
- * @param {uint8} y3
+ * @param {uint8_t} x1
+ * @param {uint8_t} y1
+ * @param {uint8_t} x2
+ * @param {uint8_t} y2
+ * @param {uint8_t} x3
+ * @param {uint8_t} y3
  * @return {float}
  */
-float calc_curvature(uint8 x1, uint8 y1, uint8 x2, uint8 y2, uint8 x3, uint8 y3)
+float calc_curvature(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t x3, uint8_t y3)
 {
     float K;
     int S_of_ABC = ((int)(x2 - x1) * (y3 - y1) - (int)(x3 - x1) * (y2 - y1)) / 2;
     //Ãæ»ýµÄ·ûºÅ±íÊ¾·½Ïò
     int q1 = (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1);
-    float AB = sqrt((float)q1);
+    float AB = sqrt(q1);
     q1 = (x3 - x2) * (x3 - x2) + (y3 - y2) * (y3 - y2);
-    float BC = sqrt((float)q1);
+    float BC = sqrt(q1);
     q1 = (x3 - x1) * (x3 - x1) + (y3 - y1) * (y3 - y1);
-    float AC = sqrt((float)q1);
+    float AC = sqrt(q1);
     if (AB * BC * AC <= 0.001)
         K = 0;
     else
@@ -801,31 +1404,31 @@ float calc_curvature(uint8 x1, uint8 y1, uint8 x2, uint8 y2, uint8 x3, uint8 y3)
  * @description: ²¹Ïß£¨·¶Î§×ó¿ªÓÒ±Õ£©
  * @param {float} k ²¹ÏßÐ±ÂÊ Í¨¹ýleast_squares()º¯Êý»ñÈ¡
  * @param {float} b ²¹ÏßÆ«ÒÆ Í¨¹ýleast_squares()º¯Êý»ñÈ¡
- * @param {uint8} select_top ·¶Î§Æðµã£¨²»°üÀ¨ÔÚÄÚ£©
- * @param {uint8} select_bottom ·¶Î§ÖÕµã£¨°üÀ¨ÔÚÄÚ£©
+ * @param {uint8_t} select_top ·¶Î§Æðµã£¨²»°üÀ¨ÔÚÄÚ£©
+ * @param {uint8_t} select_bottom ·¶Î§ÖÕµã£¨°üÀ¨ÔÚÄÚ£©
  * @param {LineTypeEnum} type ²¹ÏßµÄ¶ÔÏóÀàÐÍ {LEFT/MID/RIGHT}
  * @return {*}
  */
-void add_line(float k, float b, uint8 select_top, uint8 select_bottom, LineTypeEnum type)
+void add_line(float k, float b, uint8_t select_top, uint8_t select_bottom, LineTypeEnum type)
 {
     switch (type)
     {
         case LEFT:
             for(int i = select_top + 1; i <= select_bottom; ++i)
             {
-                leftLine[i] = k * i + b;
+                rowInfo[i].leftLine = k * i + b;
             }
             break;
         case MID:
             for(int i = select_top + 1; i <= select_bottom; ++i)
             {
-                midLine[i] = k * i + b;
+                rowInfo[i].midLine = k * i + b;
             }
             break;
         case RIGHT:
             for(int i = select_top + 1; i <= select_bottom; ++i)
             {
-                rightLine[i] = k * i + b;
+                rowInfo[i].rightLine = k * i + b;
             }
             break;
         default:
@@ -839,12 +1442,12 @@ void add_line(float k, float b, uint8 select_top, uint8 select_bottom, LineTypeE
  *               ¼´ y_t = $k$ * x_t + $b$ £¬»»³ÉÔ­×ø±êÏµÖ±½Ó´øÈëµ±Ç°Í¼Ïñ¸ß¶È h_0 ¼´¿ÉÇó³ö¶ÔÓ¦µÄ ºá×ø±ê w_0
  * @param {float *} k ´«ÈëÖ±ÏßÐ±ÂÊ
  * @param {float *} b ´«ÈëÖ±ÏßÆ«ÒÆ
- * @param {uint8} select_top Ñ¡¶¨·¶Î§µÄ¿ªÊ¼£¨¸ß¶È·¶Î§£©
- * @param {uint8} select_bottom Ñ¡¶¨·¶Î§µÄ½áÊø£¨¸ß¶È·¶Î§£©
+ * @param {uint8_t} select_top Ñ¡¶¨·¶Î§µÄ¿ªÊ¼£¨¸ß¶È·¶Î§£©
+ * @param {uint8_t} select_bottom Ñ¡¶¨·¶Î§µÄ½áÊø£¨¸ß¶È·¶Î§£©
  * @param {LeastSquaresObjectEnum} type ÐèÒªÄâºÏµÄÖ±ÏßÀàÐÍ£¨×ó±ß½ç/ÓÒ±ß½ç/ÖÐÏß£©
  * @return {*} ÎÞ·µ»ØÖµ£¬Í¨¹ý´«Èë $k$ ºÍ $b$ µÃµ½Ö±Ïß²ÎÊý
  */
-void least_squares(float * k, float * b, uint8 select_top, uint8 select_bottom, LineTypeEnum type)
+void least_squares(float * k, float * b, uint8_t select_top, uint8_t select_bottom, LineTypeEnum type)
 {
     int sumx = 0;                      /* sum of x     */
     int sumx2 = 0;                     /* sum of x**2  */
@@ -860,9 +1463,9 @@ void least_squares(float * k, float * b, uint8 select_top, uint8 select_bottom, 
             {
                 sumx  += i; //i ¼´ÎªxÖáÖµ
                 sumx2 += i * i;
-                sumxy += i * leftLine[i];
-                sumy  += leftLine[i];
-                sumy2 += leftLine[i] * leftLine[i];
+                sumxy += i * rowInfo[i].leftLine;
+                sumy  += rowInfo[i].leftLine;
+                sumy2 += rowInfo[i].leftLine * rowInfo[i].leftLine;
             }
             break;
         case MID:
@@ -870,9 +1473,9 @@ void least_squares(float * k, float * b, uint8 select_top, uint8 select_bottom, 
             {
                 sumx  += i; //i ¼´ÎªxÖáÖµ
                 sumx2 += i * i;
-                sumxy += i * midLine[i];
-                sumy  += midLine[i];
-                sumy2 += midLine[i] * midLine[i];
+                sumxy += i * rowInfo[i].midLine;
+                sumy  += rowInfo[i].midLine;
+                sumy2 += rowInfo[i].midLine * rowInfo[i].midLine;
             }
             break;
         case RIGHT:
@@ -880,9 +1483,9 @@ void least_squares(float * k, float * b, uint8 select_top, uint8 select_bottom, 
             {
                 sumx  += i; //i ¼´ÎªxÖáÖµ
                 sumx2 += i * i;
-                sumxy += i * rightLine[i];
-                sumy  += rightLine[i];
-                sumy2 += rightLine[i] * rightLine[i];
+                sumxy += i * rowInfo[i].rightLine;
+                sumy  += rowInfo[i].rightLine;
+                sumy2 += rowInfo[i].rightLine * rowInfo[i].rightLine;
             }
             break;
 
@@ -906,6 +1509,17 @@ void least_squares(float * k, float * b, uint8 select_top, uint8 select_bottom, 
     // }
     return ;
 }
+
+inline float cosAOB(int xa, int ya, int xo, int yo, int xb, int yb)
+{
+    int dot;
+    float vecA, vecB;
+    dot = (xa - xo) * (xb - xo) + (ya - yo) * (yb - yo);
+    vecA = sqrt( (xa - xo) * (xa - xo) + (ya - yo) * (ya - yo) );
+    vecB = sqrt( (xb - xo) * (xb - xo) + (yb - yo) * (yb - yo) );
+    return (float)dot/(vecA * vecB);
+}
+
 
 /**
  * @description: Á½¶Î·¶Î§Êý¾ÝÄâºÏÖ±Ïß£¨·ÏÆú×´Ì¬£©
@@ -933,26 +1547,26 @@ void advanced_regression(int type, int startline1, int endline1, int startline2,
         for (i = startline1; i < endline1; i++)
         {
             sumX += i;
-            sumY += midLine[i];
+            sumY += rowInfo[i].midLine;
         }
         for (i = startline2; i < endline2; i++)
         {
             sumX += i;
-            sumY += midLine[i];
+            sumY += rowInfo[i].midLine;
         }
-        averageX = (float)sumX / (sumlines1 + sumlines2);     //xµÄÆ½¾ùÖµ
-        averageY = (float)sumY / (sumlines1 + sumlines2);     //yµÄÆ½¾ùÖµ
+        averageX = sumX / (sumlines1 + sumlines2);     //xµÄÆ½¾ùÖµ
+        averageY = sumY / (sumlines1 + sumlines2);     //yµÄÆ½¾ùÖµ
         for (i = startline1; i < endline1; i++)
         {
-            sumUp += (midLine[i] - averageY) * (i - averageX);
+            sumUp += (rowInfo[i].midLine - averageY) * (i - averageX);
             sumDown += (i - averageX) * (i - averageX);
         }
         for (i = startline2; i < endline2; i++)
         {
-            sumUp += (midLine[i] - averageY) * (i - averageX);
+            sumUp += (rowInfo[i].midLine - averageY) * (i - averageX);
             sumDown += (i - averageX) * (i - averageX);
         }
-        if (sumDown <= 1e-5) parameterB = 0;
+        if (sumDown == 0) parameterB = 0;
         else parameterB = sumUp / sumDown;
         parameterA = averageY - parameterB * averageX;
 
@@ -963,26 +1577,26 @@ void advanced_regression(int type, int startline1, int endline1, int startline2,
         for (i = startline1; i < endline1; i++)
         {
             sumX += i;
-            sumY += leftLine[i];
+            sumY += rowInfo[i].leftLine;
         }
         for (i = startline2; i < endline2; i++)
         {
             sumX += i;
-            sumY += leftLine[i];
+            sumY += rowInfo[i].leftLine;
         }
-        averageX = (float)sumX / (sumlines1 + sumlines2);     //xµÄÆ½¾ùÖµ
-        averageY = (float)sumY / (sumlines1 + sumlines2);     //yµÄÆ½¾ùÖµ
+        averageX = sumX / (sumlines1 + sumlines2);     //xµÄÆ½¾ùÖµ
+        averageY = sumY / (sumlines1 + sumlines2);     //yµÄÆ½¾ùÖµ
         for (i = startline1; i < endline1; i++)
         {
-            sumUp += (leftLine[i] - averageY) * (i - averageX);
+            sumUp += (rowInfo[i].leftLine - averageY) * (i - averageX);
             sumDown += (i - averageX) * (i - averageX);
         }
         for (i = startline2; i < endline2; i++)
         {
-            sumUp += (leftLine[i] - averageY) * (i - averageX);
+            sumUp += (rowInfo[i].leftLine - averageY) * (i - averageX);
             sumDown += (i - averageX) * (i - averageX);
         }
-        if (sumDown <= 1e-5) parameterB = 0;
+        if (sumDown == 0) parameterB = 0;
         else parameterB = sumUp / sumDown;
         parameterA = averageY - parameterB * averageX;
     }
@@ -992,23 +1606,23 @@ void advanced_regression(int type, int startline1, int endline1, int startline2,
         for (i = startline1; i < endline1; i++)
         {
             sumX += i;
-            sumY += rightLine[i];
+            sumY += rowInfo[i].rightLine;
         }
         for (i = startline2; i < endline2; i++)
         {
             sumX += i;
-            sumY += rightLine[i];
+            sumY += rowInfo[i].rightLine;
         }
-        averageX = (float)sumX / (sumlines1 + sumlines2);     //xµÄÆ½¾ùÖµ
-        averageY = (float)sumY / (sumlines1 + sumlines2);     //yµÄÆ½¾ùÖµ
+        averageX = sumX / (sumlines1 + sumlines2);     //xµÄÆ½¾ùÖµ
+        averageY = sumY / (sumlines1 + sumlines2);     //yµÄÆ½¾ùÖµ
         for (i = startline1; i < endline1; i++)
         {
-            sumUp += (rightLine[i] - averageY) * (i - averageX);
+            sumUp += (rowInfo[i].rightLine - averageY) * (i - averageX);
             sumDown += (i - averageX) * (i - averageX);
         }
         for (i = startline2; i < endline2; i++)
         {
-            sumUp += (rightLine[i] - averageY) * (i - averageX);
+            sumUp += (rowInfo[i].rightLine - averageY) * (i - averageX);
             sumDown += (i - averageX) * (i - averageX);
         }
         if (sumDown == 0) parameterB = 0;

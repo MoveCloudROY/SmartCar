@@ -17,9 +17,12 @@
  * @date       		2020-3-23
  ********************************************************************************************************************/
 
-
+#include "headfile.h"
 #include "isr_config.h"
 #include "isr.h"
+#include "data.h"
+#include "motor.h"
+#include "steer.h"
 
 
 uint16 delay_20ms_flag, delay_100ms_flag = 0, delay_1000ms_flag = 0;
@@ -32,6 +35,7 @@ IFX_INTERRUPT(cc60_pit_ch0_isr, 0, CCU6_0_CH0_ISR_PRIORITY)
     enableInterrupts();//开启中断嵌套
 	PIT_CLEAR_FLAG(CCU6_0, PIT_CH0);
 	//外置延时计算
+	cpu1_5ms_flag = 1;
 	++delay_20ms_cnt;
 	++delay_100ms_cnt;
 	++delay_1000ms_cnt;
@@ -53,7 +57,6 @@ IFX_INTERRUPT(cc60_pit_ch0_isr, 0, CCU6_0_CH0_ISR_PRIORITY)
 	}
 
 	motor_control();
-	servo_control();
 
 }
 
@@ -63,8 +66,7 @@ IFX_INTERRUPT(cc60_pit_ch1_isr, 0, CCU6_0_CH1_ISR_PRIORITY)
 	enableInterrupts();//开启中断嵌套
 	PIT_CLEAR_FLAG(CCU6_0, PIT_CH1);
 	//从CPU0传递给CPU1避免CPU1频繁中断
-	cpu1_5ms_flag = 1;
-
+	servo_control_PIDPos();
 }
 
 IFX_INTERRUPT(cc61_pit_ch0_isr, 0, CCU6_1_CH0_ISR_PRIORITY)

@@ -397,7 +397,7 @@ void seekfree_sendimg_03x(UARTN_enum uartn, uint8 *image, uint16 width, uint16 h
     uart_putbuff(uartn, image, width*height);  //·¢ËÍÍ¼Ïñ
 }
 
-void my_sendimg_03x(UARTN_enum uartn, uint8 (*image)[MT9V03X_W], uint16 width, uint16 height)
+void my_sendimg_wifi(UARTN_enum uartn, uint8 (*image)[MT9V03X_W], uint16 width, uint16 height)
 {
     uart_putchar(uartn,'A');uart_putchar(uartn,'I');
     for(int i = 0; i < height; ++i)
@@ -406,9 +406,10 @@ void my_sendimg_03x(UARTN_enum uartn, uint8 (*image)[MT9V03X_W], uint16 width, u
         {
             if (image[i][j] == 'A')  //·ÀÖ¹´íÎó·¢ËÍ°üÍ·
             {
-                image[i][j] = 'B';
+                uart_putchar(uartn, 'B');
             }
-            uart_putchar(uartn, image[i][j]);
+            else
+                uart_putchar(uartn, image[i][j]);
         }
     }
 }
