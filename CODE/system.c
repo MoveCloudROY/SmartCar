@@ -16,6 +16,7 @@
 #include "ui.h"
 
 
+
 #define __DEBUG_IPS_ON__
 
 extern ConstDataTypeDef ConstData;
@@ -70,7 +71,9 @@ void img_backstage(void)
     {
         if(cpu1_5ms_flag)
         {
+            img_preProcess(CUT);
             img_preProcess(OTSU);
+//            img_preProcess(MY_MORPH_OPEN);
             img_process();
             gpio_toggle(P20_9);
             cpu1_5ms_flag = 0;

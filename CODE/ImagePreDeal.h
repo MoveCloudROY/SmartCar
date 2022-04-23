@@ -20,23 +20,22 @@
     #include <core.hpp>
     #include <cmath>
 
-    #define WIDTH                           188                                     //图像宽
-    #define HEIGHT                          120                                     //图像高
-
 #else
 
     #include "headfile.h"
-    #define WIDTH                           MT9V03X_W                               //图像宽
-    #define HEIGHT                          MT9V03X_H                               //图像高
 
 #endif
+
+#define WIDTH                           180                                     //图像宽
+#define HEIGHT                          120                                     //图像高
+
 
 #define min(x, y)                       (((x) < (y)) ? (x) : (y))
 #define max(x, y)                       (((x) > (y)) ? (x) : (y))
 //#define abs(x)                          (((x) > 0) ? (x) : (-(x)))
 
 #define TH_SOBEL                        128                                     //Sobel算子阈值
-#define k_sauvola                       0.06                                    //sauvola算法 参数k
+#define k_sauvola                       0.04                                    //sauvola算法 参数k
 #define r_sauvola                       128.0                                   //sauvola算法 参数r
 #define k2_sauvola                      0.0036                                  //sauvola算法 参数k方
 #define r2_sauvola                      16384.0                                 //sauvola算法 参数r方
@@ -53,12 +52,14 @@
 #define kernel_sizeby2_morph               2                                    //形态学处理滑窗半径
 #define kernel_size_morph                  5                                    //形态学处理滑窗直径
 
-typedef enum _PreDealMethodEnum{OTSU,OTSU2D,SAUVOLA,SOBEL,GAUSSIAN_FILTER,MEDIAN_FILTER,MORPH_EROSION,MORPH_DILITION,MORPH_OPEN,MORPH_CLOSE} PreDealMethodEnum;
+typedef enum _PreDealMethodEnum{CUT,OTSU,OTSU2D,SAUVOLA,SOBEL,GAUSSIAN_FILTER,MEDIAN_FILTER,MORPH_EROSION,MORPH_DILITION,MY_MORPH_OPEN,MY_MORPH_CLOSE} PreDealMethodEnum;
 
 
 
 void img_preProcess(PreDealMethodEnum method);
-uint8 otsu(void);
+void cut(void);
+void compress(void);
+uint8_t otsu(void);
 void sauvola(void);
 void median_filter(void);
 void sobel(void);

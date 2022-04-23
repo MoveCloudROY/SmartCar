@@ -45,10 +45,10 @@ PID PID_R = {
 
 void motor_init(void)
 {
-	gtm_pwm_init(MOTOR_RA, 3000, 0);
-	gtm_pwm_init(MOTOR_RB, 3000, 0);
-	gtm_pwm_init(MOTOR_LA, 3000, 0);
-	gtm_pwm_init(MOTOR_LB, 3000, 0);
+	gtm_pwm_init(MOTOR_RA, 17000, 0);
+	gtm_pwm_init(MOTOR_RB, 17000, 0);
+	gtm_pwm_init(MOTOR_LA, 17000, 0);
+	gtm_pwm_init(MOTOR_LB, 17000, 0);
 
 	pwm_duty(MOTOR_RA, 0);
 	pwm_duty(MOTOR_RB, 0);

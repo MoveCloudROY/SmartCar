@@ -11,7 +11,7 @@
 #define IMAGE_DEAL_H
 
 //#define __ON_PC__
-
+// #define __ON_ROBOT__
 
 
 #ifdef __ON_PC__
@@ -19,16 +19,19 @@
 #include "stack.h"
 #include <cstdint>
 
+#define uint8_t uint8
+#define uint16_t uint16
+#define int16_t int16
+#define int8_t int8
+
+
 #define DEBUG
 
 #else
 #include "headfile.h"
 #include "ImagePreDeal.h"
 
-#define uint8_t uint8
-#define uint16_t uint16
-#define int16_t int16
-#define int8_t int8
+
 
 #endif
 
@@ -50,7 +53,7 @@
 // enum ThreeForkRoadFlag{OFF, FIRST, SECOND, };
 
 typedef enum _LineTypeEnum{LEFT, MID, RIGHT, }LineTypeEnum;
-typedef enum _RoadTypeEnum{Straight, Cross, Slope, S_bend, Big_bend, Reflection, Round_About, Starting_Line, Three_Fork_Road, Turn_Left, Turn_Right}RoadTypeEnum;
+typedef enum _RoadTypeEnum{Straight, Cross, Slope, S_bend, Big_bend, Reflection, Round_About, Starting_Line, Fork_In, Fork_Out, Turn_Left, Turn_Right}RoadTypeEnum;
 typedef enum _EdgePointTypeEnum {__OCCUPY,EXIST,LOST,JUMP} EdgePointTypeEnum;
 
 // /**
@@ -79,6 +82,9 @@ typedef struct _ImgInfoTypedef
 typedef struct _RowInfoTypedef
 {
     uint8_t leftLine, rightLine, midLine, width;//每个高度的左/右/中线及宽度
+    uint8_t fork_L, fork_R;
+    int fork_blackWidth;
+    float fork_black_k;
     EdgePointTypeEnum leftStatus, rightStatus;
     int error;
     LineTypeEnum LineType;
@@ -126,15 +132,18 @@ void series_getSpecialParams(void);
 // 特判道路元素
 void road_judge(void);
 
+
 // 特别元素的扫线
 void turn_searchLine(void);
 void cross_searchLine(void);
 void cross_searchLine_withLeft(void);
 void cross_searchLine_withRight(void);
 
+void fork_searchLine(void);
+void fork_repairLine(void);
+
 void slope_searchLine(void);
 void roundAbout_searchLine(void);
-void threeForks_searchLine(void);
 void startingLine_searchLine(void);
 
 

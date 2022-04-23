@@ -26,7 +26,7 @@ extern ImgInfoTypedef imgInfo;
 
 void draw_image(void)
 {
-    ips200_displayimage032(imageBin, MT9V03X_W, MT9V03X_H);
+    ips200_displayimage032(imageBin, WIDTH, HEIGHT);
 }
 void draw_line(void)
 {

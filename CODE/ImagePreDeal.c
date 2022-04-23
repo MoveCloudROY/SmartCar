@@ -9,8 +9,9 @@
 
 #include "ImagePreDeal.h"
 
-extern uint8 mt9v03x_image[HEIGHT][WIDTH];
-uint8 imageBin[HEIGHT][WIDTH];
+extern uint8_t mt9v03x_image[120][188];
+uint8_t imageCut[HEIGHT][WIDTH];
+uint8_t imageBin[HEIGHT][WIDTH];
 
 
 /**
@@ -21,21 +22,24 @@ uint8 imageBin[HEIGHT][WIDTH];
  */
 void img_preProcess(PreDealMethodEnum method)
 {
-    uint8 th_otsu;
+    uint8_t th_otsu;
     switch (method)
-	{
+    {
+        case CUT:
+            cut();
+            break;
         case OTSU:
             th_otsu = otsu();
             for (int i = 0; i < HEIGHT * WIDTH; i++)
-                *(imageBin[0] + i) = *(mt9v03x_image[0] + i) > th_otsu?255:0;
+                *(imageBin[0] + i) = *(imageCut[0] + i) > th_otsu?255:0;
             break;
         case OTSU2D:
             //二维OTSU，占个位，不知道用的到吗
             break;
         case SAUVOLA:
-            // uint8 th_otsu = otsu();
+            // uint8_t th_otsu = otsu();
             // for (int i = 0; i < HEIGHT * WIDTH; i++)
-            //     *(imageBin[0] + i) = *(mt9v03x_image[0] + i) > th_otsu?255:0;
+            //     *(imageBin[0] + i) = *(imageCut[0] + i) > th_otsu?255:0;
             sauvola();
             break;
         case SOBEL:
@@ -52,34 +56,61 @@ void img_preProcess(PreDealMethodEnum method)
         case MORPH_DILITION:
             morph_dilition();
             break;
-        case MORPH_OPEN:
+        case MY_MORPH_OPEN:
             morph_open();
             break;
-        case MORPH_CLOSE:
+        case MY_MORPH_CLOSE:
             morph_close();
             break;
 
         default:
             break;
-	}
+    }
+}
+void cut(void)
+{
+    for(int i = 0; i < 120; i++)
+    {
+        for (int j = 1; j < 188 - 7; ++j )
+        {
+            imageCut[i][j-1] = mt9v03x_image[i][j];
+        }
+    }
+}
+void compress(void)
+{
+    for(int i = 0; i < HEIGHT; i++)
+    {
+        for(int j = 0; j < WIDTH; j++)
+        {
+            if(i < HEIGHT/2)
+            {
+                *(imageBin[i] + j) = *(imageCut[i] + j);
+            }
+            else
+            {
+                *(imageBin[i] + j) = 0;
+            }
+        }
+    }
 }
 
 /**
  * @description: 大津法（全局二值化），原图像 -> 处理后图像
  * @param {*}
- * @return {uint8} th 二值化阈值
+ * @return {uint8_t} th 二值化阈值
  */
-uint8 otsu(void)
+uint8_t otsu(void)
 {
     int histogram[256] = {0};
     int i_mult_histogram[256] = {0};
     int total = HEIGHT * WIDTH;
     int u0_sum = 0,u1_sum = 0,sum_i_mult_h = 0,n0 = 0,n1 = 0;
     float max_value = 0.0,n_value = 0.0,u0 = 0.0,u1 = 0.0;
-    uint8 th = 0,minn = 255,maxn = 0;
-    uint8 * p_pixel = mt9v03x_image[0];
-    
+    uint8_t th = 0,minn = 255,maxn = 0;
 
+    uint8_t * p_pixel = imageCut[0];
+    
     for(int i=0; i<total; ++i)//计算灰度直方图
     {
         histogram[p_pixel[i]]++;
@@ -94,28 +125,27 @@ uint8 otsu(void)
         sum_i_mult_h += i_mult_histogram[i];//求总和,方便之后处理
     }
 
-    for (uint8 i=minn; i<maxn; ++i)//从最小开始遍历，寻找最合适的阈值
-	{
+    for (int i=minn; i<maxn; ++i)//从最小开始遍历，寻找最合适的阈值
+    {
         //计算前景、后景像素点个数
-		n0 += histogram[i]; 
+        n0 += histogram[i];
         n1 = total - n0;
         
         //计算前景、后景灰度值和
-		u0_sum += i_mult_histogram[i]; 
+        u0_sum += i_mult_histogram[i];
         u1_sum = sum_i_mult_h - u0_sum;
 
         u0 = u0_sum / (float)n0;
         u1 = u1_sum / (float)n1;
         
-        n_value = (float)(u0 - u1) * (u0 - u1) * (float)n0 * n1 ;//float在前，保证显式转化
+        n_value = (u0 - u1) * (u0 - u1) * (float)n0 * n1 ;//float在前，保证显式转化
 
-		if (n_value>max_value)
-		{
-			max_value = n_value;
-			th = i;
-		}
-	}
-
+        if (n_value>max_value)
+        {
+            max_value = n_value;
+            th = i;
+        }
+    }
     return th;
 }
 
@@ -137,8 +167,8 @@ void sauvola(void)
         integralColsSqu[j] = 0;
         for (int i = 0; i < kernel_sizeby2_sauvola; ++i) // kernel center 和 后 kernel_sizeby2_sauvola - 1行 之和
         {
-            integralCols[j] += mt9v03x_image[i][j];
-            integralColsSqu[j] += mt9v03x_image[i][j] * mt9v03x_image[i][j];
+            integralCols[j] += imageCut[i][j];
+            integralColsSqu[j] += imageCut[i][j] * imageCut[i][j];
         }
     }
     // memset(integralCols, 0, sizeof(integralCols));
@@ -153,22 +183,22 @@ void sauvola(void)
             if (up <= 0) //(i <= kernel_sizeby2_sauvola)//起始部分加入下端
             {
                 // downi = down * WIDTH + j;
-                integralCols[j] += mt9v03x_image[down][j];
-                integralColsSqu[j] += mt9v03x_image[down][j] * mt9v03x_image[down][j];
+                integralCols[j] += imageCut[down][j];
+                integralColsSqu[j] += imageCut[down][j] * imageCut[down][j];
             }
             else if (down >= HEIGHT) //(h - 1 - i < kernel_sizeby2_sauvola) //结尾部分减去上端
             {
                 // upi = (up - 1) * WIDTH + j;
-                integralCols[j] -= mt9v03x_image[up - 1][j];
-                integralColsSqu[j] -= mt9v03x_image[up - 1][j] * mt9v03x_image[up - 1][j];
+                integralCols[j] -= imageCut[up - 1][j];
+                integralColsSqu[j] -= imageCut[up - 1][j] * imageCut[up - 1][j];
             }
             else //中间部分减去上端加入下端
             {
                 // upi = (up - 1) * WIDTH + j;
                 // downi = down * WIDTH + j;
-                integralCols[j] = integralCols[j] + mt9v03x_image[down][j] - mt9v03x_image[up - 1][j];
-                integralColsSqu[j] = integralColsSqu[j] + mt9v03x_image[down][j] * mt9v03x_image[down][j] - mt9v03x_image[up - 1][j] * mt9v03x_image[up - 1][j];
-                // printf("%d\n",mt9v03x_image[up - 1][j]);
+                integralCols[j] = integralCols[j] + imageCut[down][j] - imageCut[up - 1][j];
+                integralColsSqu[j] = integralColsSqu[j] + imageCut[down][j] * imageCut[down][j] - imageCut[up - 1][j] * imageCut[up - 1][j];
+                // printf("%d\n",imageCut[up - 1][j]);
             }
             // if(integralCols[j]<0) printf("%d\n",i);
             // printf("%d\n",integralCols[j]);
@@ -204,7 +234,7 @@ void sauvola(void)
             mean = sum / area;
             v = sqsum / area - mean * mean;
 
-            tmp = mt9v03x_image[i][j] + mean * (k_sauvola - 1.0);
+            tmp = imageCut[i][j] + mean * (k_sauvola - 1.0);
             if (tmp <= 0 || tmp * tmp <= k2_sauvola * mean * mean * v / r2_sauvola)
                 imageBin[i][j] = 0; //实际用的时候直接用01好了
             else
@@ -224,25 +254,25 @@ void sauvola(void)
  */
 void sobel(void)
 {
-	uint16 i, j;
-    //uint8 temp[HEIGHT][WIDTH] = {0};
-	for (i = 1; i <= HEIGHT - 2; ++i)
-	{
-		for (j = 1; j <= WIDTH - 2; ++j)
-		{
-			int16 sumx=0,sumy=0;
-			sumy = -1 * mt9v03x_image[i - 1][j - 1] - 2 * mt9v03x_image[i - 1][j] - 1 * mt9v03x_image[i - 1][j + 1]
-				+ 1 * mt9v03x_image[i + 1][j - 1] + 2 * mt9v03x_image[i + 1][j] + 1 * mt9v03x_image[i + 1][j + 1];
+    uint16_t i, j;
+    //uint8_t temp[HEIGHT][WIDTH] = {0};
+    for (i = 1; i <= HEIGHT - 2; ++i)
+    {
+        for (j = 1; j <= WIDTH - 2; ++j)
+        {
+            int16_t sumx=0,sumy=0;
+            sumy = -1 * imageCut[i - 1][j - 1] - 2 * imageCut[i - 1][j] - 1 * imageCut[i - 1][j + 1]
+                + 1 * imageCut[i + 1][j - 1] + 2 * imageCut[i + 1][j] + 1 * imageCut[i + 1][j + 1];
             
-            sumx = -1 * mt9v03x_image[i - 1][j - 1] - 2 * mt9v03x_image[i][j - 1] - 1 * mt9v03x_image[i + 1][j - 1]
-				+ 1 * mt9v03x_image[i - 1][j + 1] + 2 * mt9v03x_image[i][j + 1] + 1 * mt9v03x_image[i + 1][j + 1];
-			if(abs(sumx)+abs(sumy) > TH_SOBEL)
+            sumx = -1 * imageCut[i - 1][j - 1] - 2 * imageCut[i][j - 1] - 1 * imageCut[i + 1][j - 1]
+                + 1 * imageCut[i - 1][j + 1] + 2 * imageCut[i][j + 1] + 1 * imageCut[i + 1][j + 1];
+            if(abs(sumx)+abs(sumy) > TH_SOBEL)
                 imageBin[i][j] = 0;
             else 
                 imageBin[i][j] = 255;
-		}
-		
-	}
+        }
+
+    }
 }
 
 /**
@@ -252,253 +282,253 @@ void sobel(void)
  */
 void median_filter(void)
 {
-	int i = -1, j = 0, k, f = -1, cnt = 0, sum = 0, ret = 0, total = HEIGHT * WIDTH;
-	int up, down, left, right, tmp, addtmp;
-	unsigned int tr[257] = {0};
-    uint8 temp[HEIGHT][WIDTH];
-	for(int i = 0; i < kernel_sizeby2_medianfilter ; ++i)
-	{
-		for(int j = 0; j < kernel_sizeby2_medianfilter + 1; ++j)
-		{
-			tmp = mt9v03x_image[i][j] + 1;
-			while(tmp <= N)
-			{
-				tr[tmp] += 1;
-				tmp += lowbit(tmp);
-			}
-		}
-	}
-	tmp = 1;//加上0的数量
-	addtmp = kernel_2_size_medianfilter - kernel_sizeby2_medianfilter*(kernel_sizeby2_medianfilter + 1);
-	while(tmp <= N)
-	{
-		tr[tmp] += addtmp;
-		tmp += lowbit(tmp);
-	}
-	while(cnt!=total)
-	{
-		++cnt;//计数
-		
-		//更新滑动窗口
-		if(cnt % WIDTH == 1)//左右滑动遇到边后向下滑动
-		{
-			++i;
-			f = -f;
-			
-			up = i - kernel_sizeby2_medianfilter;
-			down = i + kernel_sizeby2_medianfilter;
-			left = max(j - kernel_sizeby2_medianfilter, 0);
-			right = min(j + kernel_sizeby2_medianfilter, WIDTH - 1);
-			if(up <= 0)//上侧顶到边则加入下册，上侧减0的个数
-			{
-				for(k = left; k <= right; ++k)
-				{
-					tmp = mt9v03x_image[down][k] + 1;
-					while(tmp <= N)
-					{
-						tr[tmp] += 1;
-						tmp += lowbit(tmp);
-					}
-				}
-				tmp = 1;//减去0的数量
-				addtmp = right - left + 1;
-				while(tmp <= N)
-				{
-					tr[tmp] -= addtmp;
-					tmp += lowbit(tmp);
-				}
-			}
-			else if(down >= HEIGHT)
-			{
-				for(k = left; k <= right; ++k)
-				{
-					tmp = mt9v03x_image[up - 1][k] + 1;
-					while(tmp <= N)
-					{
-						tr[tmp] -= 1;
-						tmp += lowbit(tmp);
-					}
-				}
-				tmp = 1;//加上0的数量
-				addtmp = right - left + 1;
-				while(tmp <= N)
-				{
-					tr[tmp] += addtmp;
-					tmp += lowbit(tmp);
-				}
-			}
-			else
-			{
-				for(k = left; k <= right; ++k)
-				{
-					tmp = mt9v03x_image[down][k] + 1;
-					while(tmp <= N)
-					{
-						tr[tmp] += 1;
-						tmp += lowbit(tmp);
-					}
+    int i = -1, j = 0, k, f = -1, cnt = 0, sum = 0, ret = 0, total = HEIGHT * WIDTH;
+    int up, down, left, right, tmp, addtmp;
+    unsigned int tr[257] = {0};
+    uint8_t temp[HEIGHT][WIDTH];
+    for(int i = 0; i < kernel_sizeby2_medianfilter ; ++i)
+    {
+        for(int j = 0; j < kernel_sizeby2_medianfilter + 1; ++j)
+        {
+            tmp = imageCut[i][j] + 1;
+            while(tmp <= N)
+            {
+                tr[tmp] += 1;
+                tmp += lowbit(tmp);
+            }
+        }
+    }
+    tmp = 1;//加上0的数量
+    addtmp = kernel_2_size_medianfilter - kernel_sizeby2_medianfilter*(kernel_sizeby2_medianfilter + 1);
+    while(tmp <= N)
+    {
+        tr[tmp] += addtmp;
+        tmp += lowbit(tmp);
+    }
+    while(cnt!=total)
+    {
+        ++cnt;//计数
 
-					tmp = mt9v03x_image[up - 1][k] + 1;
-					while(tmp <= N)
-					{
-						tr[tmp] -= 1;
-						tmp += lowbit(tmp);
-					}
-				}
-				//中间滑动不影响0的个数
-			}
-		}
-		else//其余情况按f值左右滑动，f=-1左滑，f=1右滑
-		{
-			
-			if(f == 1)//向右滑动
-			{
-				++j;
-				up = max(i - kernel_sizeby2_medianfilter, 0);
-				down = min(i + kernel_sizeby2_medianfilter, HEIGHT - 1);
-				left = j - kernel_sizeby2_medianfilter;
-				right = j + kernel_sizeby2_medianfilter;
-				if(left <= 0)//左侧顶到边则加入右侧，左侧减0的个数
-				{
-					for(k = up; k <= down; ++k)
-					{
-						tmp = mt9v03x_image[k][right] + 1;
-						while(tmp <= N)
-						{
-							tr[tmp] += 1;
-							tmp += lowbit(tmp);
-						}
-					}
-					tmp = 1;//减去0的数量
-					addtmp = down - up + 1;
-					while(tmp <= N)
-					{
-						tr[tmp] -= addtmp;
-						tmp += lowbit(tmp);
-					}
-				}
-				else if(right >= WIDTH)
-				{
-					for(k = up; k <= down; ++k)
-					{
-						tmp = mt9v03x_image[k][left - 1] + 1;
-						while(tmp <= N)
-						{
-							tr[tmp] -= 1;
-							tmp += lowbit(tmp);
-						}
-					}
-					tmp = 1;//加上0的数量
-					addtmp = down - up + 1;
-					while(tmp <= N)
-					{
-						tr[tmp] += addtmp;
-						tmp += lowbit(tmp);
-					}
-				}
-				else//中间滑动不影响0的个数
-				{
-					for(k = up; k <= down; ++k)
-					{
-						tmp = mt9v03x_image[k][right] + 1;
-						while(tmp <= N)
-						{
-							tr[tmp] += 1;
-							tmp += lowbit(tmp);
-						}
+        //更新滑动窗口
+        if(cnt % WIDTH == 1)//左右滑动遇到边后向下滑动
+        {
+            ++i;
+            f = -f;
 
-						tmp = mt9v03x_image[k][left - 1] + 1;
-						while(tmp <= N)
-						{
-							tr[tmp] -= 1;
-							tmp += lowbit(tmp);
-						}
-					}
-				}
-			}
-			else
-			{
-				--j;
-				up = max(i - kernel_sizeby2_medianfilter, 0);
-				down = min(i + kernel_sizeby2_medianfilter, HEIGHT - 1);
-				left = j - kernel_sizeby2_medianfilter;
-				right = j + kernel_sizeby2_medianfilter;
-				if(left < 0)//左侧顶到边则减去右侧，左侧加0的个数
-				{
-					for(k = up; k <= down; ++k)
-					{
-						tmp = mt9v03x_image[k][right + 1] + 1;
-						while(tmp <= N)
-						{
-							tr[tmp] -= 1;
-							tmp += lowbit(tmp);
-						}
-					}
-					tmp = 1;//加上0的数量
-					addtmp = down - up + 1;
-					while(tmp <= N)
-					{
-						tr[tmp] += addtmp;
-						tmp += lowbit(tmp);
-					}
-				}
-				else if(right >= WIDTH - 1)//右侧顶到加入左侧，减去右侧0的个数
-				{
-					for(k = up; k <= down; ++k)
-					{
-						tmp = mt9v03x_image[k][left] + 1;
-						while(tmp <= N)
-						{
-							tr[tmp] += 1;
-							tmp += lowbit(tmp);
-						}
-					}
-					tmp = 1;//加上0的数量
-					addtmp = down - up + 1;
-					while(tmp <= N)
-					{
-						tr[tmp] -= addtmp;
-						tmp += lowbit(tmp);
-					}
-				}
-				else//中间滑动不影响0的个数
-				{
-					for(k = up; k <= down; ++k)
-					{
-						tmp = mt9v03x_image[k][left] + 1;
-						while(tmp <= N)
-						{
-							tr[tmp] += 1;
-							tmp += lowbit(tmp);
-						}
+            up = i - kernel_sizeby2_medianfilter;
+            down = i + kernel_sizeby2_medianfilter;
+            left = max(j - kernel_sizeby2_medianfilter, 0);
+            right = min(j + kernel_sizeby2_medianfilter, WIDTH - 1);
+            if(up <= 0)//上侧顶到边则加入下册，上侧减0的个数
+            {
+                for(k = left; k <= right; ++k)
+                {
+                    tmp = imageCut[down][k] + 1;
+                    while(tmp <= N)
+                    {
+                        tr[tmp] += 1;
+                        tmp += lowbit(tmp);
+                    }
+                }
+                tmp = 1;//减去0的数量
+                addtmp = right - left + 1;
+                while(tmp <= N)
+                {
+                    tr[tmp] -= addtmp;
+                    tmp += lowbit(tmp);
+                }
+            }
+            else if(down >= HEIGHT)
+            {
+                for(k = left; k <= right; ++k)
+                {
+                    tmp = imageCut[up - 1][k] + 1;
+                    while(tmp <= N)
+                    {
+                        tr[tmp] -= 1;
+                        tmp += lowbit(tmp);
+                    }
+                }
+                tmp = 1;//加上0的数量
+                addtmp = right - left + 1;
+                while(tmp <= N)
+                {
+                    tr[tmp] += addtmp;
+                    tmp += lowbit(tmp);
+                }
+            }
+            else
+            {
+                for(k = left; k <= right; ++k)
+                {
+                    tmp = imageCut[down][k] + 1;
+                    while(tmp <= N)
+                    {
+                        tr[tmp] += 1;
+                        tmp += lowbit(tmp);
+                    }
 
-						tmp = mt9v03x_image[k][right + 1] + 1;
-						while(tmp <= N)
-						{
-							tr[tmp] -= 1;
-							tmp += lowbit(tmp);
-						}
-					}
-					
-				}
-			}
-		}
-		//更新结束
-		//获取中位数赋值
-		
-		sum = 0; ret = 0;
-		for(int t = 8; ~t; --t)
-		{
-			ret += 1 << t;                      // 尝试扩展
-			if (ret >= N || sum + tr[ret] >= kernel_mid_medianfilter)  // 如果扩展失败
-				ret -= 1 << t;
-			else
-				sum += tr[ret];  // 扩展成功后 要更新之前求和的值
-		}
-		temp[i][j] = ret;
-		//printf("%d %d %d %u\n", i, j, ret, tr[1]);
-	}
-    memcpy(mt9v03x_image,temp,sizeof(temp));
+                    tmp = imageCut[up - 1][k] + 1;
+                    while(tmp <= N)
+                    {
+                        tr[tmp] -= 1;
+                        tmp += lowbit(tmp);
+                    }
+                }
+                //中间滑动不影响0的个数
+            }
+        }
+        else//其余情况按f值左右滑动，f=-1左滑，f=1右滑
+        {
+
+            if(f == 1)//向右滑动
+            {
+                ++j;
+                up = max(i - kernel_sizeby2_medianfilter, 0);
+                down = min(i + kernel_sizeby2_medianfilter, HEIGHT - 1);
+                left = j - kernel_sizeby2_medianfilter;
+                right = j + kernel_sizeby2_medianfilter;
+                if(left <= 0)//左侧顶到边则加入右侧，左侧减0的个数
+                {
+                    for(k = up; k <= down; ++k)
+                    {
+                        tmp = imageCut[k][right] + 1;
+                        while(tmp <= N)
+                        {
+                            tr[tmp] += 1;
+                            tmp += lowbit(tmp);
+                        }
+                    }
+                    tmp = 1;//减去0的数量
+                    addtmp = down - up + 1;
+                    while(tmp <= N)
+                    {
+                        tr[tmp] -= addtmp;
+                        tmp += lowbit(tmp);
+                    }
+                }
+                else if(right >= WIDTH)
+                {
+                    for(k = up; k <= down; ++k)
+                    {
+                        tmp = imageCut[k][left - 1] + 1;
+                        while(tmp <= N)
+                        {
+                            tr[tmp] -= 1;
+                            tmp += lowbit(tmp);
+                        }
+                    }
+                    tmp = 1;//加上0的数量
+                    addtmp = down - up + 1;
+                    while(tmp <= N)
+                    {
+                        tr[tmp] += addtmp;
+                        tmp += lowbit(tmp);
+                    }
+                }
+                else//中间滑动不影响0的个数
+                {
+                    for(k = up; k <= down; ++k)
+                    {
+                        tmp = imageCut[k][right] + 1;
+                        while(tmp <= N)
+                        {
+                            tr[tmp] += 1;
+                            tmp += lowbit(tmp);
+                        }
+
+                        tmp = imageCut[k][left - 1] + 1;
+                        while(tmp <= N)
+                        {
+                            tr[tmp] -= 1;
+                            tmp += lowbit(tmp);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                --j;
+                up = max(i - kernel_sizeby2_medianfilter, 0);
+                down = min(i + kernel_sizeby2_medianfilter, HEIGHT - 1);
+                left = j - kernel_sizeby2_medianfilter;
+                right = j + kernel_sizeby2_medianfilter;
+                if(left < 0)//左侧顶到边则减去右侧，左侧加0的个数
+                {
+                    for(k = up; k <= down; ++k)
+                    {
+                        tmp = imageCut[k][right + 1] + 1;
+                        while(tmp <= N)
+                        {
+                            tr[tmp] -= 1;
+                            tmp += lowbit(tmp);
+                        }
+                    }
+                    tmp = 1;//加上0的数量
+                    addtmp = down - up + 1;
+                    while(tmp <= N)
+                    {
+                        tr[tmp] += addtmp;
+                        tmp += lowbit(tmp);
+                    }
+                }
+                else if(right >= WIDTH - 1)//右侧顶到加入左侧，减去右侧0的个数
+                {
+                    for(k = up; k <= down; ++k)
+                    {
+                        tmp = imageCut[k][left] + 1;
+                        while(tmp <= N)
+                        {
+                            tr[tmp] += 1;
+                            tmp += lowbit(tmp);
+                        }
+                    }
+                    tmp = 1;//加上0的数量
+                    addtmp = down - up + 1;
+                    while(tmp <= N)
+                    {
+                        tr[tmp] -= addtmp;
+                        tmp += lowbit(tmp);
+                    }
+                }
+                else//中间滑动不影响0的个数
+                {
+                    for(k = up; k <= down; ++k)
+                    {
+                        tmp = imageCut[k][left] + 1;
+                        while(tmp <= N)
+                        {
+                            tr[tmp] += 1;
+                            tmp += lowbit(tmp);
+                        }
+
+                        tmp = imageCut[k][right + 1] + 1;
+                        while(tmp <= N)
+                        {
+                            tr[tmp] -= 1;
+                            tmp += lowbit(tmp);
+                        }
+                    }
+
+                }
+            }
+        }
+        //更新结束
+        //获取中位数赋值
+
+        sum = 0; ret = 0;
+        for(int t = 8; ~t; --t)
+        {
+            ret += 1 << t;                      // 尝试扩展
+            if (ret >= N || sum + tr[ret] >= kernel_mid_medianfilter)  // 如果扩展失败
+                ret -= 1 << t;
+            else
+                sum += tr[ret];  // 扩展成功后 要更新之前求和的值
+        }
+        temp[i][j] = ret;
+        //printf("%d %d %d %u\n", i, j, ret, tr[1]);
+    }
+    memcpy(imageCut,temp,sizeof(temp));
 }
 
 
@@ -511,10 +541,10 @@ void morph_erosion(void)
 {
     if (WIDTH - kernel_size_morph < 0 || HEIGHT - kernel_size_morph < 0) return;
 
-    uint8 temp[HEIGHT][WIDTH];
+    uint8_t temp[HEIGHT][WIDTH];
     //int mid = kernel_sizeby2_morph + 1;
     
-    uint8 val = 255;
+    uint8_t val = 0;
     for (int i = kernel_sizeby2_morph; i < HEIGHT - kernel_sizeby2_morph; i++)
     {
         for (int j = kernel_sizeby2_morph; j < WIDTH - kernel_sizeby2_morph; j++)
@@ -525,14 +555,30 @@ void morph_erosion(void)
                 {
                     //if (m == kernel_sizeby2_morph && n == kernel_sizeby2_morph )
                     //    continue;
-                    val &=  imageBin[i + m][j + n];
+                    val |= imageBin[i + m][j + n];
                     
                 }
             }
 
             temp[i][j] = val;
-            val = 255;
+            val = 0;
             
+        }
+    }
+    for(int i = 0; i < HEIGHT; ++i)
+    {
+        for(int j = 0; j < kernel_sizeby2_morph; ++j)
+        {
+            temp[i][j] = imageBin[i][j];
+            temp[i][WIDTH - 1 - j] = imageBin[i][WIDTH - 1 - j];
+        }
+    }
+    for(int i = 0; i < kernel_sizeby2_morph; ++i)
+    {
+        for(int j = 0; j < WIDTH; ++j)
+        {
+            temp[i][j] = imageBin[i][j];
+            temp[HEIGHT - 1 - i][j] = imageBin[HEIGHT - 1 - i][j];
         }
     }
     memcpy(imageBin,temp,sizeof(temp));
@@ -548,9 +594,9 @@ void morph_dilition(void)
     if (WIDTH - kernel_size_morph < 0 || HEIGHT - kernel_size_morph < 0) return;
 
     //int kernel_sizeby2_morph = kernel_sizeby2_morph + 1;
-    uint8 temp[HEIGHT][WIDTH];
+    uint8_t temp[HEIGHT][WIDTH];
 
-    uint8 val = 0;
+    uint8_t val = 255;
     for (int i = kernel_sizeby2_morph; i < HEIGHT - kernel_sizeby2_morph; i++)
     {
         for (int j = kernel_sizeby2_morph; j < WIDTH - kernel_sizeby2_morph; j++)
@@ -561,12 +607,28 @@ void morph_dilition(void)
                 {
                     // if (m == kernel_sizeby2_morph && n == kernel_sizeby2_morph )
                     //      continue;
-                        val |=  imageBin[i + m][j + n];
+                        val &=  imageBin[i + m][j + n];
                 }
             }
 
             temp[i][j] = val;
-            val = 0;
+            val = 255;
+        }
+    }
+    for(int i = 0; i < HEIGHT; ++i)
+    {
+        for(int j = 0; j < kernel_sizeby2_morph; ++j)
+        {
+            temp[i][j] = imageBin[i][j];
+            temp[i][WIDTH - 1 - j] = imageBin[i][WIDTH - 1 - j];
+        }
+    }
+    for(int i = 0; i < kernel_sizeby2_morph; ++i)
+    {
+        for(int j = 0; j < WIDTH; ++j)
+        {
+            temp[i][j] = imageBin[i][j];
+            temp[HEIGHT - 1 - i][j] = imageBin[HEIGHT - 1 - i][j];
         }
     }
     memcpy(imageBin,temp,sizeof(temp));

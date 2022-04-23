@@ -3,7 +3,7 @@
  * @Date: 2022-02-04 14:01:30
  * @LastEditors: ROY1994
  * @LastEditTime: 2022-04-14 20:56:37
- * @FilePath: \myImageDeal\ImageDeal.cpp
+ * @FilePath: \myImageDeal\rowInfo.cpp
  * @Description: 搜线，元素判断等主要处理函数
  */
 #include "ImageDeal.h"
@@ -15,7 +15,7 @@ int LineEdgeScanWindow = 5;    //直道方差阈值
 uint8_t needExternL = 0;  //是否左延长标志
 uint8_t needExternR = 0;  //是否右延长标志
 
-extern uint8_t mt9v30x_image[120][188];//原灰度图
+extern uint8_t mt9v03x_image[120][188];//原灰度图
 extern uint8_t imageBin[HEIGHT][WIDTH];//二值化图像
 
 PixelTypedef leftLineSerial[HEIGHT<<1],rightLineSerial[HEIGHT<<1];//种子生长法所需参数
@@ -41,6 +41,8 @@ float parameterA, parameterB;//参数（或已废弃）
 ImgInfoTypedef imgInfo;//图像基础参数结构体（如果重构把上面以HEIGHT大小的开成结构体）
 
 
+uint8_t ForkLinePointx_l, ForkLinePointx_r, ForkLinePointy;//三岔点补线坐标
+
 /**
  * @description: 图像处理调用函数
  * @param {*}
@@ -54,9 +56,10 @@ void img_process(void)
     advance_searchLine(HEIGHT-7);
     advance_repairLine();
     advacnde_midLineFilter();
-    series_searchLine();
-    basic_getSpecialParams(imgInfo.top, imgInfo.bottom);
-    // series_getSpecialParams();
+
+//    series_searchLine();
+//    basic_getSpecialParams(imgInfo.top, imgInfo.bottom);
+//     series_getSpecialParams();
     road_judge();
     get_error();
 }
@@ -1061,27 +1064,31 @@ void road_judge(void)
      * 
      */
 
+    fork_searchLine();
+    fork_repairLine();
+
     //旧状态机处理
 
-    //十字入状态
-    if(imgInfo.RoadType == Cross && leftUpJump != MISS && rightUpJump !=MISS)
-    {
-        #ifdef DEBUG
-                std::cout<< "#In Cross#" <<std::endl;
-            #endif
-        float leftK, rightK, leftB, rightB;
-        least_squares(&leftK, &leftB,max(imgInfo.top, leftUpJump - 7), leftUpJump, LEFT);
-        least_squares(&rightK, &rightB,max(imgInfo.top,rightUpJump - 7),rightUpJump, RIGHT);
 
-        add_line(leftK, leftB, leftUpJump, imgInfo.bottom, LEFT);
-        add_line(rightK,rightB,rightUpJump,imgInfo.bottom,RIGHT);
+    //十字入状态
+    // if(imgInfo.RoadType == Cross && leftUpJump != MISS && rightUpJump !=MISS)
+    // {
+    //     #ifdef DEBUG
+    //             std::cout<< "#In Cross#" <<std::endl;
+    //         #endif
+    //     float leftK, rightK, leftB, rightB;
+    //     least_squares(&leftK, &leftB,max(imgInfo.top, leftUpJump - 7), leftUpJump, LEFT);
+    //     least_squares(&rightK, &rightB,max(imgInfo.top,rightUpJump - 7),rightUpJump, RIGHT);
+
+    //     add_line(leftK, leftB, leftUpJump, imgInfo.bottom, LEFT);
+    //     add_line(rightK,rightB,rightUpJump,imgInfo.bottom,RIGHT);
         
-        for(int i = imgInfo.bottom;i > min(leftUpJump, rightUpJump); --i)
-        {
-            rowInfo[i].midLine = (rowInfo[i].leftLine + rowInfo[i].rightLine) / 2;
-        }
-        return ;
-    }
+    //     for(int i = imgInfo.bottom;i > min(leftUpJump, rightUpJump); --i)
+    //     {
+    //         rowInfo[i].midLine = (rowInfo[i].leftLine + rowInfo[i].rightLine) / 2;
+    //     }
+    //     return ;
+    // }
 
     //新状态机启用
     
@@ -1109,43 +1116,43 @@ void road_judge(void)
     // }
 
     //直道(必须在弯道后面判断)
-    if((leftDownJump != MISS) + (rightDownJump != MISS) + (leftUpJump != MISS) + (rightUpJump != MISS) <= 1)
-    {
-        #ifdef DEBUG
-                std::cout<< "#Straight#" <<std::endl;
-        #endif
-        imgInfo.RoadType = Straight;
-        basic_repairLine();
-        return ;
-    }
+    // if((leftDownJump != MISS) + (rightDownJump != MISS) + (leftUpJump != MISS) + (rightUpJump != MISS) <= 1)
+    // {
+    //     #ifdef DEBUG
+    //             std::cout<< "#Straight#" <<std::endl;
+    //     #endif
+    //     imgInfo.RoadType = Straight;
+    //     basic_repairLine();
+    //     return ;
+    // }
 
-    // 正入十字
-    if(leftDownJump != MISS && leftUpJump != MISS && rightDownJump != MISS  && rightUpJump != MISS && imgInfo.RoadType != Three_Fork_Road)
-    {
-        #ifdef DEBUG
-            std::cout<< "#Passing Cross Straightly#" <<std::endl;
-        #endif
-        imgInfo.RoadType = Cross;
-        cross_searchLine();
-        return ;
-    }
+    // // 正入十字
+    // if(leftDownJump != MISS && leftUpJump != MISS && rightDownJump != MISS  && rightUpJump != MISS && imgInfo.RoadType != Fork_In)
+    // {
+    //     #ifdef DEBUG
+    //         std::cout<< "#Passing Cross Straightly#" <<std::endl;
+    //     #endif
+    //     imgInfo.RoadType = Cross;
+    //     cross_searchLine();
+    //     return ;
+    // }
     //斜入十字
-    else if(leftDownJump != MISS && leftUpJump != MISS )
-    {
-        #ifdef DEBUG
-            std::cout<< "#Passing Cross With Left#" <<std::endl;
-        #endif
-        imgInfo.RoadType = Cross;
-        cross_searchLine_withLeft();
-    }
-    else if(rightDownJump != MISS && rightUpJump != MISS )
-    {
-        #ifdef DEBUG
-            std::cout<< "#Passing Cross With Right#" <<std::endl;
-        #endif
-        imgInfo.RoadType = Cross;
-        cross_searchLine_withRight();
-    }
+    // else if(leftDownJump != MISS && leftUpJump != MISS )
+    // {
+    //     #ifdef DEBUG
+    //         std::cout<< "#Passing Cross With Left#" <<std::endl;
+    //     #endif
+    //     imgInfo.RoadType = Cross;
+    //     cross_searchLine_withLeft();
+    // }
+    // else if(rightDownJump != MISS && rightUpJump != MISS )
+    // {
+    //     #ifdef DEBUG
+    //         std::cout<< "#Passing Cross With Right#" <<std::endl;
+    //     #endif
+    //     imgInfo.RoadType = Cross;
+    //     cross_searchLine_withRight();
+    // }
 
     return ;
 }
@@ -1253,6 +1260,249 @@ void cross_searchLine_withRight(void)
     }
     basic_repairLine();
     return ;
+}
+int fork_spoint_1_Y = 0, fork_spoint_2_Y = 0;
+char fork_flag_1 = 0, fork_flag_2 = 0, fork_flag_tot = 0;
+void fork_searchLine()
+{
+    uint8_t * PicTemp = NULL;
+
+    // 第一特征 判断角度
+    for (int row = HEIGHT - 10; row > (imgInfo.top + 6); row--) //防止row溢出
+    {
+        if ((rowInfo[row].rightStatus == EXIST && rowInfo[row + 1].rightStatus == EXIST) ||
+            (rowInfo[row].leftStatus == EXIST && rowInfo[row + 1].leftStatus == EXIST)) //进三叉的时候一般会看见左右两边120*的圆角
+        {
+            if  ((
+
+                    (rowInfo[row].leftLine - rowInfo[row - 6].leftLine) > 2 &&
+                    (rowInfo[row].leftLine - rowInfo[row - 6].leftLine) < 8 &&
+                    (rowInfo[row].leftLine - rowInfo[row + 6].leftLine) > 2 &&
+                    (rowInfo[row].leftLine - rowInfo[row + 6].leftLine) < 8)
+                    || (//左边的角
+                    (rowInfo[row - 6].rightLine - rowInfo[row].rightLine) > 3 &&
+                    (rowInfo[row - 6].rightLine - rowInfo[row].rightLine) < 8 &&
+                    (rowInfo[row + 6].rightLine - rowInfo[row].rightLine) > 2 &&//右边的角 看到一个就可以  因为看到两个经常漏判
+                    (rowInfo[row + 6].rightLine - rowInfo[row].rightLine) < 8
+
+                ))//阈值需要调整
+            {
+                fork_flag_1 = 'T'; //表示近端的角点特征找到
+                fork_spoint_1_Y = row; //记录第一特征点的行数
+                break;
+            }
+
+            else
+            {
+                fork_flag_1 = 'F'; //没找到GG
+            }
+        }
+    }
+
+    int wide = 0;
+    //第二特征 找黑色三角块  并运算得到相关图像信息
+    for (int row = fork_spoint_1_Y; row > imgInfo.top; row--) // g 从第一特征点开始往上搜索
+    {
+        PicTemp = imageBin[row];
+        for (int x = rowInfo[row].leftLine; x < WIDTH - 10; x++) //找三叉口黑色三角块
+        {
+            if ((*(PicTemp + x) != 0) && (*(PicTemp + x + 1) == 0) && (*(PicTemp + x + 2) == 0))
+            //找到黑色角快的左边
+            {
+                rowInfo[row].fork_L = x + 1; //记录此时的左黑边界
+                break;
+            }
+            else
+                rowInfo[row].fork_L = rowInfo[row].midLine; //没找到就在中点
+        }
+
+        for (int x = rowInfo[row].rightLine; x > WIDTH / 2; x--) //找三叉口黑色三角块
+        {
+            if ((*(PicTemp + x) == 0) && (*(PicTemp + x - 1) == 0) && (*(PicTemp + x + 1) != 0))
+            //找到黑色角快的右边
+            {
+                rowInfo[row].fork_R = x; //记录此时的右黑边界
+                break;
+            }
+            else
+                rowInfo[row].fork_R = rowInfo[row].midLine; //没找到就在中点
+        }
+
+        for (int x = rowInfo[row].fork_L; x <= rowInfo[row].fork_R; x++)
+        {
+            if (rowInfo[row].fork_L == rowInfo[row].midLine ||
+                rowInfo[row].fork_R == rowInfo[row].midLine) //如果是中点值那么GG因为这是没找到
+                break;
+            else if ((*(PicTemp + x) == 0)) //数数左黑和右黑之间的黑点数
+            {
+                wide++; //计算找到三角块的本行黑点数
+            }
+        }
+        rowInfo[row].fork_blackWidth = wide; //记录这个宽度
+        rowInfo[row].fork_black_k = rowInfo[row].fork_blackWidth / rowInfo[row].width; //图像黑点比例
+        wide = 0;                                               //清0
+    }
+
+    //判断是否为三叉的黑色三角块
+    for (int row = fork_spoint_1_Y; row >= (imgInfo.top + 1); row--) // g
+    {
+        if ((rowInfo[row].fork_blackWidth - rowInfo[row + 3].fork_blackWidth) >= 2 &&
+            //如果这个左黑和右黑之间黑点数比较多 并且满足三角形的形状
+            //再和斜十字区分
+            rowInfo[row].fork_blackWidth > 40 &&
+            rowInfo[row + 1].fork_blackWidth > 30 &&
+            rowInfo[row - 1].fork_blackWidth > 30 &&
+            rowInfo[row].fork_L < WIDTH / 2 && //滤除斜十字
+            rowInfo[row].fork_R > WIDTH / 2)
+        {
+
+            ForkLinePointx_r = rowInfo[row].fork_R; //用于补线的点
+            ForkLinePointx_l = rowInfo[row].fork_L;
+            ForkLinePointy = row;
+
+            fork_spoint_2_Y = row;           //记录第二特征点的行数
+            if (fork_spoint_1_Y - fork_spoint_2_Y > 10) // g
+            {
+                fork_flag_2 = 'T'; //当两特征点行数大于10   才判断为入环特征点  用于防误判
+                break;
+            }
+        }
+        else
+            fork_flag_2 = 'F';
+    }
+
+    // 综合上述信息判断
+    if ((fork_flag_1 == 'T') && (fork_flag_2 == 'T') || (fork_flag_tot == 'T') && (fork_flag_2 == 'T'))
+        fork_flag_tot = 'T';
+    else
+        fork_flag_tot = 'F';
+
+    if (fork_flag_tot == 'T')
+        imgInfo.RoadType = Fork_In;
+
+        /****************OUT******************/
+
+    //     //第二特征  找黑色三角块  并运算得到相关图像信息
+    //     for (row = 55; row > (imgInfo.OFFLine); row--) // g
+    //     {
+    //         PicTemp = Pixle[row];
+    //         for (x = rowInfo[row].LeftBorder; x < 55; x++) //找三叉口黑色三角块//g
+    //         {
+    //             if ((*(PicTemp + x) != 0) && (*(PicTemp + x + 1) == 0) && (*(PicTemp + x + 2) == 0))
+    //             //找到黑色角快左边
+    //             {
+    //                 rowInfo[row].Black_Wide_L = x + 1;
+    //                 break;
+    //             }
+    //             else
+    //                 rowInfo[row].Black_Wide_L = rowInfo[row].Center;
+    //         }
+
+    //         for (x = rowInfo[row].RightBorder; x > 25; x--) //找三叉口黑色三角块//g
+    //         {
+    //             if ((*(PicTemp + x) == 0) && (*(PicTemp + x - 1) == 0) &&
+    //                 (*(PicTemp + x + 1) != 0)) //找到黑色角快右边
+    //             {
+    //                 rowInfo[row].Black_Wide_R = x;
+    //                 break;
+    //             }
+    //             else
+    //                 rowInfo[row].Black_Wide_R = rowInfo[row].Center;
+    //         }
+
+    //         //            rowInfo[row].BlackWide=rowInfo[row].Black_Wide_R-rowInfo[row].Black_Wide_L;
+
+    //         for (x = rowInfo[row].Black_Wide_L; x <= rowInfo[row].Black_Wide_R; x++)
+    //         {
+    //             if (rowInfo[row].Black_Wide_L == rowInfo[row].Center ||
+    //                 rowInfo[row].Black_Wide_R == rowInfo[row].Center)
+    //                 break;
+    //             else if ((*(PicTemp + x) == 0))
+    //             {
+    //                 wide++;
+    //             }
+    //         }
+
+    //         rowInfo[row].BlackWide = wide;
+    //         rowInfo[row].Black_Pro =
+    //             rowInfo[row].BlackWide / rowInfo[row].Wide; //图像黑点比例
+    //         wide = 0;
+    //         if (rowInfo[row].BlackWide > 2)
+    //             rowInfo[row].isBlackFind = 'T';
+    //         else
+    //             rowInfo[row].isBlackFind = 'F';
+    //     }
+
+    //     //判断是否为三叉的黑色三角块
+    //     for (row = 55; row >= (imgInfo.OFFLine); row--) // g
+    //     {
+    //         if ((rowInfo[row].BlackWide - rowInfo[row + 3].BlackWide) > 1 && rowInfo[row].BlackWide > 16 && rowInfo[row + 1].BlackWide > 15
+    //             //&&rowInfo[row-1].BlackWide>15//g5.21
+    //             && (39 - rowInfo[row].Black_Wide_L) > 0 //滤除斜十字
+    //             && (rowInfo[row].Black_Wide_R - 39) > 0)
+    //         {
+    //             ForkLinePointx_r = rowInfo[row].Black_Wide_R;
+    //             ForkLinePointx_l = rowInfo[row].Black_Wide_L;
+    //             ForkLinePointy = row;
+    //             //        if(ForkLinePointy>10)
+    //             Fork_in_2 = 'T';
+    //             break;
+    //         }
+    //         else
+    //             Fork_in_2 = 'F';
+    //     }
+    //     if (Fork_in_2 == 'T')
+    //         Fork_in = 'T';
+    //     else
+    //         Fork_in = 'F';
+
+    //     f3 = Fork_in;
+    //     if (Fork_in == 'T')
+    //     {
+    //         //      PRINTF("fork distance=%d\n\r", SystemData.SpeedData.Length * OX);
+    //         forklenth = SystemData.SpeedData.Length * OX;
+    //         imgInfo.RoadType = Forkout;
+    //     }
+
+    //     // g 5.13
+    //     if (imgInfo.RoadType == Fork_In || imgInfo.RoadType == Forkout)
+    //         Fork_dowm = 1;
+    // }
+}
+
+void fork_repairLine()
+{
+    float Det_Fork_L;
+    float Det_Fork_R;
+
+    if (imgInfo.RoadType == Fork_In )//|| imgInfo.RoadType == Fork_Out ) // 右补线
+    {
+        Det_Fork_L = 1.05 * ForkLinePointx_r / (HEIGHT - 5 - ForkLinePointy);
+        for (int row = HEIGHT - 5; row > imgInfo.top; row--)
+        {
+            int temp = (int)(rowInfo[HEIGHT - 5].leftLine + Det_Fork_L * (HEIGHT - 5  - row));
+            if (temp >= WIDTH)
+            {
+                temp = WIDTH - 1;
+            }
+            if (temp > rowInfo[row].leftLine)
+            {
+                rowInfo[row].leftLine = temp;
+                if (imageBin[row][rowInfo[row].leftLine] == 0)
+                {
+                    for (int x = rowInfo[row].leftLine; x < rowInfo[row].rightLine; x++)
+                    {
+                        if (imageBin[row][x] == 1 && imageBin[row][x + 1] == 1)
+                        {
+                            rowInfo[row].leftLine = x;
+                        }
+                    }
+                }
+            }
+            rowInfo[row].midLine = (rowInfo[row].rightLine + rowInfo[row].leftLine) / 2;
+            rowInfo[row].width = rowInfo[row].rightLine - rowInfo[row].leftLine; //宽度更新
+        }
+    }
 }
 
 /**
