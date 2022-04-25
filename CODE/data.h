@@ -7,9 +7,25 @@
 
 #ifndef CODE_DATA_H_
 #define CODE_DATA_H_
+
+#if _ON_PC_
+
+#include "pid.h"
+#include "ImageDeal.h"
+#include "ImagePreDeal.h"
+#include "motor.h"
+#include "steer.h"
+
+#else
+
+#endif
+
+
 typedef struct _ConstDataTypeDef
 {
-        int kServoLowLimit, kServoHighLimit, kServoMid;
+    int kServoLowLimit, kServoHighLimit, kServoMid;
+    float kImageStraightLineVarianceTh, kImageStraightLineSpeedUpVarianceTh;
+
 }ConstDataTypeDef;
 
 

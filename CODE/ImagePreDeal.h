@@ -26,7 +26,7 @@
 
 #endif
 
-#define WIDTH                           180                                     //Í¼Ïñ¿í
+#define WIDTH                           188                                     //Í¼Ïñ¿í
 #define HEIGHT                          120                                     //Í¼Ïñ¸ß
 
 
@@ -52,12 +52,11 @@
 #define kernel_sizeby2_morph               2                                    //ÐÎÌ¬Ñ§´¦Àí»¬´°°ë¾¶
 #define kernel_size_morph                  5                                    //ÐÎÌ¬Ñ§´¦Àí»¬´°Ö±¾¶
 
-typedef enum _PreDealMethodEnum{CUT,OTSU,OTSU2D,SAUVOLA,SOBEL,GAUSSIAN_FILTER,MEDIAN_FILTER,MORPH_EROSION,MORPH_DILITION,MY_MORPH_OPEN,MY_MORPH_CLOSE} PreDealMethodEnum;
+typedef enum _PreDealMethodEnum{OTSU,OTSU2D,SAUVOLA,SOBEL,GAUSSIAN_FILTER,MEDIAN_FILTER,MORPH_EROSION,MORPH_DILITION,MY_MORPH_OPEN,MY_MORPH_CLOSE} PreDealMethodEnum;
 
 
 
 void img_preProcess(PreDealMethodEnum method);
-void cut(void);
 void compress(void);
 uint8_t otsu(void);
 void sauvola(void);

@@ -25,13 +25,10 @@ void img_preProcess(PreDealMethodEnum method)
     uint8_t th_otsu;
     switch (method)
     {
-        case CUT:
-            cut();
-            break;
         case OTSU:
             th_otsu = otsu();
             for (int i = 0; i < HEIGHT * WIDTH; i++)
-                *(imageBin[0] + i) = *(imageCut[0] + i) > th_otsu?255:0;
+                *(imageBin[0] + i) = *(mt9v03x_image[0] + i) > th_otsu?255:0;
             break;
         case OTSU2D:
             //二维OTSU，占个位，不知道用的到吗
@@ -39,7 +36,7 @@ void img_preProcess(PreDealMethodEnum method)
         case SAUVOLA:
             // uint8_t th_otsu = otsu();
             // for (int i = 0; i < HEIGHT * WIDTH; i++)
-            //     *(imageBin[0] + i) = *(imageCut[0] + i) > th_otsu?255:0;
+            //     *(imageBin[0] + i) = *(mt9v03x_image[0] + i) > th_otsu?255:0;
             sauvola();
             break;
         case SOBEL:
@@ -67,16 +64,7 @@ void img_preProcess(PreDealMethodEnum method)
             break;
     }
 }
-void cut(void)
-{
-    for(int i = 0; i < 120; i++)
-    {
-        for (int j = 1; j < 188 - 7; ++j )
-        {
-            imageCut[i][j-1] = mt9v03x_image[i][j];
-        }
-    }
-}
+
 void compress(void)
 {
     for(int i = 0; i < HEIGHT; i++)
@@ -85,7 +73,7 @@ void compress(void)
         {
             if(i < HEIGHT/2)
             {
-                *(imageBin[i] + j) = *(imageCut[i] + j);
+                *(imageBin[i] + j) = *(mt9v03x_image[i] + j);
             }
             else
             {
@@ -109,7 +97,7 @@ uint8_t otsu(void)
     float max_value = 0.0,n_value = 0.0,u0 = 0.0,u1 = 0.0;
     uint8_t th = 0,minn = 255,maxn = 0;
 
-    uint8_t * p_pixel = imageCut[0];
+    uint8_t * p_pixel = mt9v03x_image[0];
     
     for(int i=0; i<total; ++i)//计算灰度直方图
     {
@@ -167,8 +155,8 @@ void sauvola(void)
         integralColsSqu[j] = 0;
         for (int i = 0; i < kernel_sizeby2_sauvola; ++i) // kernel center 和 后 kernel_sizeby2_sauvola - 1行 之和
         {
-            integralCols[j] += imageCut[i][j];
-            integralColsSqu[j] += imageCut[i][j] * imageCut[i][j];
+            integralCols[j] += mt9v03x_image[i][j];
+            integralColsSqu[j] += mt9v03x_image[i][j] * mt9v03x_image[i][j];
         }
     }
     // memset(integralCols, 0, sizeof(integralCols));
@@ -183,22 +171,22 @@ void sauvola(void)
             if (up <= 0) //(i <= kernel_sizeby2_sauvola)//起始部分加入下端
             {
                 // downi = down * WIDTH + j;
-                integralCols[j] += imageCut[down][j];
-                integralColsSqu[j] += imageCut[down][j] * imageCut[down][j];
+                integralCols[j] += mt9v03x_image[down][j];
+                integralColsSqu[j] += mt9v03x_image[down][j] * mt9v03x_image[down][j];
             }
             else if (down >= HEIGHT) //(h - 1 - i < kernel_sizeby2_sauvola) //结尾部分减去上端
             {
                 // upi = (up - 1) * WIDTH + j;
-                integralCols[j] -= imageCut[up - 1][j];
-                integralColsSqu[j] -= imageCut[up - 1][j] * imageCut[up - 1][j];
+                integralCols[j] -= mt9v03x_image[up - 1][j];
+                integralColsSqu[j] -= mt9v03x_image[up - 1][j] * mt9v03x_image[up - 1][j];
             }
             else //中间部分减去上端加入下端
             {
                 // upi = (up - 1) * WIDTH + j;
                 // downi = down * WIDTH + j;
-                integralCols[j] = integralCols[j] + imageCut[down][j] - imageCut[up - 1][j];
-                integralColsSqu[j] = integralColsSqu[j] + imageCut[down][j] * imageCut[down][j] - imageCut[up - 1][j] * imageCut[up - 1][j];
-                // printf("%d\n",imageCut[up - 1][j]);
+                integralCols[j] = integralCols[j] + mt9v03x_image[down][j] - mt9v03x_image[up - 1][j];
+                integralColsSqu[j] = integralColsSqu[j] + mt9v03x_image[down][j] * mt9v03x_image[down][j] - mt9v03x_image[up - 1][j] * mt9v03x_image[up - 1][j];
+                // printf("%d\n",mt9v03x_image[up - 1][j]);
             }
             // if(integralCols[j]<0) printf("%d\n",i);
             // printf("%d\n",integralCols[j]);
@@ -234,7 +222,7 @@ void sauvola(void)
             mean = sum / area;
             v = sqsum / area - mean * mean;
 
-            tmp = imageCut[i][j] + mean * (k_sauvola - 1.0);
+            tmp = mt9v03x_image[i][j] + mean * (k_sauvola - 1.0);
             if (tmp <= 0 || tmp * tmp <= k2_sauvola * mean * mean * v / r2_sauvola)
                 imageBin[i][j] = 0; //实际用的时候直接用01好了
             else
@@ -261,11 +249,11 @@ void sobel(void)
         for (j = 1; j <= WIDTH - 2; ++j)
         {
             int16_t sumx=0,sumy=0;
-            sumy = -1 * imageCut[i - 1][j - 1] - 2 * imageCut[i - 1][j] - 1 * imageCut[i - 1][j + 1]
-                + 1 * imageCut[i + 1][j - 1] + 2 * imageCut[i + 1][j] + 1 * imageCut[i + 1][j + 1];
+            sumy = -1 * mt9v03x_image[i - 1][j - 1] - 2 * mt9v03x_image[i - 1][j] - 1 * mt9v03x_image[i - 1][j + 1]
+                + 1 * mt9v03x_image[i + 1][j - 1] + 2 * mt9v03x_image[i + 1][j] + 1 * mt9v03x_image[i + 1][j + 1];
             
-            sumx = -1 * imageCut[i - 1][j - 1] - 2 * imageCut[i][j - 1] - 1 * imageCut[i + 1][j - 1]
-                + 1 * imageCut[i - 1][j + 1] + 2 * imageCut[i][j + 1] + 1 * imageCut[i + 1][j + 1];
+            sumx = -1 * mt9v03x_image[i - 1][j - 1] - 2 * mt9v03x_image[i][j - 1] - 1 * mt9v03x_image[i + 1][j - 1]
+                + 1 * mt9v03x_image[i - 1][j + 1] + 2 * mt9v03x_image[i][j + 1] + 1 * mt9v03x_image[i + 1][j + 1];
             if(abs(sumx)+abs(sumy) > TH_SOBEL)
                 imageBin[i][j] = 0;
             else 
@@ -290,7 +278,7 @@ void median_filter(void)
     {
         for(int j = 0; j < kernel_sizeby2_medianfilter + 1; ++j)
         {
-            tmp = imageCut[i][j] + 1;
+            tmp = mt9v03x_image[i][j] + 1;
             while(tmp <= N)
             {
                 tr[tmp] += 1;
@@ -323,7 +311,7 @@ void median_filter(void)
             {
                 for(k = left; k <= right; ++k)
                 {
-                    tmp = imageCut[down][k] + 1;
+                    tmp = mt9v03x_image[down][k] + 1;
                     while(tmp <= N)
                     {
                         tr[tmp] += 1;
@@ -342,7 +330,7 @@ void median_filter(void)
             {
                 for(k = left; k <= right; ++k)
                 {
-                    tmp = imageCut[up - 1][k] + 1;
+                    tmp = mt9v03x_image[up - 1][k] + 1;
                     while(tmp <= N)
                     {
                         tr[tmp] -= 1;
@@ -361,14 +349,14 @@ void median_filter(void)
             {
                 for(k = left; k <= right; ++k)
                 {
-                    tmp = imageCut[down][k] + 1;
+                    tmp = mt9v03x_image[down][k] + 1;
                     while(tmp <= N)
                     {
                         tr[tmp] += 1;
                         tmp += lowbit(tmp);
                     }
 
-                    tmp = imageCut[up - 1][k] + 1;
+                    tmp = mt9v03x_image[up - 1][k] + 1;
                     while(tmp <= N)
                     {
                         tr[tmp] -= 1;
@@ -392,7 +380,7 @@ void median_filter(void)
                 {
                     for(k = up; k <= down; ++k)
                     {
-                        tmp = imageCut[k][right] + 1;
+                        tmp = mt9v03x_image[k][right] + 1;
                         while(tmp <= N)
                         {
                             tr[tmp] += 1;
@@ -411,7 +399,7 @@ void median_filter(void)
                 {
                     for(k = up; k <= down; ++k)
                     {
-                        tmp = imageCut[k][left - 1] + 1;
+                        tmp = mt9v03x_image[k][left - 1] + 1;
                         while(tmp <= N)
                         {
                             tr[tmp] -= 1;
@@ -430,14 +418,14 @@ void median_filter(void)
                 {
                     for(k = up; k <= down; ++k)
                     {
-                        tmp = imageCut[k][right] + 1;
+                        tmp = mt9v03x_image[k][right] + 1;
                         while(tmp <= N)
                         {
                             tr[tmp] += 1;
                             tmp += lowbit(tmp);
                         }
 
-                        tmp = imageCut[k][left - 1] + 1;
+                        tmp = mt9v03x_image[k][left - 1] + 1;
                         while(tmp <= N)
                         {
                             tr[tmp] -= 1;
@@ -457,7 +445,7 @@ void median_filter(void)
                 {
                     for(k = up; k <= down; ++k)
                     {
-                        tmp = imageCut[k][right + 1] + 1;
+                        tmp = mt9v03x_image[k][right + 1] + 1;
                         while(tmp <= N)
                         {
                             tr[tmp] -= 1;
@@ -476,7 +464,7 @@ void median_filter(void)
                 {
                     for(k = up; k <= down; ++k)
                     {
-                        tmp = imageCut[k][left] + 1;
+                        tmp = mt9v03x_image[k][left] + 1;
                         while(tmp <= N)
                         {
                             tr[tmp] += 1;
@@ -495,14 +483,14 @@ void median_filter(void)
                 {
                     for(k = up; k <= down; ++k)
                     {
-                        tmp = imageCut[k][left] + 1;
+                        tmp = mt9v03x_image[k][left] + 1;
                         while(tmp <= N)
                         {
                             tr[tmp] += 1;
                             tmp += lowbit(tmp);
                         }
 
-                        tmp = imageCut[k][right + 1] + 1;
+                        tmp = mt9v03x_image[k][right + 1] + 1;
                         while(tmp <= N)
                         {
                             tr[tmp] -= 1;
@@ -528,7 +516,7 @@ void median_filter(void)
         temp[i][j] = ret;
         //printf("%d %d %d %u\n", i, j, ret, tr[1]);
     }
-    memcpy(imageCut,temp,sizeof(temp));
+    memcpy(mt9v03x_image,temp,sizeof(temp));
 }
 
 

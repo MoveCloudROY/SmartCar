@@ -11,19 +11,13 @@
 #define IMAGE_DEAL_H
 
 //#define __ON_PC__
-// #define __ON_ROBOT__
+ #define __ON_ROBOT__
 
 
 #ifdef __ON_PC__
 #include "ImagePreDeal.h"
 #include "stack.h"
 #include <cstdint>
-
-#define uint8_t uint8
-#define uint16_t uint16
-#define int16_t int16
-#define int8_t int8
-
 
 #define DEBUG
 
@@ -32,10 +26,9 @@
 #include "ImagePreDeal.h"
 
 
-
 #endif
 
-
+#include "data.h"
 
 
 #define MISS                                    255
@@ -53,7 +46,7 @@
 // enum ThreeForkRoadFlag{OFF, FIRST, SECOND, };
 
 typedef enum _LineTypeEnum{LEFT, MID, RIGHT, }LineTypeEnum;
-typedef enum _RoadTypeEnum{Straight, Cross, Slope, S_bend, Big_bend, Reflection, Round_About, Starting_Line, Fork_In, Fork_Out, Turn_Left, Turn_Right}RoadTypeEnum;
+typedef enum _RoadTypeEnum{Type_Null, Straight, Cross, Slope, S_bend, Big_bend, Reflection, Round_About_L, Round_About_R, Starting_Line, Fork_In, Fork_Out, Turn_Left, Turn_Right}RoadTypeEnum;
 typedef enum _EdgePointTypeEnum {__OCCUPY,EXIST,LOST,JUMP} EdgePointTypeEnum;
 
 // /**
@@ -76,6 +69,7 @@ typedef struct _ImgInfoTypedef
     uint8_t leftDownJump, rightDownJump, leftUpJump, rightUpJump,leftDownStart, rightDownStart, leftUpStart, rightUpStart;
     uint8_t leftSeriesBreak, rightSeriesBreak;
     int error,allLostCnt;
+    int straight_needSpeedUP;
     RoadTypeEnum RoadType;
 }ImgInfoTypedef;
 
@@ -118,7 +112,7 @@ void params_init(void);
 void basic_searchLine(int bottom,int top);
 void advance_searchLine(int bottom);
 void advance_repairLine(void);
-void advacnde_midLineFilter(void);
+void advance_midLineFilter(void);
 void basic_getSpecialParams(uint8_t select_begin, uint8_t select_end);
 void basic_getJumpPointFromDet(uint8_t *row, int L,int R, EdgePointTypedef *Q, LineTypeEnum type);
 
@@ -134,17 +128,19 @@ void road_judge(void);
 
 
 // 特别元素的扫线
-void turn_searchLine(void);
-void cross_searchLine(void);
-void cross_searchLine_withLeft(void);
-void cross_searchLine_withRight(void);
+void straight_detect(void);
+void straight_speedUpDetect(void);
+void turn_detect(void);
+void cross_detect(void);
+void cross_detect_withLeft(void);
+void cross_detect_withRight(void);
 
-void fork_searchLine(void);
+void fork_detect(void);
 void fork_repairLine(void);
 
-void slope_searchLine(void);
-void roundAbout_searchLine(void);
-void startingLine_searchLine(void);
+void slope_detect(void);
+void roundAbout_detect(void);
+void startingLine_detect(void);
 
 
 

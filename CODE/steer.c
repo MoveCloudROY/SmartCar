@@ -21,7 +21,7 @@ PID PID_Servo = {
     .targetPoint = 0,
     .P = 4,
     .I = 0,
-    .D = 5,
+    .D = 4,
     .alphaDev = 0.0,
     .alphaOut = 0.0,
 
