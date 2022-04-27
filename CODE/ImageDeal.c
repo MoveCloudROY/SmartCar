@@ -9,13 +9,13 @@
 #include "ImageDeal.h"
 
 
-int LineEdgeScanWindow_Cross = 2;  //Ê®×ÖÉ¨Ïß·¶Î§
+int LineEdgeScanWindow_Cross = 3;  //Ê®×ÖÉ¨Ïß·¶Î§
 int LineEdgeScanWindow = 5;    //Ö±µÀ·½²îãĞÖµ
 
 uint8_t needExternL = 0;  //ÊÇ·ñ×óÑÓ³¤±êÖ¾
 uint8_t needExternR = 0;  //ÊÇ·ñÓÒÑÓ³¤±êÖ¾
 
-extern uint8_t mt9v30x_image[120][188];//Ô­»Ò¶ÈÍ¼
+extern uint8_t mt9v03x_image[120][188];//Ô­»Ò¶ÈÍ¼
 extern uint8_t imageBin[HEIGHT][WIDTH];//¶şÖµ»¯Í¼Ïñ
 extern ConstDataTypeDef ConstData;
 
@@ -43,6 +43,8 @@ ImgInfoTypedef imgInfo;//Í¼Ïñ»ù´¡²ÎÊı½á¹¹Ìå£¨Èç¹ûÖØ¹¹°ÑÉÏÃæÒÔHEIGHT´óĞ¡µÄ¿ª³É½á¹
 
 
 uint8_t ForkLinePointx_l, ForkLinePointx_r, ForkLinePointy;//Èı²íµã²¹Ïß×ø±ê
+int fork_spoint_1_Y = 0, fork_spoint_2_Y = 0;
+char fork_flag_1 = 0, fork_flag_2 = 0, fork_flag_tot = 0;
 
 /**
  * @description: Í¼Ïñ´¦Àíµ÷ÓÃº¯Êı
@@ -57,8 +59,8 @@ void img_process(void)
     advance_searchLine(HEIGHT-7);
     advance_repairLine();
 
-    road_judge();
-    advance_midLineFilter();
+    // road_judge();
+    // advance_midLineFilter();
 
     //series_searchLine();
     //basic_getSpecialParams(imgInfo.top, imgInfo.bottom);
@@ -83,6 +85,9 @@ void params_init(void)
     // memset(rowInfo, 0, sizeof(rowInfo));
     // memset(leftLine, 0, sizeof(leftLine));
     // memset(rowInfo, WIDTH - 1, sizeof(rowInfo));
+    ForkLinePointx_l = 0; ForkLinePointx_r = 0; ForkLinePointy = 0;
+    fork_flag_1 = 'F';
+    fork_flag_2 = 'F';
     imgInfo.top = 8;//UP_LIMIT;
     imgInfo.bottom = HEIGHT - 1;//DOWN_LIMIT;
     for(int i = 0; i  < HEIGHT; ++i)
@@ -91,8 +96,8 @@ void params_init(void)
         rowInfo[i].rightStatus = LOST;
         rowInfo[i].leftLine = 0;
         rowInfo[i].rightLine = WIDTH - 1;
-        rowInfo[i].fork_L = 39;
-        rowInfo[i].fork_R = 39;
+        rowInfo[i].fork_L = WIDTH / 2;
+        rowInfo[i].fork_R = WIDTH / 2;
         rowInfo[i].fork_blackWidth = 0;
     }
 
@@ -621,8 +626,9 @@ void basic_repairLine(void)//[x] ¸øÓè¸ü¶àÑ¡Ïî,µÀÂ·ÏÂ²à²¹Ïß,midLine¼ÆËã,[x]²ğ·Ö³ö
     }
     return ;
 }
-#define LIMIT_L(x) (x = ( (x) < 1? 1 : (x)))
+#define LIMIT_L(x) (x = ((x) < 1? 1 : (x)))
 #define LIMIT_R(x) (x = ((x) > WIDTH - 2? WIDTH - 2 : (x)))
+#define LIMIT_H(x) ((x) >= HEIGHT ? HEIGHT - 1: (x))
 void advance_searchLine(int bottom)  //////²»ÓÃ¸ü¸Ä
 {
     uint8_t isFindLk = 'F';     //È·¶¨ÎŞ±ßĞ±ÂÊµÄ»ù×¼ÓĞ±ßĞĞÊÇ·ñ±»ÕÒµ½µÄ±êÖ¾
@@ -631,8 +637,8 @@ void advance_searchLine(int bottom)  //////²»ÓÃ¸ü¸Ä
     uint8_t hasFindRk = 'F';    //ÊÇ·ñ³¢ÊÔ¹ıÕÒµ½ÕâÒ»Ö¡Í¼ÏñµÄ»ù×¼ÓÒĞ±ÂÊ
     float D_L = 0;              //ÑÓ³¤Ïß×ó±ßÏßĞ±ÂÊ
     float D_R = 0;              //ÑÓ³¤ÏßÓÒ±ßÏßĞ±ÂÊ
-    int firstLostL;             //¼Ç×¡Ê×´Î×ó¶ª±ßĞĞ
-    int firstLostR;             //¼Ç×¡Ê×´ÎÓÒ¶ª±ßĞĞ
+    int firstLostL = 0;             //¼Ç×¡Ê×´Î×ó¶ª±ßĞĞ
+    int firstLostR = 0;             //¼Ç×¡Ê×´ÎÓÒ¶ª±ßĞĞ
     needExternR = 0;            //±êÖ¾Î»Çå0
     needExternL = 0;
     uint8_t tmpL = 0, tmpR = 0;
@@ -648,8 +654,8 @@ void advance_searchLine(int bottom)  //////²»ÓÃ¸ü¸Ä
         }
         else
         {
-            tmpL = rowInfo[row + 1].leftLine - LineEdgeScanWindow_Cross;  //´ÓÉÏÒ»ĞĞÓÒ±ßÏß-5µÄµã¿ªÊ¼£¨È·¶¨É¨Ãè¿ªÊ¼µã£©
-            tmpR = rowInfo[row + 1].leftLine + LineEdgeScanWindow_Cross;
+            tmpL = rowInfo[row + 1].rightLine - LineEdgeScanWindow_Cross;  //´ÓÉÏÒ»ĞĞÓÒ±ßÏß-5µÄµã¿ªÊ¼£¨È·¶¨É¨Ãè¿ªÊ¼µã£©
+            tmpR = rowInfo[row + 1].rightLine + LineEdgeScanWindow_Cross;
         }
 
         LIMIT_L(tmpL);   //È·¶¨×óÉ¨ÃèÇø¼ä²¢½øĞĞÏŞÖÆ
@@ -661,7 +667,7 @@ void advance_searchLine(int bottom)  //////²»ÓÃ¸ü¸Ä
         tmpR = rowInfo[row + 1].leftLine + LineEdgeScanWindow;  //µ½ÉÏÒ»ĞĞ×ó±ßÏß+5µÄµã½áÊø£¨È·¶¨É¨Ãè½áÊøµã£©
 
         LIMIT_L(tmpL);   //È·¶¨×óÉ¨ÃèÇø¼ä²¢½øĞĞÏŞÖÆ
-        LIMIT_R(tmpL);  //È·¶¨ÓÒÉ¨ÃèÇø¼ä²¢½øĞĞÏŞÖÆ
+        LIMIT_R(tmpR);  //È·¶¨ÓÒÉ¨ÃèÇø¼ä²¢½øĞĞÏŞÖÆ
 
         basic_getJumpPointFromDet(imageBin[row],tmpL, tmpR, &EdgePoint[0], LEFT);
 
@@ -745,7 +751,7 @@ void advance_searchLine(int bottom)  //////²»ÓÃ¸ü¸Ä
             {
                 hasFindRk = 'T';      //ÕÒÁË  Ò»Ö¡Í¼ÏñÖ»ÅÜÒ»´Î ÖÃÎªT
                 firstLostR = row + 2; //
-                for (int y = row + 1; y < row + 30; y++)
+                for (int y = row + 1; y < LIMIT_H(row + 30); y++)
                 {
                     if (rowInfo[y].rightStatus == EXIST) //ÍùÎŞ±ßĞĞÏÂÃæËÑË÷  Ò»°ã¶¼ÊÇÓĞ±ßµÄ
                         R_found_point++;
@@ -783,7 +789,7 @@ void advance_searchLine(int bottom)  //////²»ÓÃ¸ü¸Ä
             {
                 hasFindLk = 'T';
                 firstLostL = row + 2;
-                for (int y = row + 1; y < row + 15; y++)
+                for (int y = row + 1; y < LIMIT_H(row + 30); y++)
                 {
                     if (rowInfo[y].leftStatus == EXIST)
                         L_found_point++;
@@ -813,18 +819,16 @@ void advance_searchLine(int bottom)  //////²»ÓÃ¸ü¸Ä
             LIMIT_R(rowInfo[row].leftLine); //ÏŞ·ù
         }
 
-        if (rowInfo[row].leftStatus == LOST && rowInfo[row].rightStatus == LOST)
-                imgInfo.allLostCnt++; //ÒªÊÇ×óÓÒ¶¼ÎŞ±ß£¬¶ª±ßÊı+1
+        // if (rowInfo[row].leftStatus == LOST && rowInfo[row].rightStatus == LOST)
+        //         imgInfo.allLostCnt++; //ÒªÊÇ×óÓÒ¶¼ÎŞ±ß£¬¶ª±ßÊı+1
 
         LIMIT_L(rowInfo[row].leftLine);  //ÏŞ·ù
         LIMIT_R(rowInfo[row].leftLine);  //ÏŞ·ù
         LIMIT_L(rowInfo[row].rightLine); //ÏŞ·ù
         LIMIT_R(rowInfo[row].rightLine); //ÏŞ·ù
 
-        rowInfo[row].width =
-            rowInfo[row].rightLine - rowInfo[row].leftLine;
-        rowInfo[row].midLine =
-            (rowInfo[row].rightLine + rowInfo[row].leftLine) / 2;
+        rowInfo[row].width = rowInfo[row].rightLine - rowInfo[row].leftLine;
+        rowInfo[row].midLine = (rowInfo[row].rightLine + rowInfo[row].leftLine) / 2;
 
 
         if (rowInfo[row].width <= 7) //ÖØĞÂÈ·¶¨¿ÉÊÓ¾àÀë
@@ -844,7 +848,7 @@ void advance_searchLine(int bottom)  //////²»ÓÃ¸ü¸Ä
 }
 #undef LIMIT_L
 #undef LIMIT_R
-
+#undef LIMIT_H
 
 void basic_getJumpPointFromDet(uint8_t *row, int L,int R, EdgePointTypedef *Q, LineTypeEnum type) //µÚÒ»¸ö²ÎÊıÊÇÒª²éÕÒµÄÊı×é
 {
@@ -1254,8 +1258,7 @@ void cross_detect_withRight(void)
     basic_repairLine();
     return ;
 }
-int fork_spoint_1_Y = 0, fork_spoint_2_Y = 0;
-char fork_flag_1 = 0, fork_flag_2 = 0, fork_flag_tot = 0;
+
 void fork_detect()
 {
     uint8_t * PicTemp = NULL;
@@ -1309,7 +1312,7 @@ void fork_detect()
                 rowInfo[row].fork_L = rowInfo[row].midLine; //Ã»ÕÒµ½¾ÍÔÚÖĞµã
         }
 
-        for (int x = rowInfo[row].rightLine; x > 9; x--) //ÕÒÈı²æ¿ÚºÚÉ«Èı½Ç¿é
+        for (int x = rowInfo[row].rightLine; x > WIDTH / 2; x--) //ÕÒÈı²æ¿ÚºÚÉ«Èı½Ç¿é
         {
             if ((*(PicTemp + x) == 0) && (*(PicTemp + x - 1) == 0) && (*(PicTemp + x + 1) != 0))
             //ÕÒµ½ºÚÉ«½Ç¿ìµÄÓÒ±ß
@@ -1453,7 +1456,7 @@ void get_error(void)//TODO ÊµÏÖ¶¯Ì¬µ÷ÕûÇ°Õ°
  */
 uint8_t judge_lineContinuity(uint8_t select_top, uint8_t select_bottom, LineTypeEnum type)
 {
-    int delta;//W
+    int delta;
     switch (type)
     {
         case LEFT:

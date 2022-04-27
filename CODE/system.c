@@ -20,6 +20,7 @@
 #define __DEBUG_IPS_ON__
 
 extern ConstDataTypeDef ConstData;
+extern uint8_t imageBin[HEIGHT][WIDTH];
 
 extern PID PID_L, PID_R;
 
@@ -74,7 +75,8 @@ void img_backstage(void)
 //            img_preProcess(CUT);
             img_preProcess(OTSU);
 
-//            img_preProcess(MY_MORPH_OPEN);
+            img_preProcess(MORPH_EROSION);
+
             img_process();
             gpio_toggle(P20_9);
             cpu1_5ms_flag = 0;

@@ -524,52 +524,20 @@ void median_filter(void)
  * @description: 腐蚀
  * @param {*}
  * @return {*}
+ * 太慢了, 考虑具体问题,我们只需要滤除赛道上的黑点,故周围只要白点数量多于阈值即可
  */
 void morph_erosion(void)
 {
-    if (WIDTH - kernel_size_morph < 0 || HEIGHT - kernel_size_morph < 0) return;
-
-    uint8_t temp[HEIGHT][WIDTH];
-    //int mid = kernel_sizeby2_morph + 1;
-    
-    uint8_t val = 0;
-    for (int i = kernel_sizeby2_morph; i < HEIGHT - kernel_sizeby2_morph; i++)
+    for (int i = 0; i < HEIGHT ; i++)
     {
-        for (int j = kernel_sizeby2_morph; j < WIDTH - kernel_sizeby2_morph; j++)
+        for (int j = 0; j < WIDTH ; j++)
         {
-            for (int m = -kernel_sizeby2_morph; m <= kernel_sizeby2_morph; m++)
-            {
-                for (int n = -kernel_sizeby2_morph; n <= kernel_sizeby2_morph; n++)
-                {
-                    //if (m == kernel_sizeby2_morph && n == kernel_sizeby2_morph )
-                    //    continue;
-                    val |= imageBin[i + m][j + n];
-                    
-                }
-            }
-
-            temp[i][j] = val;
-            val = 0;
+            if((i - 1 >= 0  && !!imageBin[i-1][j]) +  (i + 1 < HEIGHT && !!imageBin[i+1][j]) +
+                    (j - 1 >= 0 && !!imageBin[i][j-1]) +  (j + 1 < WIDTH && !!imageBin[i][j+1]) >= 3)
+                imageBin[i][j] = 255;
             
         }
     }
-    for(int i = 0; i < HEIGHT; ++i)
-    {
-        for(int j = 0; j < kernel_sizeby2_morph; ++j)
-        {
-            temp[i][j] = imageBin[i][j];
-            temp[i][WIDTH - 1 - j] = imageBin[i][WIDTH - 1 - j];
-        }
-    }
-    for(int i = 0; i < kernel_sizeby2_morph; ++i)
-    {
-        for(int j = 0; j < WIDTH; ++j)
-        {
-            temp[i][j] = imageBin[i][j];
-            temp[HEIGHT - 1 - i][j] = imageBin[HEIGHT - 1 - i][j];
-        }
-    }
-    memcpy(imageBin,temp,sizeof(temp));
 }
 
 /**
@@ -583,24 +551,12 @@ void morph_dilition(void)
 
     //int kernel_sizeby2_morph = kernel_sizeby2_morph + 1;
     uint8_t temp[HEIGHT][WIDTH];
-
-    uint8_t val = 255;
-    for (int i = kernel_sizeby2_morph; i < HEIGHT - kernel_sizeby2_morph; i++)
+    for(int i = 0; i < kernel_sizeby2_morph; ++i)
     {
-        for (int j = kernel_sizeby2_morph; j < WIDTH - kernel_sizeby2_morph; j++)
+        for(int j = 0; j < WIDTH; ++j)
         {
-            for (int m = -kernel_sizeby2_morph; m <= kernel_sizeby2_morph; m++)
-            {
-                for (int n = -kernel_sizeby2_morph; n <= kernel_sizeby2_morph; n++)
-                {
-                    // if (m == kernel_sizeby2_morph && n == kernel_sizeby2_morph )
-                    //      continue;
-                        val &=  imageBin[i + m][j + n];
-                }
-            }
-
-            temp[i][j] = val;
-            val = 255;
+            temp[i][j] = imageBin[i][j];
+            temp[HEIGHT - 1 - i][j] = imageBin[HEIGHT - 1 - i][j];
         }
     }
     for(int i = 0; i < HEIGHT; ++i)
@@ -611,14 +567,26 @@ void morph_dilition(void)
             temp[i][WIDTH - 1 - j] = imageBin[i][WIDTH - 1 - j];
         }
     }
-    for(int i = 0; i < kernel_sizeby2_morph; ++i)
+    int val = 1;
+    for (int i = kernel_sizeby2_morph; i < HEIGHT - kernel_sizeby2_morph; i++)
     {
-        for(int j = 0; j < WIDTH; ++j)
+        for (int j = kernel_sizeby2_morph; j < WIDTH - kernel_sizeby2_morph; j++)
         {
-            temp[i][j] = imageBin[i][j];
-            temp[HEIGHT - 1 - i][j] = imageBin[HEIGHT - 1 - i][j];
+            for (int m = -kernel_sizeby2_morph; m <= kernel_sizeby2_morph; m++)
+            {
+                for (int n = -kernel_sizeby2_morph; n <= kernel_sizeby2_morph; n++)
+                {
+                    // if (m == kernel_sizeby2_morph && n == kernel_sizeby2_morph )
+                    //      continue;
+                        val &= !!imageBin[i + m][j + n];
+                }
+            }
+
+            temp[i][j] = val*255;
+            val = 1;
         }
     }
+
     memcpy(imageBin,temp,sizeof(temp));
 }
 

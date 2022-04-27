@@ -5,7 +5,7 @@
 #include "vofa.h"
 
 PID PID_L = {
-    .targetPoint = 60,
+    .targetPoint = 50,
     .P = 8.5,
     .I = 0.83,
     .D = 5.0,
@@ -24,7 +24,7 @@ PID PID_L = {
     .result = 0,
 };
 PID PID_R = {
-    .targetPoint = 60,
+        .targetPoint = 50,
         .P = 9.0,
         .I = 0.9,
         .D = 5.0,
