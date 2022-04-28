@@ -57,6 +57,7 @@ void img_process(void)
     // RoadType = Cross;
     basic_searchLine(HEIGHT-1,HEIGHT-6);
     advance_searchLine(HEIGHT-7);
+
     advance_repairLine();
 
     // road_judge();
@@ -641,7 +642,7 @@ void advance_searchLine(int bottom)  //////不用更改
     int firstLostR = 0;             //记住首次右丢边行
     needExternR = 0;            //标志位清0
     needExternL = 0;
-    uint8_t tmpL = 0, tmpR = 0;
+    int tmpL = 0, tmpR = 0;
     for (int row = bottom; row > imgInfo.top; row--)  //前5行处理过了，下面从55行到（设定的不处理的行top）
     {   //太远的图像不稳定，top以后的不处理
         // picTemp = imageBin[row];
@@ -649,25 +650,27 @@ void advance_searchLine(int bottom)  //////不用更改
         EdgePointTypedef EdgePoint[2];  // 0左1右
         if (imgInfo.RoadType != Cross)
         {
-            tmpL = rowInfo[row + 1].rightLine - LineEdgeScanWindow;  //从上一行右边线-5的点开始（确定扫描开始点）
-            tmpR = rowInfo[row + 1].rightLine + LineEdgeScanWindow;  //到上一行右边线+5的点结束（确定扫描结束点）
+            tmpL = (int)rowInfo[row + 1].rightLine - LineEdgeScanWindow;  //从上一行右边线-5的点开始（确定扫描开始点）
+            tmpR = (int)rowInfo[row + 1].rightLine + LineEdgeScanWindow;  //到上一行右边线+5的点结束（确定扫描结束点）
         }
         else
         {
-            tmpL = rowInfo[row + 1].rightLine - LineEdgeScanWindow_Cross;  //从上一行右边线-5的点开始（确定扫描开始点）
-            tmpR = rowInfo[row + 1].rightLine + LineEdgeScanWindow_Cross;
+            tmpL = (int)rowInfo[row + 1].rightLine - LineEdgeScanWindow_Cross;  //从上一行右边线-5的点开始（确定扫描开始点）
+            tmpR = (int)rowInfo[row + 1].rightLine + LineEdgeScanWindow_Cross;
         }
 
         LIMIT_L(tmpL);   //确定左扫描区间并进行限制
         LIMIT_R(tmpR);  //确定右扫描区间并进行限制
 
+
         basic_getJumpPointFromDet(imageBin[row], tmpL, tmpR, &EdgePoint[1], RIGHT);  //扫右边线
 
-        tmpL = rowInfo[row + 1].leftLine - LineEdgeScanWindow;  //从上一行左边线-5的点开始（确定扫描开始点）
-        tmpR = rowInfo[row + 1].leftLine + LineEdgeScanWindow;  //到上一行左边线+5的点结束（确定扫描结束点）
+        tmpL = (int)rowInfo[row + 1].leftLine - LineEdgeScanWindow;  //从上一行左边线-5的点开始（确定扫描开始点）
+        tmpR = (int)rowInfo[row + 1].leftLine + LineEdgeScanWindow;  //到上一行左边线+5的点结束（确定扫描结束点）
 
         LIMIT_L(tmpL);   //确定左扫描区间并进行限制
         LIMIT_R(tmpR);  //确定右扫描区间并进行限制
+
 
         basic_getJumpPointFromDet(imageBin[row],tmpL, tmpR, &EdgePoint[0], LEFT);
 
@@ -743,7 +746,7 @@ void advance_searchLine(int bottom)  //////不用更改
         //        /***********重新确定无边行************/
         uint8_t L_found_point = 0;
         uint8_t R_found_point = 0;
-
+        int tmpRightLine = WIDTH - 2, tmpLeftLine = 1;
 
         if (EdgePoint[1].type == LOST && row > 10 && row < HEIGHT-10) //最早出现的无边行
         {
@@ -762,7 +765,7 @@ void advance_searchLine(int bottom)  //////不用更改
                         / ((float)(R_found_point - 3));
                                                         //求下面这些点连起来的斜率
                                                         //好给无边行做延长线左个基准
-                    if (D_R > 0)
+                    if (D_R >= 0)
                     {
                         isFindRk ='T';
                             //如果斜率大于0  那么找到了这个基准行  因为梯形畸变
@@ -777,10 +780,20 @@ void advance_searchLine(int bottom)  //////不用更改
                 }
             }
             if (isFindRk == 'T')
-                rowInfo[row].rightLine = rowInfo[firstLostR].rightLine - D_R * (firstLostR - row); //如果找到了 那么以基准行做延长线
+            {
+                tmpRightLine = rowInfo[firstLostR].rightLine - D_R * (firstLostR - row); //如果找到了 那么以基准行做延长线
+            }
 
-            LIMIT_L(rowInfo[row].rightLine); //限幅
-            LIMIT_R(rowInfo[row].rightLine); //限幅
+            LIMIT_L(tmpRightLine); //限幅
+            LIMIT_R(tmpRightLine); //限幅
+            rowInfo[row].rightLine = tmpRightLine;
+
+
+#ifdef DEBUG
+        std::cout<< "==========================" << std::endl;
+        std::cout << "row: " << row << std::endl;
+        std::cout << D_R << ' ' << firstLostR << ' ' << tmpRightLine << ' ' << (int)rowInfo[firstLostR].rightLine << std::endl;
+#endif
         }
 
         if (EdgePoint[0].type == LOST && row > 10 && row < HEIGHT-10) //下面同理  左边界
@@ -813,10 +826,11 @@ void advance_searchLine(int bottom)  //////不用更改
             }
 
             if (isFindLk == 'T')
-                rowInfo[row].leftLine = rowInfo[firstLostL].leftLine + D_L * (firstLostL - row);
+            tmpLeftLine = rowInfo[firstLostL].leftLine + D_L * (firstLostL - row);
 
-            LIMIT_L(rowInfo[row].leftLine); //限幅
-            LIMIT_R(rowInfo[row].leftLine); //限幅
+            LIMIT_L(tmpLeftLine); //限幅
+            LIMIT_R(tmpLeftLine); //限幅
+            rowInfo[row].leftLine = tmpLeftLine;
         }
 
         // if (rowInfo[row].leftStatus == LOST && rowInfo[row].rightStatus == LOST)
