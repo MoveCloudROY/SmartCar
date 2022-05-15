@@ -12,9 +12,11 @@
 
 
 #define PI                          3.14
-#define CALC_SPD(x)                 ((float)(x)*PI/100.3) //(65mm * 10^-3) * PI * x/(1024 * 4) 5ms -> 单位m/s
+#define CALC_SPD(x)                 ((float)(x)*PI* 65.0 *(30.0/68)* 1e-3 * 200.0/(1024.0 * 2)) //(65mm * 10^-3) * PI * x*(30/68)*200/(1024 * 4) 5ms -> 单位m/s
 
 void motor_init(void);
+void startInt(void);
+void stopInt(void);
 void motor_control(void);
 
 #endif

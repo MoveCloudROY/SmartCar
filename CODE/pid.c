@@ -80,6 +80,7 @@ int PID_calcInc(PID *pid, int nowPoint)
     return pid->result;
 }
 
+
 //Œª÷√ Ωpid
 int PID_calcPos(PID *pid, int nowPoint)
 {
