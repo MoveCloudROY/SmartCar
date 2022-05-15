@@ -1,13 +1,16 @@
 #include "motor.h"
 #include "pid.h"
-#include "stdlib.h"
-#include "math.h"
+//#include "stdlib.h"
+//#include "math.h"
 #include "vofa.h"
 #define DEBUG_MOTOR_PID
 //#define OLTEST
 
+float speedL, speedR;
+PassDisTypedef passDis;
+
 PID PID_L = {
-    .targetPoint = 200,
+    .targetPoint = 50,
 //    .P = 8.5,
 //    .I = 0.83,
     .P = 29.5264604345801,
@@ -28,15 +31,8 @@ PID PID_L = {
     .result = 0,
 };
 PID PID_R = {
-<<<<<<< HEAD
-    .targetPoint = 50,
-    .P = 9.0,
-    .I = 0.9,
-    .D = 5.0,
-    .alphaDev = 0.05,
-    .alphaOut = 0.1,
-=======
-        .targetPoint = 200,
+
+        .targetPoint = 50,
 //        .P = 9.0,
 //        .I = 0.9,
         .P = 29.9297150662304,
@@ -44,7 +40,6 @@ PID PID_R = {
         .D = 0,
         .alphaDev = 0.05,
         .alphaOut = 0.1,
->>>>>>> 2a00ab0d51f07133afcc3f18f5b81b02598bb338
 
     .feedForwardK = 6.9979,
     .feedForwardB = 361.75,
@@ -58,12 +53,21 @@ PID PID_R = {
     .result = 0,
 };
 
-<<<<<<< HEAD
-float speedL, speedR;
-=======
-boolean intFlag = FALSE;
-int disR = 0, disL = 0;
->>>>>>> 2a00ab0d51f07133afcc3f18f5b81b02598bb338
+
+
+
+static void startIntDis(PassDisTypedef * passDis)
+{
+    passDis->intFlag = TRUE;
+    passDis->disL = 0.0;
+    passDis->disR = 0.0;
+}
+
+static void stopIntDis(PassDisTypedef * passDis)
+{
+    passDis->intFlag = FALSE;
+}
+
 
 void motor_init(void)
 {
@@ -79,26 +83,22 @@ void motor_init(void)
 
 	gpt12_init(GPT12_T2, GPT12_T2INB_P33_7, GPT12_T2EUDB_P33_6);//×ó
 	gpt12_init(GPT12_T4, GPT12_T4INA_P02_8, GPT12_T4EUDA_P00_9);//ÓÒ
+
+	passDis.start = startIntDis;
+	passDis.stop = stopIntDis;
+	passDis.intFlag = FALSE;
+	passDis.disL = passDis.disR = 0;
+
 }
 
-void startInt(void){
-    intFlag = TRUE;
-    disL = 0.0;
-    disR = 0.0;
-}
 
-void stopInt(void){
-    intFlag = FALSE;
-}
 
 void motor_control(void)
 {
     int encoderL, encoderR, encoderLFilter, encoderRFilter, pwmL, pwmR;
-<<<<<<< HEAD
 
-=======
-    float speedL, speedR,intL,intR;
->>>>>>> 2a00ab0d51f07133afcc3f18f5b81b02598bb338
+    float speedL, speedR;
+
     //int oldParaL, oldParaR, nowParaL, nowParaR;
     //float filterParam = 0.1;
 #ifdef OLTEST
@@ -170,9 +170,10 @@ void motor_control(void)
     pwm_duty(MOTOR_RB, 5000-pwmR);
 
 
-    if(intFlag){
-        disL += speedL*0.005;
-        disR += speedR*0.005;
+    if(passDis.intFlag)
+    {
+        passDis.disL += speedL*0.005;
+        passDis.disR += speedR*0.005;
     }
 
     //vofa·¢ËÍ
@@ -189,7 +190,14 @@ void motor_control(void)
     general_sendFloat(speedR);
     vofa_sendTail();
 #endif
-
 }
 
-
+void motor_stop(void)
+{
+    PID_L.targetPoint = 0;
+    PID_R.targetPoint = 0;
+    pwm_duty(MOTOR_LA, 5000);
+    pwm_duty(MOTOR_LB, 5000);
+    pwm_duty(MOTOR_RA, 5000);
+    pwm_duty(MOTOR_RB, 5000);
+}

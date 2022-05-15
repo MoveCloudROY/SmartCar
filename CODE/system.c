@@ -17,7 +17,7 @@
 
 
 
-#define __DEBUG_IPS_ON__
+//#define __DEBUG_IPS_ON__
 
 extern ConstDataTypeDef ConstData;
 extern uint8_t imageBin[HEIGHT][WIDTH];
@@ -30,6 +30,8 @@ extern int steer_pwm;
 extern uint16 cpu0_5ms_flag, cpu1_5ms_flag;
 
 extern uint16 delay_20ms_flag, delay_100ms_flag, delay_1000ms_flag;
+
+extern PassDisTypedef passDis;
 
 void car_init(void)
 {
@@ -63,10 +65,17 @@ void car_init(void)
 
     pit_init(CCU6_0, PIT_CH0, 5000);
     pit_init(CCU6_0, PIT_CH1, 20000);
+
+    passDis.start(&passDis);
 }
 
 void car_backstage(void)
 {
+    if((passDis.disL + passDis.disR) / 2 >= 3.0)
+    {
+//        motor_stop();
+//        passDis.stop(&passDis);
+    }
     if(cpu0_5ms_flag)
     {
         car_statusbar();
@@ -84,7 +93,7 @@ void img_backstage(void)
 
             img_preProcess(MORPH_EROSION);
 
-            img_process();
+//            img_process();
             gpio_toggle(P20_9);
             cpu1_5ms_flag = 0;
         }
@@ -95,7 +104,7 @@ void img_backstage(void)
 
 #ifdef __DEBUG_IPS_ON__
             draw_image();
-            draw_line();
+            draw_line();S
 #endif
 
 //            a_sendimg_wifi(UART_0, mt9v03x_image, MT9V03X_W, MT9V03X_H);
@@ -112,6 +121,8 @@ void car_statusbar(void)
 {
     general_sendFloat(speedL);
     general_sendFloat(speedR);
+    general_sendFloat(passDis.disL);
+    general_sendFloat(passDis.disR);
     general_sendFloat((float)steer_pwm);
 
     vofa_sendTail();
