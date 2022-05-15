@@ -24,24 +24,26 @@ PID PID_L = {
     .result = 0,
 };
 PID PID_R = {
-        .targetPoint = 50,
-        .P = 9.0,
-        .I = 0.9,
-        .D = 5.0,
-        .alphaDev = 0.05,
-        .alphaOut = 0.1,
+    .targetPoint = 50,
+    .P = 9.0,
+    .I = 0.9,
+    .D = 5.0,
+    .alphaDev = 0.05,
+    .alphaOut = 0.1,
 
-        .feedForwardK = 6.9979,
-        .feedForwardB = 361.75,
+    .feedForwardK = 6.9979,
+    .feedForwardB = 361.75,
 
-        .para = 0,
-        .lastError = 0,
-        .prevError = 0,
-        .integralError = 0,
+    .para = 0,
+    .lastError = 0,
+    .prevError = 0,
+    .integralError = 0,
 
-        .lastResult = 0,
-        .result = 0,
+    .lastResult = 0,
+    .result = 0,
 };
+
+float speedL, speedR;
 
 void motor_init(void)
 {
@@ -63,7 +65,7 @@ void motor_init(void)
 void motor_control(void)
 {
     int encoderL, encoderR, encoderLFilter, encoderRFilter, pwmL, pwmR;
-    float speedL, speedR;
+
     //int oldParaL, oldParaR, nowParaL, nowParaR;
     //float filterParam = 0.1;
 

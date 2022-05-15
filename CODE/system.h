@@ -11,4 +11,5 @@
 void car_init(void);
 void car_backstage(void);
 void img_backstage(void);
+void car_statusbar(void);
 #endif /* CODE_SYSTEM_H_ */

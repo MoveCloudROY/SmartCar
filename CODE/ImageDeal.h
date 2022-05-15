@@ -11,7 +11,7 @@
 #define IMAGE_DEAL_H
 
 //#define __ON_PC__
- #define __ON_ROBOT__
+// #define __ON_ROBOT__
 
 
 #ifdef __ON_PC__
@@ -25,6 +25,10 @@
 #include "headfile.h"
 #include "ImagePreDeal.h"
 
+#define uint8_t uint8
+#define uint16_t uint16
+#define int16_t int16
+#define int8_t int8
 
 #endif
 
@@ -46,9 +50,9 @@
 // enum ThreeForkRoadFlag{OFF, FIRST, SECOND, };
 
 typedef enum _LineTypeEnum{LEFT, MID, RIGHT, }LineTypeEnum;
-typedef enum _RoadTypeEnum{Type_Null, Straight, Cross, Slope, S_bend, Big_bend, Reflection, Round_About_L, Round_About_R, Starting_Line, Fork_In, Fork_Out, Turn_Left, Turn_Right}RoadTypeEnum;
-typedef enum _EdgePointTypeEnum {__OCCUPY,EXIST,LOST,JUMP} EdgePointTypeEnum;
-
+typedef enum _RoadTypeEnum{Road_None, Straight, Cross, Slope, S_bend, Big_bend, Reflection, Circle_L, Circle_R, Starting_Line, Fork_In, Fork_Out, Turn_Left, Turn_Right}RoadTypeEnum;
+typedef enum _EdgePointTypeEnum {__EdgePointTypeEnum_OCCUPY, EXIST, LOST, JUMP} EdgePointTypeEnum;
+typedef enum _CircleStatusTypeEnum {CIRCLE_NOT_FIND, CIRCLE_FIND, CIRCLE_IN, CIRCLE_OUT, CIRCLE_OFF} CircleStatusTypeEnum;
 // /**
 //  * @brief 状态机
 //  * @description: 分为 交叉路口，斜坡，s弯，大弯，环岛，起跑线，三岔路口 7种元素   +   光照条件判别 1种特殊元素
@@ -71,6 +75,9 @@ typedef struct _ImgInfoTypedef
     int error,allLostCnt;
     int straight_needSpeedUP;
     RoadTypeEnum RoadType;
+    CircleStatusTypeEnum CircleStatus;
+    /*****道路类型相关信息*****/
+
 }ImgInfoTypedef;
 
 typedef struct _RowInfoTypedef
@@ -138,8 +145,13 @@ void cross_detect_withRight(void);
 void fork_detect(void);
 void fork_repairLine(void);
 
+void circle_judge_1(void);
+void circle_judge_2(void);
+void circle_judge_3(void);
+void circle_detect(void);
+void circle_repairLine(void);
+
 void slope_detect(void);
-void roundAbout_detect(void);
 void startingLine_detect(void);
 
 

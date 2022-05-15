@@ -22,9 +22,12 @@
 extern ConstDataTypeDef ConstData;
 extern uint8_t imageBin[HEIGHT][WIDTH];
 
-extern PID PID_L, PID_R;
+extern PID PID_L, PID_R, PID_Servo;
+extern float speedL, speedR;
+extern int steer_pwm;
 
-extern uint16 cpu1_5ms_flag;
+
+extern uint16 cpu0_5ms_flag, cpu1_5ms_flag;
 
 extern uint16 delay_20ms_flag, delay_100ms_flag, delay_1000ms_flag;
 
@@ -64,7 +67,11 @@ void car_init(void)
 
 void car_backstage(void)
 {
-
+    if(cpu0_5ms_flag)
+    {
+        car_statusbar();
+        cpu0_5ms_flag = 0;
+    }
 }
 void img_backstage(void)
 {
@@ -98,4 +105,14 @@ void img_backstage(void)
         }
         mt9v03x_finish_flag = 0;
     }
+}
+
+
+void car_statusbar(void)
+{
+    general_sendFloat(speedL);
+    general_sendFloat(speedR);
+    general_sendFloat((float)steer_pwm);
+
+    vofa_sendTail();
 }

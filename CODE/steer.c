@@ -36,6 +36,8 @@ PID PID_Servo = {
     .result = 0,
 };
 
+int steer_pwm;
+
 void servo_init(void)
 {
     gtm_pwm_init(SERVO_PIN, 50, SERVO_MID);
@@ -53,11 +55,11 @@ void servo_control_PIDPos(void)
 
     PID_Servo.lastError = PID_Servo.iError;
 
-    int pwm = ConstData.kServoMid - Outpid;
+    steer_pwm = ConstData.kServoMid - Outpid;
 
-    pwm = STEER_LIMIT_LOW(pwm);
-    pwm = STEER_LIMIT_HIGH(pwm);
-    servo_set(pwm);
-//    vofa_sendFloat((float)pwm);
+    steer_pwm = STEER_LIMIT_LOW(steer_pwm);
+    steer_pwm = STEER_LIMIT_HIGH(steer_pwm);
+    servo_set(steer_pwm);
+//    vofa_sendFloat((float)steer_pwm);
 //    vofa_sendTail();
 }

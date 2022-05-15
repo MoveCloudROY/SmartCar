@@ -26,7 +26,7 @@
 
 
 uint16 delay_20ms_flag, delay_100ms_flag = 0, delay_1000ms_flag = 0;
-uint16 cpu1_5ms_flag = 0;
+uint16 cpu0_5ms_flag = 0, cpu1_5ms_flag = 0;
 
 //PIT中断函数  示例
 IFX_INTERRUPT(cc60_pit_ch0_isr, 0, CCU6_0_CH0_ISR_PRIORITY)
@@ -35,7 +35,9 @@ IFX_INTERRUPT(cc60_pit_ch0_isr, 0, CCU6_0_CH0_ISR_PRIORITY)
     enableInterrupts();//开启中断嵌套
 	PIT_CLEAR_FLAG(CCU6_0, PIT_CH0);
 	//外置延时计算
+	cpu0_5ms_flag = 1;
 	cpu1_5ms_flag = 1;
+
 	++delay_20ms_cnt;
 	++delay_100ms_cnt;
 	++delay_1000ms_cnt;

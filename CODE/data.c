@@ -18,5 +18,6 @@ void data_set(void)
 
     ConstData.kImageStraightLineVarianceTh = 26;
     ConstData.kImageStraightLineSpeedUpVarianceTh = 20;
+    ConstData.kImageCircleOutVarianceTh = 200;
 
 }
