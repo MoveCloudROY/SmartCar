@@ -3,7 +3,7 @@
 //#include "stdlib.h"
 //#include "math.h"
 #include "vofa.h"
-#define DEBUG_MOTOR_PID
+//#define DEBUG_MOTOR_PID
 //#define OLTEST
 
 float speedL, speedR;
@@ -84,8 +84,8 @@ void motor_init(void)
 	gpt12_init(GPT12_T2, GPT12_T2INB_P33_7, GPT12_T2EUDB_P33_6);//×ó
 	gpt12_init(GPT12_T4, GPT12_T4INA_P02_8, GPT12_T4EUDA_P00_9);//ÓÒ
 
-	passDis.start = startIntDis;
-	passDis.stop = stopIntDis;
+	passDis.start = &startIntDis;
+	passDis.stop = &stopIntDis;
 	passDis.intFlag = FALSE;
 	passDis.disL = passDis.disR = 0;
 
@@ -201,3 +201,5 @@ void motor_stop(void)
     pwm_duty(MOTOR_RA, 5000);
     pwm_duty(MOTOR_RB, 5000);
 }
+
+

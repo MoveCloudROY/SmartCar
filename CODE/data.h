@@ -26,6 +26,7 @@ typedef struct _ConstDataTypeDef
     int kServoLowLimit, kServoHighLimit, kServoMid;
     float kImageStraightLineVarianceTh, kImageStraightLineSpeedUpVarianceTh;
     int kImageCircleOutVarianceTh;
+    int kArcman;
 }ConstDataTypeDef;
 
 

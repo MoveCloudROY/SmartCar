@@ -71,7 +71,9 @@ void car_init(void)
 
 void car_backstage(void)
 {
-    if((passDis.disL + passDis.disR) / 2 >= 3.0)
+
+
+    if((passDis.disL + passDis.disR) / 2 >= 1.0)
     {
 //        motor_stop();
 //        passDis.stop(&passDis);
@@ -91,9 +93,9 @@ void img_backstage(void)
 //            img_preProcess(CUT);
             img_preProcess(OTSU);
 
-            img_preProcess(MORPH_EROSION);
+//            img_preProcess(MORPH_EROSION);
 
-//            img_process();
+            img_process();
             gpio_toggle(P20_9);
             cpu1_5ms_flag = 0;
         }
@@ -104,7 +106,7 @@ void img_backstage(void)
 
 #ifdef __DEBUG_IPS_ON__
             draw_image();
-            draw_line();S
+            draw_line();
 #endif
 
 //            a_sendimg_wifi(UART_0, mt9v03x_image, MT9V03X_W, MT9V03X_H);
