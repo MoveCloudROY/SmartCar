@@ -10,10 +10,12 @@ C_SRCS += \
 ../CODE/key.c \
 ../CODE/motor.c \
 ../CODE/pid.c \
+../CODE/shell.c \
 ../CODE/steer.c \
 ../CODE/system.c \
 ../CODE/ui.c \
-../CODE/vofa.c 
+../CODE/vofa.c \
+../CODE/vt100.c 
 
 OBJS += \
 ./CODE/ImageDeal.o \
@@ -22,10 +24,12 @@ OBJS += \
 ./CODE/key.o \
 ./CODE/motor.o \
 ./CODE/pid.o \
+./CODE/shell.o \
 ./CODE/steer.o \
 ./CODE/system.o \
 ./CODE/ui.o \
-./CODE/vofa.o 
+./CODE/vofa.o \
+./CODE/vt100.o 
 
 COMPILED_SRCS += \
 ./CODE/ImageDeal.src \
@@ -34,10 +38,12 @@ COMPILED_SRCS += \
 ./CODE/key.src \
 ./CODE/motor.src \
 ./CODE/pid.src \
+./CODE/shell.src \
 ./CODE/steer.src \
 ./CODE/system.src \
 ./CODE/ui.src \
-./CODE/vofa.src 
+./CODE/vofa.src \
+./CODE/vt100.src 
 
 C_DEPS += \
 ./CODE/ImageDeal.d \
@@ -46,10 +52,12 @@ C_DEPS += \
 ./CODE/key.d \
 ./CODE/motor.d \
 ./CODE/pid.d \
+./CODE/shell.d \
 ./CODE/steer.d \
 ./CODE/system.d \
 ./CODE/ui.d \
-./CODE/vofa.d 
+./CODE/vofa.d \
+./CODE/vt100.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes

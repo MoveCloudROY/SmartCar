@@ -8,6 +8,14 @@
 #ifndef CODE_SYSTEM_H_
 #define CODE_SYSTEM_H_
 
+typedef struct _SystemStatusTypedef
+{
+    int cpu0_usage, cpu1_usage;
+
+    int seconds;
+}SystemStatusTypedef;
+
+
 void car_init(void);
 void car_backstage(void);
 void img_backstage(void);

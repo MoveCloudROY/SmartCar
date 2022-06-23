@@ -22,11 +22,12 @@
 
 
 
-
 #include "SEEKFREE_PRINTF.h"
 
 #include "zf_assert.h"
 #include "stdio.h"
+#include <stdlib.h>
+#include <stdint.h>
 #include "math.h"
 //官方头文件
 #include "ifxAsclin_reg.h"
@@ -72,10 +73,6 @@
 #include "vofa.h"
 
 
-#define uint8_t uint8
-#define uint16_t uint16
-#define int16_t int16
-#define int8_t int8
 
 #endif
 
