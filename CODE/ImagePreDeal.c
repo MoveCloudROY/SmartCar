@@ -27,8 +27,13 @@ void img_preProcess(PreDealMethodEnum method)
     {
         case OTSU:
             th_otsu = otsu();
-            for (int i = 0; i < HEIGHT * WIDTH; i++)
-                *(imageBin[0] + i) = *(mt9v03x_image[0] + i) > th_otsu?255:0;
+            for (int i = 0; i < HEIGHT; ++i)
+            {
+                for (int j = 0; j < WIDTH ; ++j)
+                {
+                    imageBin[i][j] = (mt9v03x_image[i][j] > th_otsu) ? 255 : 0;
+                }
+            }
             break;
         case OTSU2D:
             //二维OTSU，占个位，不知道用的到吗

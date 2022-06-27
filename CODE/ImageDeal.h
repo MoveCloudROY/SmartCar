@@ -66,7 +66,7 @@ typedef enum _DirTypeEnum{BlackToWhite, WhiteToBlack} DirTypeEnum;
 
 /**
  * @brief 图像基本信息
- * 
+ *
  */
 typedef struct _ImgInfoTypedef
 {

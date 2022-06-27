@@ -12,9 +12,9 @@ ConstDataTypeDef ConstData;
 
 void data_set(void)
 {
-    ConstData.kServoLowLimit = 1356;
-    ConstData.kServoHighLimit = 1636;
-    ConstData.kServoMid = 1496;//1490;
+    ConstData.kServoLowLimit = 1360;
+    ConstData.kServoHighLimit = 1650;
+    ConstData.kServoMid = 1510  ;//1496;
 
     ConstData.kImageStraightLineVarianceTh = 26;
     ConstData.kImageStraightLineSpeedUpVarianceTh = 20;

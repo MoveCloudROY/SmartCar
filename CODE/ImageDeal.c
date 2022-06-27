@@ -2,7 +2,7 @@
  * @Author: ROY1994
  * @Date: 2022-02-04 14:01:30
  * @LastEditors: ROY1994
- * @LastEditTime: 2022-06-22 13:40:33
+ * @LastEditTime: 2022-06-27 15:23:07
  * @FilePath: \myImageDeal\ImageDeal.cpp
  * @Description: ËÑÏß£¬ÔªËØÅÐ¶ÏµÈÖ÷Òª´¦Àíº¯Êý
  */
@@ -13,6 +13,9 @@
 #include "DEBUGDEFINE.h"
 #endif
 
+#define PIXEL(ROW_NUM, LINE) imageBin[ROW_NUM][rowInfo[ROW_NUM].LINE##Line]
+#define BLACK 0
+#define WHITE 255
 
 int LineEdgeScanWindow_Cross = 3;  //Ê®×ÖÉ¨Ïß·¶Î§
 int LineEdgeScanWindow = 5;    //Ö±µÀ·½²îãÐÖµ
@@ -48,9 +51,9 @@ ImgInfoTypedef imgInfo;//Í¼Ïñ»ù´¡²ÎÊý½á¹¹Ìå£¨Èç¹ûÖØ¹¹°ÑÉÏÃæÒÔHEIGHT´óÐ¡µÄ¿ª³É½á¹
 
 
 uint8_t ForkLinePointx_l, ForkLinePointx_r, ForkLinePointy;//Èý²íµã²¹Ïß×ø±ê
-int fork_spoint_1_Y = 0, fork_spoint_2_Y = 0;
-char fork_flag_1 = 0, fork_flag_2 = 0, fork_flag_tot = 0;
-
+int forkDetectStartLine = 0, forkDetectSpecLine = 0;
+char fork_flag_1 = 'F', fork_flag_2 = 'F', fork_flag_tot = 'F';
+char fork_in_flag = 'F'; //ÒÑ¾­Èë¹ýÈý²æ±êÖ¾
 /**
  * @description: Í¼Ïñ´¦Àíµ÷ÓÃº¯Êý
  * @param {*}
@@ -62,7 +65,7 @@ void img_process(void)
     // RoadType = Cross;
     basic_searchLine(HEIGHT-1,HEIGHT-6); // ¶Ô×îµ×ÏÂ6ÐÐ½øÐÐÍêÈ«É¨Ïß
     advance_searchLine(HEIGHT-7); // ÆäÓà¸ù¾ÝÉÏÒ»ÐÐµÄ·¶Î§µÃ³ö
-    advance_repairLine(); // ²¹Ïß
+
 
     // imgInfo.CircleStatus = CIRCLE_OUT;
     // imgInfo.RoadType = Circle_L;
@@ -72,7 +75,7 @@ void img_process(void)
 #ifdef DEBUG
     PRINT_ROADTYPE_INFO();
 #endif
-
+    advance_repairLine(); // ²¹Ïß
     advance_midLineFilter();
 
     //series_searchLine();
@@ -644,7 +647,7 @@ void basic_repairLine(void)//[x] ¸øÓè¸ü¶àÑ¡Ïî,µÀÂ·ÏÂ²à²¹Ïß,midLine¼ÆËã,[x]²ð·Ö³ö
 #define LIMIT_L(x) (x = ((x) < 1? 1 : (x)))
 #define LIMIT_R(x) (x = ((x) > WIDTH - 2? WIDTH - 2 : (x)))
 #define LIMIT_H(x) ((x) >= HEIGHT ? HEIGHT - 1: (x))
-void advance_searchLine(int bottom)  //////²»ÓÃ¸ü¸Ä
+void advance_searchLine(int bottom)
 {
     uint8_t isFindLk = 'F';     //È·¶¨ÎÞ±ßÐ±ÂÊµÄ»ù×¼ÓÐ±ßÐÐÊÇ·ñ±»ÕÒµ½µÄ±êÖ¾
     uint8_t hasFindLk = 'F';    //ÊÇ·ñ³¢ÊÔ¹ýÕÒµ½ÕâÒ»Ö¡Í¼ÏñµÄ»ù×¼×óÐ±ÂÊ
@@ -709,55 +712,54 @@ void advance_searchLine(int bottom)  //////²»ÓÃ¸ü¸Ä
         rowInfo[row].leftStatus = EdgePoint[0].type;  //¼ÇÂ¼±¾ÐÐÊÇ·ñÕÒµ½±ßÏß£¬¼´±ßÏßÀàÐÍ
         rowInfo[row].rightStatus = EdgePoint[1].type;
 
-        //ÖØÐÂÈ·¶¨ÄÇÐ©´óÌø±äµÄ±ßÔµ
-        if (EdgePoint[0].type == JUMP || EdgePoint[1].type == JUMP)
+        //********ÖØÐÂÈ·¶¨ÄÇÐ©´óÌø±äµÄ±ßÔµ*********//
+        if (EdgePoint[0].type == JUMP )  //Èç¹û×ó±ßÏß´óÌø±ä
         {
-            if (EdgePoint[0].type == JUMP )  //Èç¹û×ó±ßÏß´óÌø±ä
+            for (int col = (rowInfo[row].leftLine + 1); col <= (rowInfo[row].rightLine - 1); ++col)  //×óÓÒ±ßÏßÖ®¼äÖØÐÂÉ¨Ãè
             {
-                for (int col = (rowInfo[row].leftLine + 1); col <= (rowInfo[row].rightLine - 1); col++)  //×óÓÒ±ßÏßÖ®¼äÖØÐÂÉ¨Ãè
+                if (*(imageBin[row] + col) == 0 && *(imageBin[row] + col + 1) != 0)
                 {
-                    if (*(imageBin[row] + col) == 0 && *(imageBin[row] + col + 1) != 0)
-                    {
-                        rowInfo[row].leftLine = col;  //Èç¹ûÉÏÒ»ÐÐ×ó±ßÏßµÄÓÒ±ßÓÐºÚ°×Ìø±äÔòÎª¾ø¶Ô±ßÏßÖ±½ÓÈ¡³ö
-                        rowInfo[row].leftStatus = EXIST;
-                        break;
-                    }
-                    else if (*(imageBin[row] + col) != 0)  ///Ò»µ©³öÏÖ°×µãÔòÖ±½ÓÌø³ö
-                        break;
-                    else if (col == (rowInfo[row].rightLine - 1))
-                    {  //Èç¹ûµ½ÁËÓÒ±ßÏßµÄ×îÓÒ±ß£¬ÔòÈÏÎªÊÇ¾ø¶Ô±ßÏß
-                        rowInfo[row].leftLine = col;
-                        rowInfo[row].leftStatus = EXIST;
-                        break;
-                    }
+                    rowInfo[row].leftLine = col;  //Èç¹ûÉÏÒ»ÐÐ×ó±ßÏßµÄÓÒ±ßÓÐºÚ°×Ìø±äÔòÎª¾ø¶Ô±ßÏßÖ±½ÓÈ¡³ö
+                    rowInfo[row].leftStatus = EXIST;
+                    break;
+                }
+                else if (*(imageBin[row] + col) != 0)  ///Ò»µ©³öÏÖ°×µãÔòÖ±½ÓÌø³ö
+                    break;
+                else if (col == (rowInfo[row].rightLine - 1))
+                {  //Èç¹ûµ½ÁËÓÒ±ßÏßµÄ×îÓÒ±ß£¬ÔòÈÏÎªÊÇ¾ø¶Ô±ßÏß
+                    rowInfo[row].leftLine = col;
+                    rowInfo[row].leftStatus = EXIST;
+                    break;
                 }
             }
-            if ((rowInfo[row].rightLine - rowInfo[row].leftLine) <= 7)  //Í¼Ïñ¿í¶ÈÏÞ¶¨
+        }
+        if ((rowInfo[row].rightLine - rowInfo[row].leftLine) <= 7)  //Í¼Ïñ¿í¶ÈÏÞ¶¨
+        {
+            imgInfo.top = row + 1;  //Èç¹ûÕâÐÐ±È7Ð¡ÁËºóÃæÖ±½Ó²»ÒªÁË
+            break;
+        }
+        if (EdgePoint[1].type == JUMP)
+        {
+            for (int col = (rowInfo[row].rightLine - 1); col >= (rowInfo[row].leftLine + 1); col--)
             {
-                imgInfo.top = row + 1;  //Èç¹ûÕâÐÐ±È7Ð¡ÁËºóÃæÖ±½Ó²»ÒªÁË
-                break;
-            }
-            if (EdgePoint[1].type == JUMP)
-                for (int col = (rowInfo[row].rightLine - 1); col >= (rowInfo[row].leftLine + 1); col--)
+                if ((*(imageBin[row] + col) == 0) && (*(imageBin[row] + col - 1) != 0))
                 {
-                    if ((*(imageBin[row] + col) == 0) && (*(imageBin[row] + col - 1) != 0))
-                    {
-                        rowInfo[row].rightLine = col;  ////Èç¹ûÓÒ±ßÏßµÄ×ó±ß»¹ÓÐºÚ°×Ìø±äÔòÎª¾ø¶Ô±ßÏßÖ±½ÓÈ¡³ö
-                        rowInfo[row].rightStatus = EXIST;
-                        break;
-                    }
-                    else if (*(imageBin[row] + col) != 0)
-                        break;
-                    else if (col == (rowInfo[row].leftLine + 1))
-                    {  //Èç¹ûµ½ÁË×ó±ßÏßµÄ×î×ó±ß£¬ÔòÈÏÎªÊÇ¾ø¶Ô±ßÏß
-                        rowInfo[row].rightLine = col;
-                        rowInfo[row].rightStatus = EXIST;
-                        break;
-                    }
+                    rowInfo[row].rightLine = col;  ////Èç¹ûÓÒ±ßÏßµÄ×ó±ß»¹ÓÐºÚ°×Ìø±äÔòÎª¾ø¶Ô±ßÏßÖ±½ÓÈ¡³ö
+                    rowInfo[row].rightStatus = EXIST;
+                    break;
                 }
+                else if (*(imageBin[row] + col) != 0)
+                    break;
+                else if (col == (rowInfo[row].leftLine + 1))
+                {  //Èç¹ûµ½ÁË×ó±ßÏßµÄ×î×ó±ß£¬ÔòÈÏÎªÊÇ¾ø¶Ô±ßÏß
+                    rowInfo[row].rightLine = col;
+                    rowInfo[row].rightStatus = EXIST;
+                    break;
+                }
+            }
         }
 
-        //        /***********ÖØÐÂÈ·¶¨ÎÞ±ßÐÐ************/
+        //*************ÖØÐÂÈ·¶¨ÎÞ±ßÐÐ************//
         uint8_t L_found_point = 0;
         uint8_t R_found_point = 0;
         int tmpRightLine = WIDTH - 2, tmpLeftLine = 1;
@@ -810,7 +812,7 @@ void advance_searchLine(int bottom)  //////²»ÓÃ¸ü¸Ä
             {
                 hasFindLk = 'T';
                 firstLostL = row + 2;
-                for (int y = row + 1; y < LIMIT_H(row + 30); y++)
+                for (int y = row + 1; y < LIMIT_H(row + 30); ++y)
                 {
                     if (rowInfo[y].leftStatus == EXIST)
                         L_found_point++;
@@ -853,7 +855,7 @@ void advance_searchLine(int bottom)  //////²»ÓÃ¸ü¸Ä
         rowInfo[row].midLine = (rowInfo[row].rightLine + rowInfo[row].leftLine) / 2;
 
 
-        if (rowInfo[row].width <= 7) //ÖØÐÂÈ·¶¨¿ÉÊÓ¾àÀë
+        if (rowInfo[row].width <= WIDTH / 10) //ÖØÐÂÈ·¶¨¿ÉÊÓ¾àÀë
         {
             imgInfo.top = row + 1;
             break;
@@ -919,7 +921,7 @@ void basic_getJumpPointFromDet(uint8_t *row, int L,int R, EdgePointTypedef *Q, L
             {
                 if (*(row + (L + R) / 2)) //Èç¹ûÖÐ¼äÊÇ°×µÄ
                 {
-                    Q->posX = (L + R) / 2; //ÈÏÎª×ó±ßÏßÊÇÖÐµã
+                    Q->posX = (L + R) / 2; //ÈÏÎªÓÒ±ßÏßÊÇÖÐµã
                     Q->type = LOST;        //·ÇÕýÈ·Ìø±äÇÒÖÐ¼äÎª°×£¬ÈÏÎªÃ»ÓÐ±ß
                     break;
                 }
@@ -938,7 +940,10 @@ void advance_repairLine(void) /////»æÖÆÑÓ³¤Ïß²¢ÖØÐÂÈ·¶¨ÖÐÏß
 {
     int FTSite = 0,TFSite = 0;
     float kL = 0.0, kR = 0.0;
-    if (needExternL != 'F' && imgInfo.RoadType == Circle_L && imgInfo.CircleStatus != CIRCLE_IN)
+
+    if (imgInfo.RoadType == Circle_L && imgInfo.CircleStatus == CIRCLE_OFF)
+        TFSite = HEIGHT - 5;
+    if (needExternL == 'T')
     {
         for (int row = HEIGHT-6; row >= (imgInfo.top + 5); row--)
         //´ÓµÚÎåÐÐ¿ªÊ¼ÍøÉÏÉ¨É¨µ½¶¥±ßÏÂÃæÁ½ÐÐ   ¶à¶Î²¹Ïß
@@ -982,7 +987,9 @@ void advance_repairLine(void) /////»æÖÆÑÓ³¤Ïß²¢ÖØÐÂÈ·¶¨ÖÐÏß
         }
     }
 
-    if (needExternR != 'F' && imgInfo.RoadType == Circle_R && imgInfo.CircleStatus != CIRCLE_IN)
+    if (imgInfo.RoadType == Circle_R && imgInfo.CircleStatus == CIRCLE_OFF)
+        TFSite = HEIGHT - 5;
+    if (needExternR == 'T')
     {
         for (int row = HEIGHT-6; row >= (imgInfo.top + 5); row--) //´ÓµÚÎåÐÐ¿ªÊ¼ÍøÉÏÉ¨É¨µ½¶¥±ßÏÂÃæÁ½ÐÐ
         {
@@ -1037,11 +1044,13 @@ void advance_midLineFilter(void)
     int y;
     for (int row = HEIGHT - 2; row >= imgInfo.top + 5; --row) //´Ó¿ªÊ¼Î»µ½Í£Ö¹Î»
     {
-        if( row <= HEIGHT - 15 &&
+        if(
+            row <= HEIGHT - 15 &&
             rowInfo[row].leftStatus == LOST &&
             rowInfo[row].rightStatus == LOST &&
             rowInfo[row - 1].leftStatus == LOST &&
-            rowInfo[row - 1].rightStatus == LOST) //µ±Ç°ÐÐ×óÓÒ¶¼ÎÞ±ß£¬¶øÇÒÔÚÇ°105ÐÐ   ÂË²¨
+            rowInfo[row - 1].rightStatus == LOST
+          ) //µ±Ç°ÐÐ×óÓÒ¶¼ÎÞ±ß£¬¶øÇÒÔÚÇ°105ÐÐ   ÂË²¨
         {
             y = row;
             while (y >= (imgInfo.top + 5))
@@ -1138,12 +1147,20 @@ void road_judge(void)
 
     cross_detect();
 
-    if(imgInfo.RoadType != Cross)
+    if(imgInfo.RoadType != Cross
+        && imgInfo.RoadType != Fork_In
+        && imgInfo.RoadType != Fork_Out
+        && fork_in_flag != 'T'
+      )
     {
         circle_detect();
     }
 
-    if(imgInfo.RoadType != Cross)
+    if(
+        imgInfo.RoadType != Cross
+        && imgInfo.RoadType != Circle_L
+        && imgInfo.RoadType != Circle_R
+      )
     {
         fork_detect();
     }
@@ -1318,10 +1335,10 @@ void fork_detect()
                     (rowInfo[row + 6].rightLine - rowInfo[row].rightLine) > 2 &&//ÓÒ±ßµÄ½Ç ¿´µ½Ò»¸ö¾Í¿ÉÒÔ  ÒòÎª¿´µ½Á½¸ö¾­³£Â©ÅÐ
                     (rowInfo[row + 6].rightLine - rowInfo[row].rightLine) < 8
 
-                ))//ãÐÖµÐèÒªµ÷Õû
+                ))//TODO ãÐÖµÐèÒªµ÷Õû
             {
                 fork_flag_1 = 'T'; //±íÊ¾½ü¶ËµÄ½ÇµãÌØÕ÷ÕÒµ½
-                fork_spoint_1_Y = row; //¼ÇÂ¼µÚÒ»ÌØÕ÷µãµÄÐÐÊý
+                forkDetectStartLine = row; //¼ÇÂ¼µÚÒ»ÌØÕ÷µãµÄÐÐÊý
                 break;
             }
 
@@ -1334,13 +1351,14 @@ void fork_detect()
 
     int wide = 0;
     //µÚ¶þÌØÕ÷ ÕÒºÚÉ«Èý½Ç¿é  ²¢ÔËËãµÃµ½Ïà¹ØÍ¼ÏñÐÅÏ¢
-    for (int row = fork_spoint_1_Y; row > imgInfo.top; row--) //  ´ÓµÚÒ»ÌØÕ÷µã¿ªÊ¼ÍùÉÏËÑË÷
+    for (int row = forkDetectStartLine; row > imgInfo.top; row--) //  ´ÓµÚÒ»ÌØÕ÷µã¿ªÊ¼ÍùÉÏËÑË÷
     {
+        wide = 0;
         PicTemp = imageBin[row];
-        for (int x = rowInfo[row].leftLine; x < WIDTH - 10; x++) //ÕÒÈý²æ¿ÚºÚÉ«Èý½Ç¿é
+        for (int x = rowInfo[row].leftLine; x < WIDTH / 2; x++) //ÕÒÈý²æ¿ÚºÚÉ«Èý½Ç¿é
         {
-            if ((*(PicTemp + x) != 0) && (*(PicTemp + x + 1) == 0) && (*(PicTemp + x + 2) == 0))
-            //ÕÒµ½ºÚÉ«½Ç¿ìµÄ×ó±ß
+            if (((*(PicTemp + x + 1) == 0) && (*(PicTemp + x + 2) == 0) && *(PicTemp + x) != 0))
+            //ÕÒµ½ºÚÉ«½Ç¿éµÄ×ó±ß
             {
                 rowInfo[row].fork_L = x + 1; //¼ÇÂ¼´ËÊ±µÄ×óºÚ±ß½ç
                 break;
@@ -1373,12 +1391,11 @@ void fork_detect()
             }
         }
         rowInfo[row].fork_blackWidth = wide; //¼ÇÂ¼Õâ¸ö¿í¶È
-        rowInfo[row].fork_black_k = (float)rowInfo[row].fork_blackWidth / rowInfo[row].width; //Í¼ÏñºÚµã±ÈÀý
-        wide = 0;                                               //Çå0
+        rowInfo[row].fork_black_k = (float)rowInfo[row].fork_blackWidth / rowInfo[row].width; //Í¼ÏñºÚµã±ÈÀý                                              //Çå0
     }
 
     //ÅÐ¶ÏÊÇ·ñÎªÈý²æµÄºÚÉ«Èý½Ç¿é
-    for (int row = fork_spoint_1_Y; row >= (imgInfo.top + 1); row--)
+    for (int row = forkDetectStartLine; row >= (imgInfo.top + 1); row--)
     {
         if ((rowInfo[row].fork_blackWidth - rowInfo[row + 3].fork_blackWidth) >= 2 &&
             //Èç¹ûÕâ¸ö×óºÚºÍÓÒºÚÖ®¼äºÚµãÊý±È½Ï¶à ²¢ÇÒÂú×ãÈý½ÇÐÎµÄÐÎ×´
@@ -1394,8 +1411,8 @@ void fork_detect()
             ForkLinePointx_l = rowInfo[row].fork_L;
             ForkLinePointy = row;
 
-            fork_spoint_2_Y = row;           //¼ÇÂ¼µÚ¶þÌØÕ÷µãµÄÐÐÊý
-            if (fork_spoint_1_Y - fork_spoint_2_Y > 10) // g
+            forkDetectSpecLine = row;           //¼ÇÂ¼µÚ¶þÌØÕ÷µãµÄÐÐÊý
+            if (forkDetectStartLine - forkDetectSpecLine > 10) // g
             {
                 fork_flag_2 = 'T'; //µ±Á½ÌØÕ÷µãÐÐÊý´óÓÚ10   ²ÅÅÐ¶ÏÎªÈë»·ÌØÕ÷µã  ÓÃÓÚ·ÀÎóÅÐ
                 break;
@@ -1411,11 +1428,59 @@ void fork_detect()
     else
         fork_flag_tot = 'F';
 
-    if (fork_flag_tot == 'T')
-        imgInfo.RoadType = Fork_In;
+    // Ï£Íû×öµ½¼ì²âµ½Fork_InµÄÊ±ºò
+
+    // ÕûÌå×´Ì¬Î»¹ý³Ì:
+    // RoadType         Fork_In --> Road_None/Striaght --> Fork_Out --> Road_None/Striaght
+    //                     -------------------------------------
+    // fork_in_flag        |                                   |-----------------
+    //
+    static char fork_in_flag_last = 'F', fork_out_flag_last = 'F';
+    char fork_in_flag_now = 'F', fork_out_flag_now = 'F';
+
+    if(fork_in_flag == 'F')
+    {
+        if(fork_flag_tot == 'T' && imgInfo.RoadType != Fork_In)
+        {
+            fork_in_flag_now = 'T';
+            imgInfo.RoadType = Fork_In;
+        }
+        if(fork_in_flag_last == 'T' && fork_in_flag_now == 'F')
+        {
+            fork_in_flag = 'T';
+            fork_in_flag_last = 'F';
+        }
+        else
+        {
+            fork_in_flag_last = fork_in_flag_now;
+        }
+    }
+    else // fork_in_flag == 'T'
+    {
+        if (
+            fork_flag_tot == 'T'
+            && imgInfo.RoadType != Fork_Out
+           )
+        {
+            fork_out_flag_now = 'T';
+            imgInfo.RoadType = Fork_Out;
+        }
+        if(fork_out_flag_last == 'T' && fork_out_flag_now == 'F')
+        {
+            fork_in_flag = 'F';
+            fork_out_flag_last = 'F';
+        }
+        else
+        {
+            fork_out_flag_last = fork_out_flag_now;
+        }
+    }
+
+
+
 
 #ifdef DEBUG
-    // printf("fork_spoint_1_Y = %d\n", (int)fork_spoint_1_Y);
+    // printf("forkDetectStartLine = %d\n", (int)forkDetectStartLine);
     // printf("fork_flag_1 = %c\n", fork_flag_1);
     // printf("fork_flag_2 = %c\n", fork_flag_2);
     // printf("fork_flag_tot = %c\n", fork_flag_tot);
@@ -1429,44 +1494,27 @@ void fork_detect()
  */
 void fork_repairLine()
 {
-    float Det_Fork_L;
-    // float Det_Fork_R;
-
-    if (imgInfo.RoadType == Fork_In )//|| imgInfo.RoadType == Fork_Out ) // ÓÒ²¹Ïß
+    if(imgInfo.RoadType == Fork_In || imgInfo.RoadType == Fork_Out)
     {
-        Det_Fork_L = 1.05 * ForkLinePointx_r / (HEIGHT - 5 - ForkLinePointy);
-        for (int row = HEIGHT - 5; row > imgInfo.top; row--)
+        int LeftDown_x = 0;
+        if(rowInfo[HEIGHT - 1].leftStatus == LOST || PIXEL(HEIGHT - 1, left) == 0)
         {
-            int temp = (int)(rowInfo[HEIGHT - 5].leftLine + Det_Fork_L * (HEIGHT - 5  - row));
-            if (temp >= WIDTH)
-            {
-                temp = WIDTH - 1;
-            }
-            if (temp > rowInfo[row].leftLine)
-            {
-                rowInfo[row].leftLine = temp;
-                if (imageBin[row][rowInfo[row].leftLine] == 0)
-                {
-                    for (int x = rowInfo[row].leftLine; x < rowInfo[row].rightLine; x++)
-                    {
-                        if (imageBin[row][x] == 1 && imageBin[row][x + 1] == 1)
-                        {
-                            rowInfo[row].leftLine = x;
-                        }
-                    }
-                }
-            }
-            rowInfo[row].midLine = (rowInfo[row].rightLine + rowInfo[row].leftLine) / 2;
-            rowInfo[row].width = rowInfo[row].rightLine - rowInfo[row].leftLine; //¿í¶È¸üÐÂ
+            LeftDown_x = rowInfo[HEIGHT - 1].leftLine;
         }
+        float k = (float)(ForkLinePointx_r - LeftDown_x) / (ForkLinePointy - (HEIGHT - 1));
+        float b = (float)(LeftDown_x - k * (HEIGHT - 1));
+        add_line(k, b, ForkLinePointy - 1, HEIGHT - 1, LEFT);
+        recalc_line(ForkLinePointy - 1, HEIGHT - 1, LEFT);
     }
 }
+
+
 
 EdgeJumpPointTypedef color_TogglePos_left[10], color_TogglePos_right[10];
 // int color_TogglePos_left[10] = {0}, color_TogglePos_right[10] = {0};
 int color_toggleCnt_left = 0, color_toggleCnt_right = 0;
 // ºÚ->°×->ºÚ->°×->ºÚ ËÄ¸öÌø±äµã(·ÀÖ¹¿ÉÄÜµÄÔ½½ç)
-uint8_t isCircle_flag_1 = 'F',isCircle_flag_2 = 'F',isCircle_flag_3 = 'F';
+uint8_t isCircle_flag_1 = 'F', isCircle_flag_2 = 'F', isCircle_flag_3 = 'F', circle_in_flag = 'F';
 
 /**
  * @description: Èë»·µºÅÐ¶Ïº¯Êý1 ÅÐ¾ÝÎªµ¥ÏßºÚ°×½»´íÊý
@@ -1480,11 +1528,11 @@ void circle_judge_1(void)
     for(int row = HEIGHT - 5; row > imgInfo.top + 2; row--)
     {
         // ×óÏß½»´í±äÉ«¼ì²â
-        if ((!imageBin[row][rowInfo[row].leftLine] && !imageBin[row - 1][rowInfo[row - 1].leftLine]) ||
-            (imageBin[row][rowInfo[row].leftLine] && imageBin[row - 1][rowInfo[row - 1].leftLine]))
-        {
-            continue ;
-        }
+        // if ((!imageBin[row][rowInfo[row].leftLine] && !imageBin[row - 1][rowInfo[row - 1].leftLine]) ||
+        //     (imageBin[row][rowInfo[row].leftLine] && imageBin[row - 1][rowInfo[row - 1].leftLine]))
+        // {
+        //     continue ;
+        // }
 
         if (!imageBin[row][rowInfo[row].leftLine] && imageBin[row - 1][rowInfo[row - 1].leftLine])
         {
@@ -1500,11 +1548,11 @@ void circle_judge_1(void)
         }
 
         //ÓÒÏß½»´í±äÉ«¼ì²â
-        if ((!imageBin[row][rowInfo[row].rightLine] && !imageBin[row - 1][rowInfo[row - 1].rightLine]) ||
-            (imageBin[row][rowInfo[row].rightLine] && imageBin[row - 1][rowInfo[row - 1].rightLine]))
-        {
-            continue ;
-        }
+        // if ((!imageBin[row][rowInfo[row].rightLine] && !imageBin[row - 1][rowInfo[row - 1].rightLine]) ||
+        //     (imageBin[row][rowInfo[row].rightLine] && imageBin[row - 1][rowInfo[row - 1].rightLine]))
+        // {
+        //     continue ;
+        // }
 
         if (!imageBin[row][rowInfo[row].rightLine] && imageBin[row - 1][rowInfo[row - 1].rightLine])
         {
@@ -1523,8 +1571,8 @@ void circle_judge_1(void)
     // if(color_toggleCnt_left) color_toggleCnt_left--;
     // if(color_toggleCnt_right) color_toggleCnt_right--;
 
-    if ((color_toggleCnt_left >= 4 && color_toggleCnt_right <= 1) ||
-        (color_toggleCnt_left <= 1 && color_toggleCnt_right >= 4))
+    if ((color_toggleCnt_left - color_toggleCnt_right >= 3 ) ||
+        (color_toggleCnt_left - color_toggleCnt_right <= -3))
         isCircle_flag_1 = 'T';
     else
         isCircle_flag_1 = 'F';
@@ -1541,7 +1589,7 @@ void circle_judge_2(void)
 {
     isCircle_flag_2 = 'F';
 
-    SerialCnt = 0;
+    // SerialCnt = 0;
     // int16_t SerialCnt = 0;//ÖÖ×ÓÉú³¤·¨¼ÆÊý
 
 
@@ -1558,12 +1606,14 @@ void circle_judge_2(void)
      *
      */
     int16_t x, y, tx, ty, s, SearchCompleteFlag = 0, SearchDisruptFlag = 0;
-    if (color_toggleCnt_left >= 4 && color_toggleCnt_right <= 1 && color_TogglePos_left[2].type == WhiteToBlack) // ÒâÎ¶×Å»òÐíÊÇ×ó»·µº
+    if (color_toggleCnt_left - color_toggleCnt_right >= 3 && color_TogglePos_left[2].type == WhiteToBlack) // ÒâÎ¶×Å»òÐíÊÇ×ó»·µº
     {
+        int16_t SerialCnt_left = 0;
         //¼ÇÂ¼ÆðÊ¼µã
         start.y = color_TogglePos_left[2].posY;
         start.x = rowInfo[start.y].leftLine;
-        PointSerial[SerialCnt++] = start;
+        SerialCnt_left++;
+        PointSerial[SerialCnt_left] = start;
         //¿ªÊ¼°ËÁÚÓòÉ¨Ïß
         s = 5;
         x = start.x;
@@ -1580,7 +1630,7 @@ void circle_judge_2(void)
             {
                 tmpTop = color_TogglePos_left[4].posY;
             }
-            if(y <= tmpTop || SerialCnt >= (HEIGHT<<1)) // Ð¡ÓÚÉ¨ÏßÖÕÖ¹»òÕßÏÂÒ»¸öÍ»±ä¼õÈ¥ãÐÖµ
+            if(y <= tmpTop || SerialCnt_left >= (HEIGHT<<1)) // Ð¡ÓÚÉ¨ÏßÖÕÖ¹»òÕßÏÂÒ»¸öÍ»±ä¼õÈ¥ãÐÖµ
             {
                 isCircle_flag_2 = 'F';
                 break;
@@ -1600,7 +1650,7 @@ void circle_judge_2(void)
                     break;
                 }
                 if(tx == 0 || tx == 1) continue; //×î×óÁ½ÁÐÇ¿ÖÆ¿´×÷°×
-                if(tx > HEIGHT - 1 || ty > HEIGHT - 1 || ty < 0 || s_cnt > 8) // ³¬³ö±ß½ç»òÕßÉ¨³¬¹ýÒ»È¦
+                if(tx > WIDTH - 1 || ty > HEIGHT - 1 || ty < 0 || s_cnt > 8) // ³¬³ö±ß½ç»òÕßÉ¨³¬¹ýÒ»È¦
                 {
                     SearchDisruptFlag = 1;
                     break;
@@ -1623,40 +1673,40 @@ void circle_judge_2(void)
                 isCircle_flag_2 = 'F';
                 break;
             }
-            ++SerialCnt;// ¼Ç²½Êý
-            PointSerial[SerialCnt].x = tx;
-            PointSerial[SerialCnt].y = ty;
+            ++SerialCnt_left;// ¼Ç²½Êý
         }
     }
-    else if (color_toggleCnt_left <= 1 && color_toggleCnt_right >= 4 && color_TogglePos_right[2].type == WhiteToBlack) // ÒâÎ¶×Å»òÐíÊÇÓÒ»·µº
+    else if (color_toggleCnt_left - color_toggleCnt_right <= -3 && color_TogglePos_right[2].type == WhiteToBlack) // ÒâÎ¶×Å»òÐíÊÇÓÒ»·µº
     {
+        int16_t SerialCnt_right = 0;
         //¼ÇÂ¼ÆðÊ¼µã
         start.y = color_TogglePos_right[2].posY;
-        start.x = rowInfo[start.y].leftLine;
+        start.x = rowInfo[start.y].rightLine;
+        SerialCnt_right++;
+        PointSerial[SerialCnt_right] = start;
         //¿ªÊ¼°ËÁÚÓòÉ¨Ïß
-        s = 7;
+        s = 5;
         x = start.x;
         y = start.y;
         SearchCompleteFlag = 0; // ËÑË÷Íê³É±êÖ¾Î»
-
         while(1)
         {
             //Ç¿ÖÆ½áÊø,·ÀÖ¹É¨¹ýÍ·
-            int tmpTop = imgInfo.top + 2;
+            int tmpTop = imgInfo.top + 2, s_cnt = 0;
             if( color_toggleCnt_right >= 4 &&
                 color_TogglePos_right[4].type == WhiteToBlack &&
                 tmpTop < color_TogglePos_right[4].posY)
             {
                 tmpTop = color_TogglePos_right[4].posY;
             }
-            if(y <= tmpTop || SerialCnt > (HEIGHT<<1)) // Ð¡ÓÚÉ¨ÏßÖÕÖ¹»òÕßÏÂÒ»¸öÍ»±ä¼õÈ¥ãÐÖµ
+            if(y <= tmpTop || SerialCnt_right >= (HEIGHT<<1)) // Ð¡ÓÚÉ¨ÏßÖÕÖ¹»òÕßÏÂÒ»¸öÍ»±ä¼õÈ¥ãÐÖµ
             {
                 isCircle_flag_2 = 'F';
                 break;
             }
             // printf(" $%d %d$ \n", x, y);
             //ÄæÊ±ÕëÐý×ªÉ¨Ïß
-            for( ; ; ++s)
+            for( ; ; ++s, ++s_cnt)
             {
                 s = (s + 8) % 8;
                 // if(s == 8) s = 0;
@@ -1668,8 +1718,8 @@ void circle_judge_2(void)
                     SearchCompleteFlag = 1;
                     break;
                 }
-                if(tx == WIDTH - 1 || tx == WIDTH - 2) continue; //×î×óÁ½ÁÐÇ¿ÖÆ¿´×÷°×
-                if(tx < 0 || ty > HEIGHT - 1 || ty < 0)
+                if(tx == WIDTH - 1 || tx == WIDTH - 2) continue; //×îÓÒÁ½ÁÐÇ¿ÖÆ¿´×÷°×
+                if(tx < 0 || ty > HEIGHT - 1 || ty < 0 || s_cnt > 8)
                 {
                     SearchDisruptFlag = 1;
                     break;
@@ -1692,20 +1742,35 @@ void circle_judge_2(void)
                 isCircle_flag_2 = 'F';
                 break;
             }
-            ++SerialCnt;// ¼Ç²½Êý
+            ++SerialCnt_right;// ¼Ç²½Êý
+#ifdef DEBUG
+            PointSerial[SerialCnt_right].x = tx;
+            PointSerial[SerialCnt_right].y = ty;
+            SerialCnt = SerialCnt_right;
+#endif
         }
     }
 }
+
+/**
+ * @description: Èë»·µºÅÐ¶Ïº¯Êý3 ÅÐ¾ÝÎªÏÂ²à½Çµã
+ * @return {*}
+ */
+void circle_judge_3(void)
+{
+    isCircle_flag_3 = 'F';
+
+}
+
+
 /**
  * @description: Èë»·µºÅÐ¶Ïº¯Êý
  * @return {*}
  */
 void circle_judge_in(void)
 {
-    isCircle_flag_3 = 'F';
+    circle_in_flag = 'F';
 
-    SerialCnt = 0;
-    // int16_t SerialCnt = 0;//ÖÖ×ÓÉú³¤·¨¼ÆÊý
 
     PixelTypedef start;
 
@@ -1722,12 +1787,13 @@ void circle_judge_in(void)
     int16_t x, y, tx, ty, s, SearchCompleteFlag = 0, SearchDisruptFlag = 0;
     if (imgInfo.RoadType == Circle_L) // ÒâÎ¶×Å»òÐíÊÇ×ó»·µº
     {
+        int16_t SerialCnt_left = 0;
         //¼ÇÂ¼ÆðÊ¼µã
-        start.y = color_TogglePos_left[2].posY;
+        start.y = color_TogglePos_left[1].posY;
         start.x = rowInfo[start.y].leftLine;
         //¿ªÊ¼°ËÁÚÓòÉ¨Ïß
-        if(color_TogglePos_left[2].type == WhiteToBlack) s = 5;
-        else if(color_TogglePos_left[2].type == BlackToWhite) s = 1;
+        if(color_TogglePos_left[1].type == WhiteToBlack) s = 5;
+        else if(color_TogglePos_left[1].type == BlackToWhite) s = 1;
 
         x = start.x;
         y = start.y;
@@ -1739,13 +1805,13 @@ void circle_judge_in(void)
             int tmpTop = imgInfo.top + 2, s_cnt = 0;
             if( color_toggleCnt_left >= 4 &&
                 color_TogglePos_left[4].type == WhiteToBlack &&
-                tmpTop < color_TogglePos_left[4].posY)
+                tmpTop < color_TogglePos_left[4].posY - 4)
             {
-                tmpTop = color_TogglePos_left[4].posY;
+                tmpTop = color_TogglePos_left[4].posY - 4;
             }
-            if(y <= tmpTop || SerialCnt >= (HEIGHT<<1)) // Ð¡ÓÚÉ¨ÏßÖÕÖ¹»òÕßÏÂÒ»¸öÍ»±ä¼õÈ¥ãÐÖµ
+            if(y <= tmpTop || SerialCnt_left >= (HEIGHT<<1)) // Ð¡ÓÚÉ¨ÏßÖÕÖ¹»òÕßÏÂÒ»¸öÍ»±ä¼õÈ¥ãÐÖµ
             {
-                isCircle_flag_3 = 'F';
+                circle_in_flag = 'F';
                 break;
             }
             // printf(" $%d %d$ \n", x, y);
@@ -1763,7 +1829,7 @@ void circle_judge_in(void)
                     break;
                 }
                 if(tx == 0 || tx == 1) continue; //×î×óÁ½ÁÐÇ¿ÖÆ¿´×÷°×
-                if(tx > HEIGHT - 1 || ty > HEIGHT - 1 || ty < 0 || s_cnt > 8) // ³¬³ö±ß½ç»òÕßÉ¨³¬¹ýÒ»È¦
+                if(tx > WIDTH - 1 || ty > HEIGHT - 1 || ty < 0 || s_cnt > 8) // ³¬³ö±ß½ç»òÕßÉ¨³¬¹ýÒ»È¦
                 {
                     SearchDisruptFlag = 1;
                     break;
@@ -1778,25 +1844,26 @@ void circle_judge_in(void)
             }
             if(SearchCompleteFlag == 1)// ËÑË÷Íê³ÉÍË³ö
             {
-                isCircle_flag_3 = 'T';
+                circle_in_flag = 'T';
                 break;
             }
             if(SearchDisruptFlag == 1)
             {
-                isCircle_flag_3 = 'F';
+                circle_in_flag = 'F';
                 break;
             }
-            ++SerialCnt;// ¼Ç²½Êý
+            ++SerialCnt_left;// ¼Ç²½Êý
         }
     }
     else if (imgInfo.RoadType == Circle_R) // ÒâÎ¶×Å»òÐíÊÇÓÒ»·µº
     {
+        int16_t SerialCnt_right = 0;
         //¼ÇÂ¼ÆðÊ¼µã
-        start.y = color_TogglePos_right[2].posY;
-        start.x = rowInfo[start.y].leftLine;
+        start.y = color_TogglePos_right[1].posY;
+        start.x = rowInfo[start.y].rightLine;
         //¿ªÊ¼°ËÁÚÓòÉ¨Ïß
-        if(color_TogglePos_right[2].type == WhiteToBlack) s = 7;
-        else if(color_TogglePos_right[2].type == BlackToWhite) s = 3;
+        if(color_TogglePos_right[1].type == WhiteToBlack) s = 5;
+        else if(color_TogglePos_right[1].type == BlackToWhite) s = 3;
 
         x = start.x;
         y = start.y;
@@ -1805,21 +1872,21 @@ void circle_judge_in(void)
         while(1)
         {
             //Ç¿ÖÆ½áÊø,·ÀÖ¹É¨¹ýÍ·
-            int tmpTop = imgInfo.top + 2;
+            int tmpTop = imgInfo.top + 2, s_cnt = 0;
             if( color_toggleCnt_right >= 4 &&
                 color_TogglePos_right[4].type == WhiteToBlack &&
-                tmpTop < color_TogglePos_right[4].posY)
+                tmpTop < color_TogglePos_right[4].posY - 4)
             {
-                tmpTop = color_TogglePos_right[4].posY;
+                tmpTop = color_TogglePos_right[4].posY - 4;
             }
-            if(y <= tmpTop || SerialCnt > (HEIGHT<<1)) // Ð¡ÓÚÉ¨ÏßÖÕÖ¹»òÕßÏÂÒ»¸öÍ»±ä¼õÈ¥ãÐÖµ
+            if(y <= tmpTop || SerialCnt_right >= (HEIGHT<<1)) // Ð¡ÓÚÉ¨ÏßÖÕÖ¹»òÕßÏÂÒ»¸öÍ»±ä¼õÈ¥ãÐÖµ
             {
-                isCircle_flag_3 = 'F';
+                circle_in_flag = 'F';
                 break;
             }
             // printf(" $%d %d$ \n", x, y);
             //ÄæÊ±ÕëÐý×ªÉ¨Ïß
-            for( ; ; ++s)
+            for( ; ; ++s, ++s_cnt)
             {
                 s = (s + 8) % 8;
                 // if(s == 8) s = 0;
@@ -1831,8 +1898,8 @@ void circle_judge_in(void)
                     SearchCompleteFlag = 1;
                     break;
                 }
-                if(tx == WIDTH - 1 || tx == WIDTH - 2) continue; //×î×óÁ½ÁÐÇ¿ÖÆ¿´×÷°×
-                if(tx < 0 || ty > HEIGHT - 1 || ty < 0)
+                if(tx == WIDTH - 1 || tx == WIDTH - 2 ) continue; //×îÓÒÁ½ÁÐÇ¿ÖÆ¿´×÷°×
+                if(tx < 0 || ty > HEIGHT - 1 || ty < 0 || s_cnt > 8)
                 {
                     SearchDisruptFlag = 1;
                     break;
@@ -1847,15 +1914,16 @@ void circle_judge_in(void)
             }
             if(SearchCompleteFlag == 1)// ËÑË÷Íê³ÉÍË³ö
             {
-                isCircle_flag_3 = 'T';
+                circle_in_flag = 'T';
                 break;
             }
             if(SearchDisruptFlag == 1)
             {
-                isCircle_flag_3 = 'F';
+                circle_in_flag = 'F';
                 break;
             }
-            ++SerialCnt;// ¼Ç²½Êý
+            ++SerialCnt_right;// ¼Ç²½Êý
+
         }
     }
 }
@@ -1897,11 +1965,11 @@ void circle_detect(void)
     if (isCircle_flag_1 == 'T' && isCircle_flag_2 == 'T' && imgInfo.CircleStatus == CIRCLE_NOT_FIND) // Á½¸öÅÐ¾ÝÎªT ÇÒ»·µºÎ´ÕÒµ½ ÔòËµÃ÷ÕÒµ½»·µº
     {
         imgInfo.CircleStatus = CIRCLE_FIND; // ±ê¼Ç [·¢ÏÖ»·µº] ×´Ì¬
-        if (color_toggleCnt_left >= 4 && color_toggleCnt_right <= 1 && imgInfo.RoadType != Circle_R) // Í¨¹ý½»´íÊý ÅÐ¶Ï×ó»·µº»¹ÊÇÓÒ»·µº ×ó²à½»´íÊý½Ï¶à ÔòÎª×ó»·µº
+        if (color_toggleCnt_left - color_toggleCnt_right >= 3 && imgInfo.RoadType != Circle_R) // Í¨¹ý½»´íÊý ÅÐ¶Ï×ó»·µº»¹ÊÇÓÒ»·µº ×ó²à½»´íÊý½Ï¶à ÔòÎª×ó»·µº
         {
             imgInfo.RoadType = Circle_L;
         }
-        else if (color_toggleCnt_left <= 1 && color_toggleCnt_right >= 4 && imgInfo.RoadType != Circle_L)
+        else if (color_toggleCnt_left - color_toggleCnt_right <= -3 && imgInfo.RoadType != Circle_L)
         {
             imgInfo.RoadType = Circle_R;
         }
@@ -1911,19 +1979,60 @@ void circle_detect(void)
     {
         circle_judge_in(); // ÅÐ¶ÏÊÇ·ñÈë»·µºº¯Êý
 #ifdef DEBUG
-        printf("isCircle_flag_3 = %c\n", isCircle_flag_3);
+        printf("circle_in_flag = %c\n", circle_in_flag);
 #endif
-        if(isCircle_flag_3 == 'F') // Èç¹ûÃ»ÓÐÕÒµ½ºÚÉ«±Õ»·, ÔòËµÃ÷Ó¦µ±Èë»·µº, ±ê¼Ç×´Ì¬Î»
+
+        if (imgInfo.RoadType == Circle_L)
         {
-            imgInfo.CircleStatus = CIRCLE_IN;
+            static int leftdown_flag_last = 0, leftdown_check_flag = 0; // ×óÏÂ½Ç°×É«Îª 1, ºÚÉ«Îª 0
+            // ¼ì²â×óÏÂ½ÇÓÉ°×±äºÚÌø±ä
+            int leftdown_flag_now = imageBin[HEIGHT- 1][1] && imageBin[HEIGHT - 1][2]
+                && imageBin[HEIGHT - 1][3] && imageBin[HEIGHT - 2][3] && PIXEL(HEIGHT - 1, left);
+
+            if(!leftdown_flag_now && leftdown_flag_last && !leftdown_check_flag)
+                leftdown_check_flag = 1;
+
+            if (circle_in_flag == 'F' && leftdown_check_flag) // Èç¹ûÃ»ÓÐÕÒµ½ºÚÉ«±Õ»·, ÔòËµÃ÷Ó¦µ±Èë»·µº, ±ê¼Ç×´Ì¬Î»
+            {
+                imgInfo.CircleStatus = CIRCLE_IN;
+                leftdown_flag_last = 0;
+                leftdown_check_flag = 0;
+            }
+            else
+            {
+                leftdown_flag_last = leftdown_flag_now;
+            }
         }
+        else if (imgInfo.RoadType == Circle_R)
+        {
+            static int rightdown_flag_last = 0, rightdown_check_flag = 0; // ×óÏÂ½Ç°×É«Îª 1, ºÚÉ«Îª 0
+            // ¼ì²âÓÒÏÂ½ÇÓÉ°×±äºÚÌø±ä
+            int rightdown_flag_now = imageBin[HEIGHT- 1][WIDTH - 2] && imageBin[HEIGHT - 1][WIDTH - 3]
+                                    && imageBin[HEIGHT - 1][WIDTH - 4] && imageBin[HEIGHT - 2][WIDTH - 4]
+                                    && PIXEL(HEIGHT - 1, right);
+            if(!rightdown_flag_now && rightdown_flag_last && !rightdown_check_flag)
+               rightdown_check_flag = 1;
+
+            if (circle_in_flag == 'F' && rightdown_check_flag) // Èç¹ûÃ»ÓÐÕÒµ½ºÚÉ«±Õ»·, ÔòËµÃ÷Ó¦µ±Èë»·µº, ±ê¼Ç×´Ì¬Î»
+            {
+                imgInfo.CircleStatus = CIRCLE_IN;
+                rightdown_flag_last = 0;
+                rightdown_check_flag = 0;
+            }
+            else
+            {
+                rightdown_flag_last = rightdown_flag_now;
+            }
+        }
+
     }
 
     if (imgInfo.CircleStatus == CIRCLE_IN) // Èç¹ûÈë»·µº×´Ì¬, Ôò½øÈë [¾­¹ý»·µº] ¼ì²â×´Ì¬
     {
         if(color_toggleCnt_left <= 1 && color_toggleCnt_right <= 1
-            && ! imageBin[HEIGHT - 1][WIDTH - 1] && ! imageBin[HEIGHT - 1][WIDTH - 2]
-            && ! imageBin[HEIGHT - 1][0] && ! imageBin[HEIGHT - 1][1]) // Èç¹û×óÓÒÁ½²à½»´íÊý¶¼Ð¡ÓÚµÈÓÚ1, ÔòËµÃ÷ÕýÔÚ¾­¹ý»·µº
+            && ((! imageBin[HEIGHT - 1][WIDTH - 1] && ! imageBin[HEIGHT - 1][WIDTH - 2] && ! imageBin[HEIGHT - 1][WIDTH - 3])
+            || (! imageBin[HEIGHT - 1][0] && ! imageBin[HEIGHT - 1][1]) && imageBin[HEIGHT - 1][2])) // Èç¹û×óÓÒÁ½²à½»´íÊý¶¼Ð¡ÓÚµÈÓÚ1, ÔòËµÃ÷ÕýÔÚ¾­¹ý»·µº
+
             imgInfo.CircleStatus = CIRCLE_PASSING;
     }
 
@@ -1963,7 +2072,7 @@ void circle_detect(void)
                             (rowInfo[row].leftLine - rowInfo[row - 4].leftLine) < 15 &&
                             (rowInfo[row].leftLine - rowInfo[row + 6].leftLine) > 2 &&
                             (rowInfo[row].leftLine - rowInfo[row + 6].leftLine) < 15
-                    )//ãÐÖµÐèÒªµ÷Õû
+                        )//ãÐÖµÐèÒªµ÷Õû
                     {
                         imgInfo.CircleStatus = CIRCLE_OUT;
                         break;
@@ -2041,8 +2150,11 @@ void circle_detect(void)
 
     if(imgInfo.CircleStatus == CIRCLE_OFF) // Èç¹û½áÊø»·µº×´Ì¬, Ôò½øÈë [½áÊø»·µº] ¼ì²â×´Ì¬
     {
-        // imgInfo.CircleStatus = CIRCLE_NOT_FIND;
-        // imgInfo.RoadType = Road_None;
+        if(abs(color_toggleCnt_left - color_toggleCnt_right) <= 1)
+        {
+            imgInfo.CircleStatus = CIRCLE_NOT_FIND;
+            imgInfo.RoadType = Road_None;
+        }
     }
 
 }
@@ -2066,8 +2178,7 @@ void circle_repairLine(void)
             add_line(k, b, imgInfo.top, HEIGHT - 1, RIGHT);
             recalc_line(imgInfo.top, HEIGHT - 1, RIGHT);
         }
-        //ÓÒÔ²»·
-        if (imgInfo.RoadType == Circle_R)
+        if (imgInfo.RoadType == Circle_R) //ÓÒÔ²»·
         {
             float k, b;
             k = (0.8 * WIDTH) / (imgInfo.top - (HEIGHT - 1));
@@ -2161,11 +2272,6 @@ void get_error(void)//TODO ÊµÏÖ¶¯Ì¬µ÷ÕûÇ°Õ°
 
 }
 
-int judge_downside()
-{
-    static int ret = 0;
-
-}
 
 /**
  * @description: ÅÐ¶Ï×ó/ÖÐ/ÓÒÏßµÄÁ¬ÐøÐÔ
@@ -2291,6 +2397,7 @@ void recalc_line(uint8_t select_top, uint8_t select_bottom, LineTypeEnum type)
         rowInfo[y].leftStatus = EXIST;
         rowInfo[y].rightStatus = EXIST;
         rowInfo[y].midLine = (rowInfo[y].leftLine + rowInfo[y].rightLine) / 2;
+        rowInfo[y].width = rowInfo[y].rightLine - rowInfo[y].leftLine;
     }
 }
 
@@ -2306,26 +2413,37 @@ void recalc_line(uint8_t select_top, uint8_t select_bottom, LineTypeEnum type)
  */
 void add_line(float k, float b, uint8_t select_top, uint8_t select_bottom, LineTypeEnum type)
 {
+    int tmp = 0;
     switch (type)
     {
         case LEFT:
+        {
             for(int i = select_top + 1; i <= select_bottom; ++i)
             {
-                rowInfo[i].leftLine = k * i + b;
+                tmp = k * i + b;
+                if(tmp > rowInfo[i].leftLine)
+                    rowInfo[i].leftLine = tmp;
             }
             break;
+        }
         case MID:
+        {
             for(int i = select_top + 1; i <= select_bottom; ++i)
             {
                 rowInfo[i].midLine = k * i + b;
             }
             break;
+        }
         case RIGHT:
+        {
             for(int i = select_top + 1; i <= select_bottom; ++i)
             {
-                rowInfo[i].rightLine = k * i + b;
+                tmp = k * i + b;
+                if(tmp < rowInfo[i].rightLine)
+                    rowInfo[i].rightLine = tmp;
             }
             break;
+        }
         default:
             break;
     }
@@ -2525,3 +2643,4 @@ void advanced_regression(int type, int startline1, int endline1, int startline2,
         parameterA = averageY - parameterB * averageX;
     }
 }
+

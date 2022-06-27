@@ -26,7 +26,7 @@
 
 #endif
 
-#define WIDTH                           188                                     //Í¼Ïñ¿í
+#define WIDTH                           187                                     //Í¼Ïñ¿í
 #define HEIGHT                          120                                     //Í¼Ïñ¸ß
 
 

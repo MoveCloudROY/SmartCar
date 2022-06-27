@@ -60,6 +60,7 @@ void servo_control_PIDPos(void)
     steer_pwm = STEER_LIMIT_LOW(steer_pwm);
     steer_pwm = STEER_LIMIT_HIGH(steer_pwm);
     servo_set(steer_pwm);
+//    servo_set(ConstData.kServoMid);
 //    vofa_sendFloat((float)steer_pwm);
 //    vofa_sendTail();
 }

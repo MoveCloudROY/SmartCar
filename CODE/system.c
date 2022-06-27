@@ -18,7 +18,7 @@
 #include "vt100.h"
 
 
-#define __DEBUG_IPS_ON__
+//#define __DEBUG_IPS_ON__
 
 extern ConstDataTypeDef ConstData;
 extern uint8_t imageBin[HEIGHT][WIDTH];
@@ -28,7 +28,7 @@ extern float speedL, speedR;
 extern int steer_pwm;
 extern ImgInfoTypedef imgInfo;
 
-extern uint16 cpu0_5ms_flag, cpu1_5ms_flag;
+extern uint16 cpu0_5ms_flag, cpu0_1000ms_flag, cpu1_5ms_flag;
 
 extern uint16 delay_20ms_flag, delay_100ms_flag, delay_1000ms_flag;
 
@@ -76,12 +76,14 @@ void car_init(void)
     pit_init(CCU6_0, PIT_CH0, 5000);
     pit_init(CCU6_0, PIT_CH1, 20000);
 
+    vt_clearall();
 }
 
 void car_backstage(void)
 {
-    shell_run();
+//    shell_run();
     vt_hide_cursor();
+
     if(cpu0_5ms_flag)
     {
 //        vt_set_font_color(VT_F_RED);
@@ -89,6 +91,11 @@ void car_backstage(void)
 //        vt_move_left(3);
         car_statusbar();
         cpu0_5ms_flag = 0;
+    }
+    if(cpu0_1000ms_flag)
+    {
+        vt_clearall();
+        cpu0_1000ms_flag = 0;
     }
 }
 void img_backstage(void)
@@ -117,7 +124,7 @@ void img_backstage(void)
 #endif
 
 //            a_sendimg_wifi(UART_0, mt9v03x_image, MT9V03X_W, MT9V03X_H);
-//            my_sendimg_wifi(UART_0, imageBin, MT9V03X_W, MT9V03X_H);
+//            my_sendimg_wifi(UART_0, mt9v03x_image, MT9V03X_W, MT9V03X_H);
 
             delay_20ms_flag = 0;
         }
@@ -130,7 +137,7 @@ void car_statusbar(void)
 {
     char ss[100] = "";
     // »­ºÐ×Ó
-    vt_draw_box(1, 1, 20, 80, ' ', ' ', ' ');
+//    vt_draw_box(1, 1, 20, 80, ' ', ' ', ' ');
     //±êÌâ
     vt_set_font_color(VT_F_CYAN);
     vt_draw_str_at(2, 34, "Car Status");
