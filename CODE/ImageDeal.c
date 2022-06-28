@@ -2,7 +2,7 @@
  * @Author: ROY1994
  * @Date: 2022-02-04 14:01:30
  * @LastEditors: ROY1994
- * @LastEditTime: 2022-06-27 15:23:07
+ * @LastEditTime: 2022-06-28 20:49:56
  * @FilePath: \myImageDeal\ImageDeal.cpp
  * @Description: 搜线，元素判断等主要处理函数
  */
@@ -1984,44 +1984,44 @@ void circle_detect(void)
 
         if (imgInfo.RoadType == Circle_L)
         {
-            static int leftdown_flag_last = 0, leftdown_check_flag = 0; // 左下角白色为 1, 黑色为 0
+            static int leftdown_flag_last_F2I = 0, leftdown_check_flag_F2I = 0; // 左下角白色为 1, 黑色为 0
             // 检测左下角由白变黑跳变
             int leftdown_flag_now = imageBin[HEIGHT- 1][1] && imageBin[HEIGHT - 1][2]
                 && imageBin[HEIGHT - 1][3] && imageBin[HEIGHT - 2][3] && PIXEL(HEIGHT - 1, left);
 
-            if(!leftdown_flag_now && leftdown_flag_last && !leftdown_check_flag)
-                leftdown_check_flag = 1;
+            if(!leftdown_flag_now && leftdown_flag_last_F2I && !leftdown_check_flag_F2I)
+                leftdown_check_flag_F2I = 1;
 
-            if (circle_in_flag == 'F' && leftdown_check_flag) // 如果没有找到黑色闭环, 则说明应当入环岛, 标记状态位
+            if (circle_in_flag == 'F' && leftdown_check_flag_F2I) // 如果没有找到黑色闭环, 则说明应当入环岛, 标记状态位
             {
                 imgInfo.CircleStatus = CIRCLE_IN;
-                leftdown_flag_last = 0;
-                leftdown_check_flag = 0;
+                leftdown_flag_last_F2I = 0;
+                leftdown_check_flag_F2I = 0;
             }
             else
             {
-                leftdown_flag_last = leftdown_flag_now;
+                leftdown_flag_last_F2I = leftdown_flag_now;
             }
         }
         else if (imgInfo.RoadType == Circle_R)
         {
-            static int rightdown_flag_last = 0, rightdown_check_flag = 0; // 左下角白色为 1, 黑色为 0
+            static int rightdown_flag_last_F2I = 0, rightdown_check_flag_F2I = 0; // 左下角白色为 1, 黑色为 0
             // 检测右下角由白变黑跳变
             int rightdown_flag_now = imageBin[HEIGHT- 1][WIDTH - 2] && imageBin[HEIGHT - 1][WIDTH - 3]
                                     && imageBin[HEIGHT - 1][WIDTH - 4] && imageBin[HEIGHT - 2][WIDTH - 4]
                                     && PIXEL(HEIGHT - 1, right);
-            if(!rightdown_flag_now && rightdown_flag_last && !rightdown_check_flag)
-               rightdown_check_flag = 1;
+            if(!rightdown_flag_now && rightdown_flag_last_F2I && !rightdown_check_flag_F2I)
+               rightdown_check_flag_F2I = 1;
 
-            if (circle_in_flag == 'F' && rightdown_check_flag) // 如果没有找到黑色闭环, 则说明应当入环岛, 标记状态位
+            if (circle_in_flag == 'F' && rightdown_check_flag_F2I) // 如果没有找到黑色闭环, 则说明应当入环岛, 标记状态位
             {
                 imgInfo.CircleStatus = CIRCLE_IN;
-                rightdown_flag_last = 0;
-                rightdown_check_flag = 0;
+                rightdown_flag_last_F2I = 0;
+                rightdown_check_flag_F2I = 0;
             }
             else
             {
-                rightdown_flag_last = rightdown_flag_now;
+                rightdown_flag_last_F2I = rightdown_flag_now;
             }
         }
 
@@ -2029,16 +2029,52 @@ void circle_detect(void)
 
     if (imgInfo.CircleStatus == CIRCLE_IN) // 如果入环岛状态, 则进入 [经过环岛] 检测状态
     {
-        if(color_toggleCnt_left <= 1 && color_toggleCnt_right <= 1
-            && ((! imageBin[HEIGHT - 1][WIDTH - 1] && ! imageBin[HEIGHT - 1][WIDTH - 2] && ! imageBin[HEIGHT - 1][WIDTH - 3])
-            || (! imageBin[HEIGHT - 1][0] && ! imageBin[HEIGHT - 1][1]) && imageBin[HEIGHT - 1][2])) // 如果左右两侧交错数都小于等于1, 则说明正在经过环岛
+        if(imgInfo.RoadType == Circle_L)
+        {
+            static int rightdown_flag_last_I2P = 0, rightdown_check_flag_I2P = 0; // 左下角白色为 1, 黑色为 0
+            // 检测右下角由白变黑跳变
+            int rightdown_flag_now = imageBin[HEIGHT- 1][WIDTH - 2] && imageBin[HEIGHT - 1][WIDTH - 3]
+                                    && imageBin[HEIGHT - 1][WIDTH - 4] && imageBin[HEIGHT - 2][WIDTH - 4]
+                                    && PIXEL(HEIGHT - 1, right);
+            if(!rightdown_flag_now && rightdown_flag_last_I2P && !rightdown_check_flag_I2P)
+               rightdown_check_flag_I2P = 1;
 
-            imgInfo.CircleStatus = CIRCLE_PASSING;
+            if (rightdown_check_flag_I2P)
+            {
+                imgInfo.CircleStatus = CIRCLE_PASSING;
+                rightdown_flag_last_I2P = 0;
+                rightdown_check_flag_I2P = 0;
+            }
+            else
+            {
+                rightdown_flag_last_I2P = rightdown_flag_now;
+            }
+        }
+        else if(imgInfo.RoadType == Circle_R)
+        {
+            static int leftdown_flag_last_I2P = 0, leftdown_check_flag_I2P = 0; // 左下角白色为 1, 黑色为 0
+            // 检测左下角由白变黑跳变
+            int leftdown_flag_now = imageBin[HEIGHT- 1][1] && imageBin[HEIGHT - 1][2]
+                && imageBin[HEIGHT - 1][3] && imageBin[HEIGHT - 2][3] && PIXEL(HEIGHT - 1, left);
+
+            if(!leftdown_flag_now && leftdown_flag_last_I2P && !leftdown_check_flag_I2P)
+                leftdown_check_flag_I2P = 1;
+
+            if (leftdown_check_flag_I2P)
+            {
+                imgInfo.CircleStatus = CIRCLE_PASSING;
+                leftdown_flag_last_I2P = 0;
+                leftdown_check_flag_I2P = 0;
+            }
+            else
+            {
+                leftdown_flag_last_I2P = leftdown_flag_now;
+            }
+        }
     }
 
     if(imgInfo.CircleStatus == CIRCLE_PASSING) // 如果经过环岛状态, 则进入 [出环岛] 检测状态
     {
-
         if(imgInfo.RoadType  == Circle_L)
         {
 

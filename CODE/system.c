@@ -26,6 +26,9 @@ extern uint8_t imageBin[HEIGHT][WIDTH];
 extern PID PID_L, PID_R, PID_Servo;
 extern float speedL, speedR;
 extern int steer_pwm;
+extern char fork_in_flag;
+extern uint8_t isCircle_flag_1, isCircle_flag_2, isCircle_flag_3, circle_in_flag;
+
 extern ImgInfoTypedef imgInfo;
 
 extern uint16 cpu0_5ms_flag, cpu0_1000ms_flag, cpu1_5ms_flag;
@@ -164,7 +167,6 @@ void car_statusbar(void)
         case Turn_Right:        vt_draw_str_at(3, 14, "Turn_Right   ");     break;
         default:                                                            break;
     }
-
     // 输出环岛状态
     vt_set_font_color(VT_F_RED);
     vt_draw_str_at(3, 30, "CircleStatus: ");
@@ -179,25 +181,55 @@ void car_statusbar(void)
         default:                                                                break;
     }
 
+    // 输出三岔状态
+    vt_set_font_color(VT_F_RED);
+    vt_draw_str_at(4, 2, "IsInFork: ");
+    vt_set_font_color(VT_F_WHITE);
+    vt_draw_char_at(4, 14, fork_in_flag);
+
+    // 输出环岛标志位
+    vt_set_font_color(VT_F_RED);
+    vt_draw_str_at(4, 26, "isCircle_1: ");
+    vt_set_font_color(VT_F_WHITE);
+    vt_draw_char_at(4, 38, isCircle_flag_1);
+
+    vt_set_font_color(VT_F_RED);
+    vt_draw_str_at(4, 26, "isCircle_2: ");
+    vt_set_font_color(VT_F_WHITE);
+    vt_draw_char_at(4, 38, isCircle_flag_2);
+
+    vt_set_font_color(VT_F_RED);
+    vt_draw_str_at(4, 50, "isCircle_in: ");
+    vt_set_font_color(VT_F_WHITE);
+    vt_draw_char_at(4, 63, circle_in_flag);
+
+
     // 输出左轮速度
     vt_set_font_color(VT_F_RED);
-    vt_draw_str_at(4, 2, "LeftSpeed: ");
+    vt_draw_str_at(5, 2, "LeftSpeed: ");
     vt_set_font_color(VT_F_WHITE);
     sprintf(ss, "%.2f", speedL);
-    vt_draw_str_at(4, 14, ss);
+    vt_draw_str_at(5, 14, ss);
 
     // 输出右轮速度
     vt_set_font_color(VT_F_RED);
-    vt_draw_str_at(4, 24, "RightSpeed: ");
+    vt_draw_str_at(5, 24, "RightSpeed: ");
     vt_set_font_color(VT_F_WHITE);
     sprintf(ss, "%.2f", speedR);
-    vt_draw_str_at(4, 36, ss);
+    vt_draw_str_at(5, 36, ss);
 
     // 输出平均速度
     vt_set_font_color(VT_F_RED);
-    vt_draw_str_at(4, 48, "AveSpeed: ");
+    vt_draw_str_at(5, 48, "AveSpeed: ");
     vt_set_font_color(VT_F_WHITE);
     sprintf(ss, "%.2f", (speedL + speedR) / 2.0);
-    vt_draw_str_at(4, 60, ss);
+    vt_draw_str_at(5, 60, ss);
+
     // 输出舵机打角
+    vt_set_font_color(VT_F_RED);
+    vt_draw_str_at(5, 72, "Steer: ");
+    vt_set_font_color(VT_F_WHITE);
+    sprintf(ss, "%3d", ConstData.kServoMid - steer_pwm);
+    vt_draw_str_at(5, 84, ss);
+
 }
