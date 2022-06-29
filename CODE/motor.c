@@ -10,7 +10,7 @@ float speedL, speedR;
 PassDisTypedef passDis;
 
 PID PID_L = {
-    .targetPoint = 50,
+    .targetPoint = 100,
 //    .P = 8.5,
 //    .I = 0.83,
     .P = 29.5264604345801,
@@ -32,7 +32,7 @@ PID PID_L = {
 };
 PID PID_R = {
 
-        .targetPoint = 50,
+        .targetPoint = 100,
 //        .P = 9.0,
 //        .I = 0.9,
         .P = 29.9297150662304,
@@ -97,7 +97,6 @@ void motor_control(void)
 {
     int encoderL, encoderR, encoderLFilter, encoderRFilter, pwmL, pwmR;
 
-    float speedL, speedR;
 
     //int oldParaL, oldParaR, nowParaL, nowParaR;
     //float filterParam = 0.1;

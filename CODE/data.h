@@ -27,6 +27,7 @@ typedef struct _ConstDataTypeDef
     float kImageStraightLineVarianceTh, kImageStraightLineSpeedUpVarianceTh;
     int kImageCircleOutVarianceTh;
     int kArcman;
+    float kImageCircleInRepairLineK, kImageCircleOutRepairLineK;
 }ConstDataTypeDef;
 
 

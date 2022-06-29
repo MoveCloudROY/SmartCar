@@ -20,5 +20,8 @@ void data_set(void)
     ConstData.kImageStraightLineSpeedUpVarianceTh = 20;
     ConstData.kImageCircleOutVarianceTh = 200;
 
+    ConstData.kImageCircleInRepairLineK = 1.02;
+    ConstData.kImageCircleOutRepairLineK = 1.02;
+
     ConstData.kArcman = 10;
 }

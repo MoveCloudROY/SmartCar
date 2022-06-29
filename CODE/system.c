@@ -227,9 +227,9 @@ void car_statusbar(void)
 
     // Êä³ö¶æ»ú´ò½Ç
     vt_set_font_color(VT_F_RED);
-    vt_draw_str_at(5, 72, "Steer: ");
+    vt_draw_str_at(6, 2, "Steer: ");
     vt_set_font_color(VT_F_WHITE);
     sprintf(ss, "%3d", ConstData.kServoMid - steer_pwm);
-    vt_draw_str_at(5, 84, ss);
+    vt_draw_str_at(6, 14, ss);
 
 }

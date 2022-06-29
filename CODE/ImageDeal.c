@@ -2,7 +2,7 @@
  * @Author: ROY1994
  * @Date: 2022-02-04 14:01:30
  * @LastEditors: ROY1994
- * @LastEditTime: 2022-06-28 20:49:56
+ * @LastEditTime: 2022-06-29 21:57:55
  * @FilePath: \myImageDeal\ImageDeal.cpp
  * @Description: 搜线，元素判断等主要处理函数
  */
@@ -2027,52 +2027,62 @@ void circle_detect(void)
 
     }
 
+    // if (imgInfo.CircleStatus == CIRCLE_IN) // 如果入环岛状态, 则进入 [经过环岛] 检测状态
+    // {
+    //     if(imgInfo.RoadType == Circle_L)
+    //     {
+    //         static int rightdown_flag_last_I2P = 0, rightdown_check_flag_I2P = 0; // 左下角白色为 1, 黑色为 0
+    //         // 检测右下角由白变黑跳变
+    //         int rightdown_flag_now = imageBin[HEIGHT- 1][WIDTH - 2] && imageBin[HEIGHT - 1][WIDTH - 3]
+    //                                 && imageBin[HEIGHT - 1][WIDTH - 4] && imageBin[HEIGHT - 2][WIDTH - 4]
+    //                                 && PIXEL(HEIGHT - 1, right);
+    //         if(!rightdown_flag_now && rightdown_flag_last_I2P && !rightdown_check_flag_I2P)
+    //            rightdown_check_flag_I2P = 1;
+
+    //         if (rightdown_check_flag_I2P)
+    //         {
+    //             imgInfo.CircleStatus = CIRCLE_PASSING;
+    //             rightdown_flag_last_I2P = 0;
+    //             rightdown_check_flag_I2P = 0;
+    //         }
+    //         else
+    //         {
+    //             rightdown_flag_last_I2P = rightdown_flag_now;
+    //         }
+    //     }
+    //     else if(imgInfo.RoadType == Circle_R)
+    //     {
+    //         static int leftdown_flag_last_I2P = 0, leftdown_check_flag_I2P = 0; // 左下角白色为 1, 黑色为 0
+    //         // 检测左下角由白变黑跳变
+    //         int leftdown_flag_now = imageBin[HEIGHT- 1][1] && imageBin[HEIGHT - 1][2]
+    //             && imageBin[HEIGHT - 1][3] && imageBin[HEIGHT - 2][3] && PIXEL(HEIGHT - 1, left);
+
+    //         if(!leftdown_flag_now && leftdown_flag_last_I2P && !leftdown_check_flag_I2P)
+    //             leftdown_check_flag_I2P = 1;
+
+    //         if (leftdown_check_flag_I2P)
+    //         {
+    //             imgInfo.CircleStatus = CIRCLE_PASSING;
+    //             leftdown_flag_last_I2P = 0;
+    //             leftdown_check_flag_I2P = 0;
+    //         }
+    //         else
+    //         {
+    //             leftdown_flag_last_I2P = leftdown_flag_now;
+    //         }
+    //     }
+    // }
     if (imgInfo.CircleStatus == CIRCLE_IN) // 如果入环岛状态, 则进入 [经过环岛] 检测状态
     {
-        if(imgInfo.RoadType == Circle_L)
-        {
-            static int rightdown_flag_last_I2P = 0, rightdown_check_flag_I2P = 0; // 左下角白色为 1, 黑色为 0
-            // 检测右下角由白变黑跳变
-            int rightdown_flag_now = imageBin[HEIGHT- 1][WIDTH - 2] && imageBin[HEIGHT - 1][WIDTH - 3]
-                                    && imageBin[HEIGHT - 1][WIDTH - 4] && imageBin[HEIGHT - 2][WIDTH - 4]
-                                    && PIXEL(HEIGHT - 1, right);
-            if(!rightdown_flag_now && rightdown_flag_last_I2P && !rightdown_check_flag_I2P)
-               rightdown_check_flag_I2P = 1;
-
-            if (rightdown_check_flag_I2P)
-            {
-                imgInfo.CircleStatus = CIRCLE_PASSING;
-                rightdown_flag_last_I2P = 0;
-                rightdown_check_flag_I2P = 0;
-            }
-            else
-            {
-                rightdown_flag_last_I2P = rightdown_flag_now;
-            }
-        }
-        else if(imgInfo.RoadType == Circle_R)
-        {
-            static int leftdown_flag_last_I2P = 0, leftdown_check_flag_I2P = 0; // 左下角白色为 1, 黑色为 0
-            // 检测左下角由白变黑跳变
-            int leftdown_flag_now = imageBin[HEIGHT- 1][1] && imageBin[HEIGHT - 1][2]
-                && imageBin[HEIGHT - 1][3] && imageBin[HEIGHT - 2][3] && PIXEL(HEIGHT - 1, left);
-
-            if(!leftdown_flag_now && leftdown_flag_last_I2P && !leftdown_check_flag_I2P)
-                leftdown_check_flag_I2P = 1;
-
-            if (leftdown_check_flag_I2P)
-            {
-                imgInfo.CircleStatus = CIRCLE_PASSING;
-                leftdown_flag_last_I2P = 0;
-                leftdown_check_flag_I2P = 0;
-            }
-            else
-            {
-                leftdown_flag_last_I2P = leftdown_flag_now;
-            }
-        }
+        if  (
+                color_toggleCnt_left <= 1 && color_toggleCnt_right <= 1 &&// 如果左右两侧交错数都小于等于1, 则说明正在经过环岛
+                ((! imageBin[HEIGHT - 1][WIDTH - 1] && ! imageBin[HEIGHT - 1][WIDTH - 2] && ! imageBin[HEIGHT - 1][WIDTH - 3])
+                ||
+                (! imageBin[HEIGHT - 1][0] && ! imageBin[HEIGHT - 1][1] && !imageBin[HEIGHT - 1][2]))
+                // 如果左右两侧交错数都小于等于1, 则说明正在经过环岛
+            )
+            imgInfo.CircleStatus = CIRCLE_PASSING;
     }
-
     if(imgInfo.CircleStatus == CIRCLE_PASSING) // 如果经过环岛状态, 则进入 [出环岛] 检测状态
     {
         if(imgInfo.RoadType  == Circle_L)
@@ -2209,7 +2219,7 @@ void circle_repairLine(void)
         if (imgInfo.RoadType == Circle_L) // 左圆环
         {
             float k, b;
-            k = (0.8 * WIDTH) / (HEIGHT - 1 - imgInfo.top);
+            k = (ConstData.kImageCircleInRepairLineK * WIDTH) / (HEIGHT - 1 - imgInfo.top);
             b = WIDTH - 1 - k * (HEIGHT - 1);
             add_line(k, b, imgInfo.top, HEIGHT - 1, RIGHT);
             recalc_line(imgInfo.top, HEIGHT - 1, RIGHT);
@@ -2217,7 +2227,7 @@ void circle_repairLine(void)
         if (imgInfo.RoadType == Circle_R) //右圆环
         {
             float k, b;
-            k = (0.8 * WIDTH) / (imgInfo.top - (HEIGHT - 1));
+            k = (ConstData.kImageCircleInRepairLineK * WIDTH) / (imgInfo.top - (HEIGHT - 1));
             b = - k * (HEIGHT - 1);
             add_line(k, b, imgInfo.top, HEIGHT - 1, LEFT);
             recalc_line(imgInfo.top, HEIGHT - 1, LEFT);
@@ -2231,7 +2241,7 @@ void circle_repairLine(void)
         float Det_R = 0.0;
         if (imgInfo.RoadType == Circle_L)
         {
-            Det_R = circle_k * (WIDTH - 1) / (HEIGHT - 5 - (imgInfo.top + 1));
+            Det_R = ConstData.kImageCircleOutRepairLineK * (WIDTH - 1) / (HEIGHT - 5 - (imgInfo.top + 1));
             for (int y = HEIGHT - 5; y > imgInfo.top; y--)
             {
                 int temp = (int)(rowInfo[HEIGHT - 5].rightLine - Det_R * (HEIGHT - 5 - y));
@@ -2253,7 +2263,7 @@ void circle_repairLine(void)
 
         if (imgInfo.RoadType == Circle_R)
         {
-            Det_L = circle_k * (WIDTH - 1) / (HEIGHT - 5 - imgInfo.top);
+            Det_L = ConstData.kImageCircleOutRepairLineK * (WIDTH - 1) / (HEIGHT - 5 - imgInfo.top);
             for (int y = HEIGHT - 5; y > imgInfo.top; y--)
             {
                 int temp = (int)(rowInfo[HEIGHT - 5].leftLine + Det_L * (HEIGHT - 5 - y));
@@ -2459,6 +2469,8 @@ void add_line(float k, float b, uint8_t select_top, uint8_t select_bottom, LineT
                 tmp = k * i + b;
                 if(tmp > rowInfo[i].leftLine)
                     rowInfo[i].leftLine = tmp;
+                if(rowInfo[i].leftLine < 0)
+                    rowInfo[i].leftLine = 0;
             }
             break;
         }
@@ -2477,6 +2489,8 @@ void add_line(float k, float b, uint8_t select_top, uint8_t select_bottom, LineT
                 tmp = k * i + b;
                 if(tmp < rowInfo[i].rightLine)
                     rowInfo[i].rightLine = tmp;
+                if(rowInfo[i].rightLine > WIDTH - 1)
+                    rowInfo[i].rightLine = WIDTH - 1;
             }
             break;
         }
