@@ -1,4 +1,12 @@
 /*
+ * @Author: ROY1994
+ * @Date: 2022-04-23 21:14:50
+ * @LastEditors: ROY1994
+ * @LastEditTime: 2022-07-02 04:50:46
+ * @FilePath: \myImageDeal\data.h
+ * @Description:
+ */
+/*
  * data.h
  *
  *  Created on: 2022Äê4ÔÂ9ÈÕ
@@ -28,6 +36,7 @@ typedef struct _ConstDataTypeDef
     int kImageCircleOutVarianceTh;
     int kArcman;
     float kImageCircleInRepairLineK, kImageCircleOutRepairLineK;
+    float kImageCrossIOUth;
 }ConstDataTypeDef;
 
 

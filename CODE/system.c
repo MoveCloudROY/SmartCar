@@ -157,8 +157,8 @@ void car_statusbar(void)
         case Circle_R:          vt_draw_str_at(3, 14, "Circle_R     ");     break;
         case Straight:          vt_draw_str_at(3, 14, "Straight     ");     break;
         case Slope:             vt_draw_str_at(3, 14, "Slope        ");     break;
-        case S_bend:            vt_draw_str_at(3, 14, "S_bend       ");     break;
-        case Big_bend:          vt_draw_str_at(3, 14, "Big_bend     ");     break;
+        case P_L:               vt_draw_str_at(3, 14, "P_L          ");     break;
+        case P_R:               vt_draw_str_at(3, 14, "P_R          ");     break;
         case Reflection:        vt_draw_str_at(3, 14, "Reflection   ");     break;
         case Starting_Line:     vt_draw_str_at(3, 14, "Starting_Line");     break;
         case Fork_In:           vt_draw_str_at(3, 14, "Fork_In      ");     break;
@@ -180,56 +180,66 @@ void car_statusbar(void)
         case CIRCLE_OFF:            vt_draw_str_at(3, 45, "CIRCLE_OFF    ");    break;
         default:                                                                break;
     }
-
+    // 输出 P 环状态
+    vt_set_font_color(VT_F_RED);
+    vt_draw_str_at(4, 2, "PStatus: ");
+    vt_set_font_color(VT_F_WHITE);
+    switch (imgInfo.PStatus)
+    {
+        case P_NOT_FIND:            vt_draw_str_at(4, 14, "P_NOT_FIND");    break;
+        case P_OUT:                 vt_draw_str_at(4, 14, "P_OUT     ");         break;
+        case P_PASSING:             vt_draw_str_at(4, 14, "P_PASSING ");         break;
+        case P_OFF:                 vt_draw_str_at(4, 14, "P_OFF     ");         break;
+        default:                                                                break;
+    }
     // 输出三岔状态
     vt_set_font_color(VT_F_RED);
-    vt_draw_str_at(4, 2, "IsInFork: ");
+    vt_draw_str_at(5, 2, "IsInFork: ");
     vt_set_font_color(VT_F_WHITE);
-    vt_draw_char_at(4, 14, fork_in_flag);
+    vt_draw_char_at(5, 14, fork_in_flag);
 
     // 输出环岛标志位
     vt_set_font_color(VT_F_RED);
-    vt_draw_str_at(4, 26, "isCircle_1: ");
+    vt_draw_str_at(5, 26, "isCircle_1: ");
     vt_set_font_color(VT_F_WHITE);
-    vt_draw_char_at(4, 38, isCircle_flag_1);
+    vt_draw_char_at(5, 38, isCircle_flag_1);
 
     vt_set_font_color(VT_F_RED);
-    vt_draw_str_at(4, 26, "isCircle_2: ");
+    vt_draw_str_at(5, 26, "isCircle_2: ");
     vt_set_font_color(VT_F_WHITE);
-    vt_draw_char_at(4, 38, isCircle_flag_2);
+    vt_draw_char_at(5, 38, isCircle_flag_2);
 
     vt_set_font_color(VT_F_RED);
-    vt_draw_str_at(4, 50, "isCircle_in: ");
+    vt_draw_str_at(5, 50, "isCircle_in: ");
     vt_set_font_color(VT_F_WHITE);
-    vt_draw_char_at(4, 63, circle_in_flag);
+    vt_draw_char_at(5, 63, circle_in_flag);
 
 
     // 输出左轮速度
     vt_set_font_color(VT_F_RED);
-    vt_draw_str_at(5, 2, "LeftSpeed: ");
+    vt_draw_str_at(6, 2, "LeftSpeed: ");
     vt_set_font_color(VT_F_WHITE);
     sprintf(ss, "%.2f", speedL);
-    vt_draw_str_at(5, 14, ss);
+    vt_draw_str_at(6, 14, ss);
 
     // 输出右轮速度
     vt_set_font_color(VT_F_RED);
-    vt_draw_str_at(5, 24, "RightSpeed: ");
+    vt_draw_str_at(6, 24, "RightSpeed: ");
     vt_set_font_color(VT_F_WHITE);
     sprintf(ss, "%.2f", speedR);
-    vt_draw_str_at(5, 36, ss);
+    vt_draw_str_at(6, 36, ss);
 
     // 输出平均速度
     vt_set_font_color(VT_F_RED);
-    vt_draw_str_at(5, 48, "AveSpeed: ");
+    vt_draw_str_at(6, 48, "AveSpeed: ");
     vt_set_font_color(VT_F_WHITE);
     sprintf(ss, "%.2f", (speedL + speedR) / 2.0);
-    vt_draw_str_at(5, 60, ss);
+    vt_draw_str_at(6, 60, ss);
 
     // 输出舵机打角
     vt_set_font_color(VT_F_RED);
-    vt_draw_str_at(6, 2, "Steer: ");
+    vt_draw_str_at(7, 2, "Steer: ");
     vt_set_font_color(VT_F_WHITE);
     sprintf(ss, "%3d", ConstData.kServoMid - steer_pwm);
-    vt_draw_str_at(6, 14, ss);
-
+    vt_draw_str_at(7, 14, ss);
 }

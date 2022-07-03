@@ -2,7 +2,7 @@
  * @Author: ROY1994
  * @Date: 2022-02-04 14:01:20
  * @LastEditors: ROY1994
- * @LastEditTime: 2022-06-22 13:10:54
+ * @LastEditTime: 2022-07-03 16:03:41
  * @FilePath: \myImageDeal\ImageDeal.h
  * @Description: t
  */
@@ -24,10 +24,10 @@
 #include "headfile.h"
 #include "ImagePreDeal.h"
 
-//#define uint8_t uint8
-//#define uint16_t uint16
-//#define int16_t int16
-//#define int8_t int8
+#define uint8_t uint8
+#define uint16_t uint16
+#define int16_t int16
+#define int8_t int8
 
 #define DEBUG_DEAD()
 #endif
@@ -52,9 +52,10 @@
 // enum ThreeForkRoadFlag{OFF, FIRST, SECOND, };
 
 typedef enum _LineTypeEnum{LEFT, MID, RIGHT, }LineTypeEnum;
-typedef enum _RoadTypeEnum{Road_None, Straight, Cross, Slope, S_bend, Big_bend, Reflection, Circle_L, Circle_R, Starting_Line, Fork_In, Fork_Out, Turn_Left, Turn_Right}RoadTypeEnum;
+typedef enum _RoadTypeEnum{Road_None, Straight, Cross, Slope, P_L, P_R, Reflection, Circle_L, Circle_R, Starting_Line, Fork_In, Fork_Out, Turn_Left, Turn_Right}RoadTypeEnum;
 typedef enum _EdgePointTypeEnum {__EdgePointTypeEnum_OCCUPY, EXIST, LOST, JUMP} EdgePointTypeEnum;
 typedef enum _CircleStatusTypeEnum {CIRCLE_NOT_FIND, CIRCLE_FIND, CIRCLE_IN, CIRCLE_PASSING, CIRCLE_OUT, CIRCLE_OFF} CircleStatusTypeEnum;
+typedef enum _PStatusTypeEnum {P_NOT_FIND, P_PASSING, P_OUT, P_OFF} PStatusTypeEnum;
 typedef enum _DirTypeEnum{BlackToWhite, WhiteToBlack} DirTypeEnum;
 
 //===================================================================================================================//
@@ -82,6 +83,7 @@ typedef struct _ImgInfoTypedef
     int straight_needSpeedUP;
     RoadTypeEnum RoadType;
     CircleStatusTypeEnum CircleStatus;
+    PStatusTypeEnum PStatus;
     /*****道路类型相关信息*****/
 
 }ImgInfoTypedef;
@@ -121,7 +123,12 @@ typedef struct _EdgeJumpPointTypedef
 
 //===================================================================================================================//
 
-
+#if defined (DEBUG)
+typedef struct _DebugVaribleTypedef
+{
+    int blackBlock_Hrow, blackBlock_Hcol;
+}DebugVaribleTypedef;
+#endif
 
 
 //===================================================================================================================//
@@ -156,14 +163,13 @@ void straight_detect(void);
 void straight_speedUpDetect(void);
 void turn_detect(void);
 void cross_detect(void);
-void cross_detect_withLeft(void);
-void cross_detect_withRight(void);
 
 void fork_detect(void);
 void fork_repairLine(void);
 
 void circle_judge_1(void);
 void circle_judge_2(void);
+
 void circle_judge_in(void);
 void circle_detect(void);
 void circle_repairLine(void);
@@ -171,7 +177,7 @@ void circle_repairLine(void);
 void slope_detect(void);
 void startingLine_detect(void);
 
-
+void p_detect(void);
 
 // 获取偏差值传至PID
 void get_error(void);
