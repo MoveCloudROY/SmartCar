@@ -2,7 +2,7 @@
  * @Author: ROY1994
  * @Date: 2022-02-04 14:01:20
  * @LastEditors: ROY1994
- * @LastEditTime: 2022-07-03 16:03:41
+ * @LastEditTime: 2022-07-03 21:28:36
  * @FilePath: \myImageDeal\ImageDeal.h
  * @Description: t
  */
@@ -55,7 +55,7 @@ typedef enum _LineTypeEnum{LEFT, MID, RIGHT, }LineTypeEnum;
 typedef enum _RoadTypeEnum{Road_None, Straight, Cross, Slope, P_L, P_R, Reflection, Circle_L, Circle_R, Starting_Line, Fork_In, Fork_Out, Turn_Left, Turn_Right}RoadTypeEnum;
 typedef enum _EdgePointTypeEnum {__EdgePointTypeEnum_OCCUPY, EXIST, LOST, JUMP} EdgePointTypeEnum;
 typedef enum _CircleStatusTypeEnum {CIRCLE_NOT_FIND, CIRCLE_FIND, CIRCLE_IN, CIRCLE_PASSING, CIRCLE_OUT, CIRCLE_OFF} CircleStatusTypeEnum;
-typedef enum _PStatusTypeEnum {P_NOT_FIND, P_PASSING, P_OUT, P_OFF} PStatusTypeEnum;
+typedef enum _PStatusTypeEnum {P_NOT_FIND, P_PASSING, P_OUT_READY, P_OUT_1, P_OUT_2, P_OFF} PStatusTypeEnum;
 typedef enum _DirTypeEnum{BlackToWhite, WhiteToBlack} DirTypeEnum;
 
 //===================================================================================================================//
@@ -178,6 +178,7 @@ void slope_detect(void);
 void startingLine_detect(void);
 
 void p_detect(void);
+void p_repairLine(void);
 
 // 获取偏差值传至PID
 void get_error(void);

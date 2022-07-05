@@ -2,7 +2,7 @@
  * @Author: ROY1994
  * @Date: 2022-05-10 17:23:16
  * @LastEditors: ROY1994
- * @LastEditTime: 2022-07-03 17:14:12
+ * @LastEditTime: 2022-07-04 22:32:27
  * @FilePath: \myImageDeal\ImageDeal.cpp
  * @Description:
  */
@@ -25,10 +25,25 @@
 #define BLACK 0
 #define WHITE 255
 
+
+#define GET_VARIANCE(VAR, LINE_TYPE, TOLERANT)\
+do {\
+    VAR = 0;\
+    float pred_k =    (float)(rowInfo[HEIGHT - TOLERANT].LINE_TYPE##Line - rowInfo[imgInfo.top + TOLERANT].LINE_TYPE##Line)\
+                    / (HEIGHT - TOLERANT - (imgInfo.top + TOLERANT));\
+    float pred_b =    (float)rowInfo[(int)((HEIGHT + imgInfo.top) / 2)].LINE_TYPE##Line\
+                    - pred_k * ((HEIGHT + imgInfo.top) / 2.0);\
+    for (int row = HEIGHT - TOLERANT; row > (imgInfo.top + TOLERANT); row--)\
+    {\
+        VAR +=   (rowInfo[row].LINE_TYPE##Line - (int)(pred_k * row + pred_b))\
+               * (rowInfo[row].LINE_TYPE##Line - (int)(pred_k * row + pred_b));\
+    }\
+}while(0)\
+
+
 #if defined (DEBUG)
 DebugVaribleTypedef debugVar;
 #endif
-
 
 
 
@@ -41,6 +56,7 @@ uint8_t needExternR = 0;  //是否右延长标志
 extern uint8_t mt9v03x_image[120][188];//原灰度图
 extern uint8_t imageBin[HEIGHT][WIDTH];//二值化图像
 extern ConstDataTypeDef ConstData;
+extern long long picCount;
 
 PixelTypedef leftLineSerial[HEIGHT<<1],rightLineSerial[HEIGHT<<1];//种子生长法所需参数
 int16_t leftLineSeriesCnt,rightLineSeriesCnt;//种子生长法所需参数
@@ -98,6 +114,7 @@ void img_process(void)
 #ifdef DEBUG
     PRINT_ROADTYPE_INFO();
 #endif
+    //TODO
     advance_repairLine(); // 补线
     advance_midLineFilter();
 
@@ -124,6 +141,7 @@ void params_init(void)
     // memset(leftLine, 0, sizeof(leftLine));
     // memset(rowInfo, WIDTH - 1, sizeof(rowInfo));
     ForkLinePointx_l = 0; ForkLinePointx_r = 0; ForkLinePointy = 0;
+    CircleOrP_BlackBlock_Hrow = 0;
     fork_flag_1 = 'F';
     fork_flag_2 = 'F';
     imgInfo.top = 8;//UP_LIMIT;
@@ -1186,7 +1204,8 @@ void road_judge(void)
         imgInfo.RoadType != Circle_R    &&
         imgInfo.RoadType != P_L         &&
         imgInfo.RoadType != P_R         &&
-        imgInfo.RoadType != Slope
+        imgInfo.RoadType != Slope       &&
+        fork_in_flag != 'T'
       )
     {
         straight_detect();
@@ -1194,6 +1213,16 @@ void road_judge(void)
 
     straight_speedUpDetect();
 
+    if(
+        // imgInfo.RoadType != Cross       &&
+        imgInfo.RoadType != P_L         &&
+        imgInfo.RoadType != P_R         &&
+        imgInfo.RoadType != Circle_L    &&
+        imgInfo.RoadType != Circle_R
+      )
+    {
+        fork_detect();
+    }
 
     if (
         imgInfo.RoadType != Circle_L    &&
@@ -1201,6 +1230,8 @@ void road_judge(void)
         imgInfo.RoadType != P_L         &&
         imgInfo.RoadType != P_R         &&
         imgInfo.RoadType != Slope       &&
+        imgInfo.RoadType != Fork_In     &&
+        imgInfo.RoadType != Fork_Out    &&
         fork_in_flag != 'T'
        )
     {
@@ -1230,17 +1261,9 @@ void road_judge(void)
         }
     }
 
-    if(
-        // imgInfo.RoadType != Cross       &&
-        imgInfo.RoadType != P_L         &&
-        imgInfo.RoadType != P_R         &&
-        imgInfo.RoadType != Circle_L    &&
-        imgInfo.RoadType != Circle_R
-      )
-    {
-        fork_detect();
-    }
 
+    // TODO
+    p_repairLine();
     circle_repairLine();
     fork_repairLine();
 
@@ -1419,7 +1442,7 @@ void fork_detect()
     }
 
     //判断是否为三叉的黑色三角块
-    for (int row = forkDetectStartLine; row >= (imgInfo.top + 1); row--)
+    for (int row = forkDetectStartLine; row >= (imgInfo.top + 5); row--)
     {
         if ((rowInfo[row].fork_blackWidth - rowInfo[row + 3].fork_blackWidth) >= 2 &&
             //如果这个左黑和右黑之间黑点数比较多 并且满足三角形的形状
@@ -1460,9 +1483,9 @@ void fork_detect()
     // fork_in_flag        |                                   |-----------------
     //
     static char fork_in_flag_last = 'F', fork_out_flag_last = 'F';
+    static long long picNum_in = -1;
     char fork_in_flag_now = 'F', fork_out_flag_now = 'F';
-
-    if(fork_in_flag == 'F')
+    if(fork_in_flag == 'F' || ( picNum_in != -1 && picCount - picNum_in <= 25))
     {
         if(fork_flag_tot == 'T' && imgInfo.RoadType != Fork_In)
         {
@@ -1471,6 +1494,7 @@ void fork_detect()
         }
         if(fork_in_flag_last == 'T' && fork_in_flag_now == 'F')
         {
+            picNum_in = picCount;
             fork_in_flag = 'T';
             fork_in_flag_last = 'F';
         }
@@ -1484,6 +1508,8 @@ void fork_detect()
         if (
             fork_flag_tot == 'T'
             && imgInfo.RoadType != Fork_Out
+            && picNum_in != -1
+            && picCount - picNum_in >= 40
            )
         {
             fork_out_flag_now = 'T';
@@ -1491,6 +1517,7 @@ void fork_detect()
         }
         if(fork_out_flag_last == 'T' && fork_out_flag_now == 'F')
         {
+            picNum_in = -1;
             fork_in_flag = 'F';
             fork_out_flag_last = 'F';
         }
@@ -1499,12 +1526,8 @@ void fork_detect()
             fork_out_flag_last = fork_out_flag_now;
         }
     }
-
 #ifdef DEBUG
-    // printf("forkDetectStartLine = %d\n", (int)forkDetectStartLine);
-    // printf("fork_flag_1 = %c\n", fork_flag_1);
-    // printf("fork_flag_2 = %c\n", fork_flag_2);
-    // printf("fork_flag_tot = %c\n", fork_flag_tot);
+    PRINT_FORK_DETECT_FLAG_INFO();
 #endif
 
 }
@@ -1816,7 +1839,8 @@ void p_detect(void)
     // CircleOrP_BlackBlock_Hrow
 
     // 首先要有中心点
-    if (    imgInfo.PStatus == P_NOT_FIND && isCircle_flag_2 == 'T'
+    if (
+            imgInfo.PStatus == P_NOT_FIND && isCircle_flag_2 == 'T'
             && color_toggleCnt_left - color_toggleCnt_right >= 3
        ) // 左侧交错数比右侧多,初步考虑左P环
     {
@@ -1832,16 +1856,16 @@ void p_detect(void)
             !imageBin[CircleOrP_BlackBlock_Hrow - 1][Hcol -1]    &&
             !imageBin[CircleOrP_BlackBlock_Hrow - 1][Hcol - 2]   &&
             !imageBin[CircleOrP_BlackBlock_Hrow - 2][Hcol - 4]
-        )
+           )
         {
             imgInfo.RoadType = P_L;
             imgInfo.PStatus = P_PASSING;
         }
     }
     else if (
-        imgInfo.PStatus == P_NOT_FIND && isCircle_flag_2 == 'T'
-        && color_toggleCnt_left - color_toggleCnt_right <= -3
-        ) // 反之 右P环
+            imgInfo.PStatus == P_NOT_FIND && isCircle_flag_2 == 'T'
+            && color_toggleCnt_left - color_toggleCnt_right <= -3
+            ) // 反之 右P环
     {
         // 同理左侧边界
         float k = 0.0, b = 0.0;
@@ -1869,25 +1893,24 @@ void p_detect(void)
     }
 
     // 判断为 P 环后, 要对出环做特殊处理
-    // 判断是否到达 P_OUT 时刻
+    // 判断是否到达 P_OUT_1 (出p环斜向引导)时刻
     if (imgInfo.PStatus == P_PASSING)
     {
         if(imgInfo.RoadType  == P_L)
         {
-
             // 此方法为寻找角点, 其上方和下方的点在其右侧
             for (int row = HEIGHT - 10; row > (imgInfo.top + 20); row--) //防止row溢出
             {
                 if (rowInfo[row].rightStatus == EXIST && rowInfo[row + 1].rightStatus == EXIST) //判断右上角点是否存在
                 {
                     if (
-                               (rowInfo[row - 4].rightLine - rowInfo[row].rightLine) > 2
-                            && (rowInfo[row - 4].rightLine - rowInfo[row].rightLine) < 15
-                            && (rowInfo[row + 6].rightLine - rowInfo[row].rightLine) > 2
-                            && (rowInfo[row + 6].rightLine - rowInfo[row].rightLine) < 15
-                    )//阈值需要调整
+                            (rowInfo[row - 4].rightLine - rowInfo[row].rightLine) > 2 &&
+                            (rowInfo[row - 4].rightLine - rowInfo[row].rightLine) < 15 &&
+                            (rowInfo[row + 6].rightLine - rowInfo[row].rightLine) > 2 &&
+                            (rowInfo[row + 6].rightLine - rowInfo[row].rightLine) < 15
+                       )//阈值需要调整
                     {
-                        imgInfo.PStatus = P_OUT;
+                        imgInfo.PStatus = P_OUT_READY;
                         break;
                     }
 
@@ -1907,7 +1930,7 @@ void p_detect(void)
                             (rowInfo[row].leftLine - rowInfo[row + 6].leftLine) < 15
                         )//阈值需要调整
                     {
-                        imgInfo.PStatus = P_OUT;
+                        imgInfo.PStatus = P_OUT_READY;
                         break;
                     }
 
@@ -1915,8 +1938,150 @@ void p_detect(void)
             }
         }
     }
+
+    // 到达 P_OUT_1 后
+    // 判断是否到达 P_OUT_2 (出p环横向引导)时刻
+    if (imgInfo.PStatus == P_OUT_READY)
+    {
+        if(imgInfo.RoadType  == P_L)
+        {
+            float curv = get_curvature(imgInfo.top + 5, HEIGHT - 3, RIGHT);
+#ifdef DEBUG
+            printf("curv: %f\n", curv);
+#endif
+            if(abs(curv) < ConstData.kImageStraightCurvTh)
+            {
+                imgInfo.PStatus = P_OUT_1;
+            }
+        }
+        else if (imgInfo.RoadType == P_R)
+        {
+            float curv = get_curvature(imgInfo.top + 5, HEIGHT - 3, LEFT);
+#ifdef DEBUG
+            printf("curv: %f\n", curv);
+#endif
+            if(abs(curv) < ConstData.kImageStraightCurvTh)
+            {
+                imgInfo.PStatus = P_OUT_1;
+            }
+        }
+    }
+
+    if (imgInfo.PStatus == P_OUT_1)
+    {
+        if(imgInfo.RoadType  == P_L)
+        {
+            float curv = get_curvature(imgInfo.top + 5, HEIGHT - 3, RIGHT);
+#ifdef DEBUG
+            printf("curv: %f\n", curv);
+#endif
+            if(abs(curv) < ConstData.kImageStraightCurvTh)
+            {
+                imgInfo.PStatus = P_OUT_1;
+            }
+        }
+        else if (imgInfo.RoadType == P_R)
+        {
+            float curv = get_curvature(imgInfo.top + 5, HEIGHT - 3, LEFT);
+#ifdef DEBUG
+            printf("curv: %f\n", curv);
+#endif
+            if(abs(curv) < ConstData.kImageStraightCurvTh)
+            {
+                imgInfo.PStatus = P_OUT_1;
+            }
+        }
+    }
+
+    // 到达 P_OUT_1 后
+    // 判断是否到达 P_OFF (出p环横向引导)时刻
+    if(imgInfo.PStatus == P_OUT_1) // 如果出p环状态, 则进入 [结束p环] 检测状态
+    {
+        if(imgInfo.RoadType == P_L && (HEIGHT - 10 - (imgInfo.top + 10)) > 0)
+        {
+            int variance_l = 0; // 方差
+            GET_VARIANCE(variance_l, left, 10);
+            int variance_m = 0; // 方差
+            GET_VARIANCE(variance_m, mid, 10);
+
+            // 检测右下角由白变黑跳变
+            static int downside_flag_last_r = 0, downside_check_flag_r = 0; // 右下角白色为 1, 黑色为 0
+            int downside_flag_now_r  =    imageBin[HEIGHT- 1][WIDTH - 2] && imageBin[HEIGHT - 1][WIDTH - 3]
+                                    && imageBin[HEIGHT - 1][WIDTH - 4] && imageBin[HEIGHT - 2][WIDTH - 4];
+            if(!downside_flag_now_r && downside_flag_last_r && !downside_check_flag_r)
+               downside_check_flag_r = 1;
+
+            if (   variance_l <= ConstData.kImagePOutVarianceTh
+                && variance_m <= ConstData.kImagePOutVarianceTh
+                && downside_check_flag_r)
+            {
+                imgInfo.PStatus = P_OFF;
+                downside_flag_last_r = 0;
+                downside_check_flag_r = 0;
+            }
+            else
+            {
+                downside_flag_last_r = downside_flag_now_r;
+            }
+        }
+        else if (imgInfo.RoadType == P_R && (HEIGHT - 10 - (imgInfo.top + 10)) > 0)
+        {
+            int variance_r = 0; // 方差
+            GET_VARIANCE(variance_r, right, 10);
+            int variance_m = 0; // 方差
+            GET_VARIANCE(variance_m, mid, 10);
+
+            // 检测左下角由白变黑跳变
+            static int downside_flag_last_l = 0, downside_check_flag_l = 0; // 左下角白色为 1, 黑色为 0
+            int downside_flag_now_l  =    imageBin[HEIGHT- 1][1] && imageBin[HEIGHT - 1][2]
+                && imageBin[HEIGHT - 1][3] && imageBin[HEIGHT - 2][3];
+
+            if(!downside_flag_now_l && downside_flag_last_l && !downside_check_flag_l)
+               downside_check_flag_l = 1;
+
+            if (   variance_r <= ConstData.kImagePOutVarianceTh
+                && variance_m <= ConstData.kImagePOutVarianceTh
+                && downside_check_flag_l)
+            {
+                imgInfo.PStatus = P_OFF;
+                downside_flag_last_l = 0;
+                downside_check_flag_l = 0;
+            }
+            else
+            {
+                downside_flag_last_l = downside_flag_now_l;
+            }
+        }
+    }
+    if(imgInfo.PStatus == P_OFF)
+    {
+        imgInfo.PStatus = P_NOT_FIND;
+        imgInfo.RoadType = Road_None;
+    }
 }
 
+void p_repairLine(void)
+{
+    if (imgInfo.PStatus == P_OUT_1)
+    {
+        if(imgInfo.RoadType  == P_L)
+        {
+            float k = 0.0, b = 0.0;
+            k = (float)(rowInfo[HEIGHT - 1].leftLine - rowInfo[imgInfo.top + 2].leftLine) / (HEIGHT - imgInfo.top - 2);
+            b = (float)rowInfo[HEIGHT - 1].leftLine - k * (HEIGHT - 1);
+            add_line(k, b, imgInfo.top + 1, HEIGHT - 1, LEFT);
+            recalc_line(imgInfo.top + 1, HEIGHT - 1, LEFT);
+        }
+        else if (imgInfo.RoadType == P_R)
+        {
+            float k = 0.0, b = 0.0;
+            k = (float)(rowInfo[HEIGHT - 1].rightLine - rowInfo[imgInfo.top + 2].rightLine) / (HEIGHT - imgInfo.top - 2);
+            b = (float)rowInfo[HEIGHT - 1].rightLine - k * (HEIGHT - 1);
+            add_line(k, b, imgInfo.top + 1, HEIGHT - 1, RIGHT);
+            recalc_line(imgInfo.top + 1, HEIGHT - 1, RIGHT);
+        }
+    }
+}
 
 /**
  * @description: 入环岛判断函数
@@ -2089,19 +2254,7 @@ const int circle_getPoint_del = 5;
 float circle_k = 1.02;
 
 
-#define GET_VARIANCE(VAR, LINE_TYPE, TOLERANT)\
-do {\
-    VAR = 0;\
-    float pred_k =    (float)(rowInfo[HEIGHT - TOLERANT].LINE_TYPE##Line - rowInfo[imgInfo.top + TOLERANT].LINE_TYPE##Line)\
-                    / (HEIGHT - TOLERANT - (imgInfo.top + TOLERANT));\
-    float pred_b =    (float)rowInfo[(int)((HEIGHT + imgInfo.top) / 2)].LINE_TYPE##Line\
-                    - pred_k * ((HEIGHT + imgInfo.top) / 2.0);\
-    for (int row = HEIGHT - TOLERANT; row > (imgInfo.top + TOLERANT); row--)\
-    {\
-        VAR +=   (rowInfo[row].LINE_TYPE##Line - (int)(pred_k * row + pred_b))\
-               * (rowInfo[row].LINE_TYPE##Line - (int)(pred_k * row + pred_b));\
-    }\
-}while(0)\
+
 
 /**
  * @description: 环岛检测函数
@@ -2112,14 +2265,29 @@ void circle_detect(void)
 
     if (isCircle_flag_1 == 'T' && isCircle_flag_2 == 'T' && imgInfo.CircleStatus == CIRCLE_NOT_FIND) // 两个判据为T 且环岛未找到 则说明找到环岛
     {
-        imgInfo.CircleStatus = CIRCLE_FIND; // 标记 [发现环岛] 状态
+
         if (color_toggleCnt_left - color_toggleCnt_right >= 3 && imgInfo.RoadType != Circle_R) // 通过交错数 判断左环岛还是右环岛 左侧交错数较多 则为左环岛
         {
-            imgInfo.RoadType = Circle_L;
+            // 增强条件, 要求跳变点数少的一边在另一侧跳变点的纵向范围内的曲率小于阈值
+            // 取第一个跳变(BlackToWhite)的点作为起始点, 取第三个跳变(BlackToWhite)的点作为终点
+            int startRow = color_TogglePos_left[1].posY, endRow = color_TogglePos_left[3].posY;
+            float curv = get_curvature(endRow, startRow, RIGHT); // 计算曲率
+            if (abs(curv) < ConstData.kImageStraightCurvTh)
+            {
+                imgInfo.CircleStatus = CIRCLE_FIND; // 标记 [发现环岛] 状态
+                imgInfo.RoadType = Circle_L;
+            }
         }
         else if (color_toggleCnt_left - color_toggleCnt_right <= -3 && imgInfo.RoadType != Circle_L)
         {
-            imgInfo.RoadType = Circle_R;
+            // 同理
+            int startRow = color_TogglePos_right[1].posY, endRow = color_TogglePos_right[3].posY;
+            float curv = get_curvature(endRow, startRow, LEFT); // 计算曲率
+            if (abs(curv) < ConstData.kImageStraightCurvTh)
+            {
+                imgInfo.CircleStatus = CIRCLE_FIND; // 标记 [发现环岛] 状态
+                imgInfo.RoadType = Circle_R;
+            }
         }
     }
 
@@ -2282,7 +2450,7 @@ void circle_detect(void)
         if(imgInfo.RoadType == Circle_L && (HEIGHT - 10 - (imgInfo.top + 10)) > 0)
         {
             int variance_r = 0; // 方差
-            GET_VARIANCE(variance_r, left, 10);
+            GET_VARIANCE(variance_r, right, 10);
             int variance_m = 0; // 方差
             GET_VARIANCE(variance_m, mid, 10);
 
@@ -2356,7 +2524,6 @@ void circle_detect(void)
 
 /**
  * @description: 环岛补线函数
-                //Alart! 右侧未修改
  * @return {*}
  */
 void circle_repairLine(void)

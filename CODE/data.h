@@ -2,7 +2,7 @@
  * @Author: ROY1994
  * @Date: 2022-04-23 21:14:50
  * @LastEditors: ROY1994
- * @LastEditTime: 2022-07-02 04:50:46
+ * @LastEditTime: 2022-07-04 22:07:20
  * @FilePath: \myImageDeal\data.h
  * @Description:
  */
@@ -31,12 +31,14 @@
 
 typedef struct _ConstDataTypeDef
 {
-    int kServoLowLimit, kServoHighLimit, kServoMid;
-    float kImageStraightLineVarianceTh, kImageStraightLineSpeedUpVarianceTh;
-    int kImageCircleOutVarianceTh;
-    int kArcman;
-    float kImageCircleInRepairLineK, kImageCircleOutRepairLineK;
-    float kImageCrossIOUth;
+    int     kServoLowLimit, kServoHighLimit, kServoMid;
+    float   kImageStraightLineVarianceTh, kImageStraightLineSpeedUpVarianceTh;
+    int     kImageCircleOutVarianceTh;
+    float   kImageCircleInRepairLineK, kImageCircleOutRepairLineK;
+    float   kImageCrossIOUth;
+    float   kImageStraightCurvTh;
+    int     kImagePOutVarianceTh;
+    int     kArcman;
 }ConstDataTypeDef;
 
 

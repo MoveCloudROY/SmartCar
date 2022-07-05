@@ -16,8 +16,15 @@
 #include "ui.h"
 #include "shell.h"
 #include "vt100.h"
+/*
 
+车辆信息
+车长                            26.4 cm
+摄像头杆到车尾(最远,包含杆和突起)      14.3 cm
+摄像头支架上侧到轮子平面下侧          31.9 cm
+图像中心到车最前端                  40 cm
 
+*/
 //#define __DEBUG_IPS_ON__
 
 extern ConstDataTypeDef ConstData;
@@ -41,6 +48,7 @@ volatile SystemStatusTypedef Global = {
         .cpu0_usage = 0,
         .cpu1_usage = 0,
 };
+long long picCount = 0;
 
 void car_init(void)
 {
@@ -107,6 +115,7 @@ void img_backstage(void)
     {
         if(cpu1_5ms_flag)
         {
+            ++picCount;
 //            img_preProcess(CUT);
             img_preProcess(OTSU);
 
@@ -186,10 +195,11 @@ void car_statusbar(void)
     vt_set_font_color(VT_F_WHITE);
     switch (imgInfo.PStatus)
     {
-        case P_NOT_FIND:            vt_draw_str_at(4, 14, "P_NOT_FIND");    break;
-        case P_OUT:                 vt_draw_str_at(4, 14, "P_OUT     ");         break;
-        case P_PASSING:             vt_draw_str_at(4, 14, "P_PASSING ");         break;
-        case P_OFF:                 vt_draw_str_at(4, 14, "P_OFF     ");         break;
+        case P_NOT_FIND:            vt_draw_str_at(4, 14, "P_NOT_FIND");        break;
+        case P_OUT_1:               vt_draw_str_at(4, 14, "P_OUT_1   ");        break;
+        case P_OUT_2:               vt_draw_str_at(4, 14, "P_OUT_2   ");        break;
+        case P_PASSING:             vt_draw_str_at(4, 14, "P_PASSING ");        break;
+        case P_OFF:                 vt_draw_str_at(4, 14, "P_OFF     ");        break;
         default:                                                                break;
     }
     // 输出三岔状态
