@@ -24,23 +24,23 @@ PID PID_L = {
     .result = 0,
 };
 PID PID_R = {
-        .targetPoint = 50,
-        .P = 9.0,
-        .I = 0.9,
-        .D = 5.0,
-        .alphaDev = 0.05,
-        .alphaOut = 0.1,
+    .targetPoint = 50,
+    .P = 9.0,
+    .I = 0.9,
+    .D = 5.0,
+    .alphaDev = 0.05,
+    .alphaOut = 0.1,
 
-        .feedForwardK = 6.9979,
-        .feedForwardB = 361.75,
+    .feedForwardK = 6.9979,
+    .feedForwardB = 361.75,
 
-        .para = 0,
-        .lastError = 0,
-        .prevError = 0,
-        .integralError = 0,
+    .para = 0,
+    .lastError = 0,
+    .prevError = 0,
+    .integralError = 0,
 
-        .lastResult = 0,
-        .result = 0,
+    .lastResult = 0,
+    .result = 0,
 };
 
 void motor_init(void)
@@ -85,44 +85,55 @@ void motor_control(void)
     pwmL = PID_calcInc(&PID_L, encoderLFilter);
     pwmR = PID_calcInc(&PID_R, encoderRFilter);
     //限幅
-    if(pwmL > 4000)
-        pwmL = 4000;
-    else if(pwmL < -4000)
-        pwmL = -4000;
-    if(pwmL > 4000)
-        pwmL = 4000;
-    else if(pwmL < -4000)
-        pwmL = -4000;
+    if(pwmL > 9500)
+        pwmL = 9500;
+    else if(pwmL < -9500)
+        pwmL = -9500;
+    if(pwmL > 9500)
+        pwmL = 9500;
+    else if(pwmL < -9500)
+        pwmL = -9500;
 
-    if(pwmR > 4000)
-        pwmR = 4000;
-    else if(pwmR < -4000)
-        pwmR = -4000;
-    if(pwmR > 4000)
-        pwmR = 4000;
-    else if(pwmR < -4000)
-        pwmR = -4000;
+    if(pwmR > 9500)
+        pwmR = 9500;
+    else if(pwmR < -9500)
+        pwmR = -9500;
+    if(pwmR > 9500)
+        pwmR = 9500;
+    else if(pwmR < -9500)
+        pwmR = -9500;
 //    nowParaL = (float)filterParam * oldParaL + (1.0 - filterParam) * paraL;
 //    nowParaR = (float)filterParam * oldParaR + (1.0 - filterParam) * paraR;
 //    oldParaL = nowParaL;
 //    oldParaR = nowParaR;
 
     //设定PWM值
-    pwm_duty(MOTOR_LA, 5000+pwmL);
-    pwm_duty(MOTOR_LB, 5000-pwmL);
-    pwm_duty(MOTOR_RA, 5000+pwmR);
-    pwm_duty(MOTOR_RB, 5000-pwmR);
+    if(pwmL >= 0){
+        pwm_duty(MOTOR_LA, pwmL);
+        pwm_duty(MOTOR_LB, 0);
+    }else {
+        pwm_duty(MOTOR_LA, GTM_ATOM0_PWM_DUTY_MAX + pwmL);
+        pwm_duty(MOTOR_LB, GTM_ATOM0_PWM_DUTY_MAX);
+    }
+    if(pwmR >= 0){
+        pwm_duty(MOTOR_RA, pwmR);
+        pwm_duty(MOTOR_RB, 0);
+    }else {
+        pwm_duty(MOTOR_RA, GTM_ATOM0_PWM_DUTY_MAX + pwmR);
+        pwm_duty(MOTOR_RB, GTM_ATOM0_PWM_DUTY_MAX);
+    }
+
 
 
     //vofa发送
 #ifdef DEBUG_MOTOR_PID
-    vofa_sendFloat((float)encoderL);
-    vofa_sendFloat((float)encoderR);
-    vofa_sendFloat((float)encoderLFilter);
-    vofa_sendFloat((float)encoderRFilter);
-    vofa_sendFloat((float)PID_L.targetPoint);
-    vofa_sendFloat((float)PID_R.targetPoint);
-    vofa_sendFloat(speedR);
+    general_sendFloat((float)encoderL);
+    general_sendFloat((float)encoderR);
+    general_sendFloat((float)encoderLFilter);
+    general_sendFloat((float)encoderRFilter);
+    general_sendFloat((float)PID_L.targetPoint);
+    general_sendFloat((float)PID_R.targetPoint);
+    general_sendFloat(speedR);
     vofa_sendTail();
 #endif
 

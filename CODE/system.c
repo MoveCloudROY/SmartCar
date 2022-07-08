@@ -60,11 +60,16 @@ void car_init(void)
 
     pit_init(CCU6_0, PIT_CH0, 5000);
     pit_init(CCU6_0, PIT_CH1, 20000);
+
+
 }
 
 void car_backstage(void)
 {
-
+    pwm_duty(MOTOR_LA, 9000);
+    pwm_duty(MOTOR_LB, 0);
+    pwm_duty(MOTOR_RA, 9000);
+    pwm_duty(MOTOR_RB, 0);
 }
 void img_backstage(void)
 {
