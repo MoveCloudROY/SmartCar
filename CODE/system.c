@@ -123,7 +123,7 @@ void img_backstage(void)
 //            img_preProcess(MORPH_EROSION);
 
             img_process();
-            gpio_toggle(P20_9);
+            gpio_toggle(P20_8);
             cpu1_5ms_flag = 0;
         }
         if(delay_20ms_flag)

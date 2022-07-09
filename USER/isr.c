@@ -56,7 +56,7 @@ IFX_INTERRUPT(cc60_pit_ch0_isr, 0, CCU6_0_CH0_ISR_PRIORITY)
 	    delay_1000ms_cnt = 0;
 	    delay_1000ms_flag = 1;
 	    cpu0_1000ms_flag = 1;
-	    gpio_toggle(P20_8);
+	    gpio_toggle(P20_9);
 	}
 
 	motor_control();

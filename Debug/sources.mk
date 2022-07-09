@@ -111,7 +111,6 @@ Libraries/infineon_libraries/iLLD/TC26B/Tricore/_Impl \
 Libraries/infineon_libraries/iLLD/TC26B/Tricore/_Lib/DataHandling \
 Libraries/infineon_libraries/iLLD/TC26B/Tricore/_Lib/InternalMux \
 Libraries/infineon_libraries/iLLD/TC26B/Tricore/_PinMap \
-Libraries/rtthread_libraries/libcpu \
 Libraries/seekfree_libraries/common \
 Libraries/seekfree_libraries \
 Libraries/seekfree_peripheral \
