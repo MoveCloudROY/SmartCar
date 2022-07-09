@@ -66,10 +66,10 @@ void car_init(void)
 
 void car_backstage(void)
 {
-    pwm_duty(MOTOR_LA, 9000);
-    pwm_duty(MOTOR_LB, 0);
-    pwm_duty(MOTOR_RA, 9000);
-    pwm_duty(MOTOR_RB, 0);
+//    pwm_duty(MOTOR_LA, 9000);
+//    pwm_duty(MOTOR_LB, 0);
+//    pwm_duty(MOTOR_RA, 9000);
+//    pwm_duty(MOTOR_RB, 0);
 }
 void img_backstage(void)
 {

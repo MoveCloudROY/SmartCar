@@ -4,11 +4,12 @@
 #include "math.h"
 #include "vofa.h"
 
+
 PID PID_L = {
-    .targetPoint = 50,
-    .P = 8.5,
-    .I = 0.83,
-    .D = 5.0,
+    .targetPoint = 200,
+    .P = 24.5045390601805,
+    .I = 0.005*216.937391941517,
+    .D = 0,
     .alphaDev = 0.05,//0.3
     .alphaOut = 0.1,//0.2
 
@@ -24,10 +25,10 @@ PID PID_L = {
     .result = 0,
 };
 PID PID_R = {
-    .targetPoint = 50,
-    .P = 9.0,
-    .I = 0.9,
-    .D = 5.0,
+    .targetPoint = 200,
+    .P = 20.3031449809298,
+    .I = 0.005*268.373269126206,
+    .D = 0,
     .alphaDev = 0.05,
     .alphaOut = 0.1,
 
@@ -62,7 +63,8 @@ void motor_init(void)
 
 void motor_control(void)
 {
-    int encoderL, encoderR, encoderLFilter, encoderRFilter, pwmL, pwmR;
+    int encoderL, encoderR, encoderLFilter, encoderRFilter;
+    static int pwmL = 0, pwmR = 0;
     float speedL, speedR;
     //int oldParaL, oldParaR, nowParaL, nowParaR;
     //float filterParam = 0.1;
@@ -127,10 +129,12 @@ void motor_control(void)
 
     //vofa·¢ËÍ
 #ifdef DEBUG_MOTOR_PID
-    general_sendFloat((float)encoderL);
-    general_sendFloat((float)encoderR);
+//    general_sendFloat((float)encoderL);
+//    general_sendFloat((float)encoderR);
     general_sendFloat((float)encoderLFilter);
     general_sendFloat((float)encoderRFilter);
+    general_sendFloat((float)pwmL);
+    general_sendFloat((float)pwmR);
     general_sendFloat((float)PID_L.targetPoint);
     general_sendFloat((float)PID_R.targetPoint);
     general_sendFloat(speedR);
