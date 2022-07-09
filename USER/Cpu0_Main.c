@@ -45,6 +45,7 @@ int core0_main(void)
 	//用户在此处调用各种初始化函数等
 
 	car_init();
+//	motor_init();
 
 	//等待所有核心初始化完毕
 	IfxCpu_emitEvent(&g_cpuSyncEvent);

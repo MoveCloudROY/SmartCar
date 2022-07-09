@@ -45,14 +45,14 @@ int PID_calcInc(PID *pid, int nowPoint)
 
     pid->iError = pid->targetPoint - nowPoint;
 
-    if(pid->result > 4000) //判断上次结果是否最大/小值,若是,则对当前误差归0
+    if(pid->result > 9500) //判断上次结果是否最大/小值,若是,则对当前误差归0
     {
         if(pid->iError > 0)
         {
             pid->iError = 0;
         }
     }
-    else if(pid->result < -4000)
+    else if(pid->result < -9500)
     {
         if(pid->iError < 0)
         {
@@ -75,7 +75,7 @@ int PID_calcInc(PID *pid, int nowPoint)
     pid->result += pid->para;
 
 
-    pid->result = pid->alphaOut * (float)pid->result + (1.0f - pid->alphaOut) * pid->lastResult;
+//    pid->result = pid->alphaOut * (float)pid->result + (1.0f - pid->alphaOut) * pid->lastResult;
     pid->lastResult = pid->result;
     return pid->result;
 }

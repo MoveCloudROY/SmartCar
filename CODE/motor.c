@@ -9,13 +9,21 @@
 float speedL = 0.0, speedR = 0.0;
 PassDisTypedef passDis;
 
+
 PID PID_L = {
+<<<<<<< HEAD
     .targetPoint = 70,
 //    .P = 8.5,
 //    .I = 0.83,
     .P = 29.5264604345801,
     .I = 2.22777631957277,
     .D = 8.51117071359754,
+=======
+    .targetPoint = 200,
+    .P = 24.5045390601805,
+    .I = 0.005*216.937391941517,
+    .D = 0,
+>>>>>>> 4f2284d3928303b6bfc73d62701a25149e115f3b
     .alphaDev = 0.05,//0.3
     .alphaOut = 0.1,//0.2
 
@@ -31,6 +39,7 @@ PID PID_L = {
     .result = 0,
 };
 PID PID_R = {
+<<<<<<< HEAD
 
         .targetPoint = 70,
 //        .P = 9.0,
@@ -40,6 +49,14 @@ PID PID_R = {
         .D = 0,
         .alphaDev = 0.05,
         .alphaOut = 0.1,
+=======
+    .targetPoint = 200,
+    .P = 20.3031449809298,
+    .I = 0.005*268.373269126206,
+    .D = 0,
+    .alphaDev = 0.05,
+    .alphaOut = 0.1,
+>>>>>>> 4f2284d3928303b6bfc73d62701a25149e115f3b
 
     .feedForwardK = 6.9979,
     .feedForwardB = 361.75,
@@ -95,9 +112,15 @@ void motor_init(void)
 
 void motor_control(void)
 {
+<<<<<<< HEAD
     int encoderL, encoderR, encoderLFilter, encoderRFilter, pwmL, pwmR;
 
 
+=======
+    int encoderL, encoderR, encoderLFilter, encoderRFilter;
+    static int pwmL = 0, pwmR = 0;
+    float speedL, speedR;
+>>>>>>> 4f2284d3928303b6bfc73d62701a25149e115f3b
     //int oldParaL, oldParaR, nowParaL, nowParaR;
     //float filterParam = 0.1;
 #ifdef OLTEST
@@ -140,33 +163,44 @@ void motor_control(void)
     pwmL = PID_calcInc(&PID_L, encoderLFilter);
     pwmR = PID_calcInc(&PID_R, encoderRFilter);
     //限幅
-    if(pwmL > 4000)
-        pwmL = 4000;
-    else if(pwmL < -4000)
-        pwmL = -4000;
-    if(pwmL > 4000)
-        pwmL = 4000;
-    else if(pwmL < -4000)
-        pwmL = -4000;
+    if(pwmL > 9500)
+        pwmL = 9500;
+    else if(pwmL < -9500)
+        pwmL = -9500;
+    if(pwmL > 9500)
+        pwmL = 9500;
+    else if(pwmL < -9500)
+        pwmL = -9500;
 
-    if(pwmR > 4000)
-        pwmR = 4000;
-    else if(pwmR < -4000)
-        pwmR = -4000;
-    if(pwmR > 4000)
-        pwmR = 4000;
-    else if(pwmR < -4000)
-        pwmR = -4000;
+    if(pwmR > 9500)
+        pwmR = 9500;
+    else if(pwmR < -9500)
+        pwmR = -9500;
+    if(pwmR > 9500)
+        pwmR = 9500;
+    else if(pwmR < -9500)
+        pwmR = -9500;
 //    nowParaL = (float)filterParam * oldParaL + (1.0 - filterParam) * paraL;
 //    nowParaR = (float)filterParam * oldParaR + (1.0 - filterParam) * paraR;
 //    oldParaL = nowParaL;
 //    oldParaR = nowParaR;
 
     //设定PWM值
-    pwm_duty(MOTOR_LA, 5000+pwmL);
-    pwm_duty(MOTOR_LB, 5000-pwmL);
-    pwm_duty(MOTOR_RA, 5000+pwmR);
-    pwm_duty(MOTOR_RB, 5000-pwmR);
+    if(pwmL >= 0){
+        pwm_duty(MOTOR_LA, pwmL);
+        pwm_duty(MOTOR_LB, 0);
+    }else {
+        pwm_duty(MOTOR_LA, GTM_ATOM0_PWM_DUTY_MAX + pwmL);
+        pwm_duty(MOTOR_LB, GTM_ATOM0_PWM_DUTY_MAX);
+    }
+    if(pwmR >= 0){
+        pwm_duty(MOTOR_RA, pwmR);
+        pwm_duty(MOTOR_RB, 0);
+    }else {
+        pwm_duty(MOTOR_RA, GTM_ATOM0_PWM_DUTY_MAX + pwmR);
+        pwm_duty(MOTOR_RB, GTM_ATOM0_PWM_DUTY_MAX);
+    }
+
 
 
     if(passDis.intFlag)
@@ -177,6 +211,7 @@ void motor_control(void)
 
     //vofa发送
 #ifdef DEBUG_MOTOR_PID
+<<<<<<< HEAD
     general_sendFloat((float)encoderL);
     general_sendFloat((float)encoderR);
     general_sendFloat((float)encoderLFilter);
@@ -186,6 +221,16 @@ void motor_control(void)
     general_sendFloat((float)PID_L.result);
     general_sendFloat((float)PID_R.result);
     general_sendFloat(speedL);
+=======
+//    general_sendFloat((float)encoderL);
+//    general_sendFloat((float)encoderR);
+    general_sendFloat((float)encoderLFilter);
+    general_sendFloat((float)encoderRFilter);
+    general_sendFloat((float)pwmL);
+    general_sendFloat((float)pwmR);
+    general_sendFloat((float)PID_L.targetPoint);
+    general_sendFloat((float)PID_R.targetPoint);
+>>>>>>> 4f2284d3928303b6bfc73d62701a25149e115f3b
     general_sendFloat(speedR);
     vofa_sendTail();
 #endif

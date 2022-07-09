@@ -61,6 +61,15 @@ IFX_INTERRUPT(cc60_pit_ch0_isr, 0, CCU6_0_CH0_ISR_PRIORITY)
 
 	motor_control();
 
+//	static float time = 0;
+//	time +=0.005;
+//    //读取编码器
+//    int16 encoderL = gpt12_get(GPT12_T2);
+//    int16 encoderR = -gpt12_get(GPT12_T4);//右轮正转负的,所以手动取个反
+//    //对编码器读取值滤波
+//    gpt12_clear(GPT12_T2);
+//    gpt12_clear(GPT12_T4);
+//    printf("%f,%d,%d\n", time, encoderL, encoderR);
 }
 
 

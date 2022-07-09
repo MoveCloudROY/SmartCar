@@ -36,8 +36,8 @@
 //-------------------------------------------------------------------------------------------------------------------
 #define DEBUG_UART                  UART_2
 #define DEBUG_UART_BAUD             115200
-#define DEBUG_UART_TX_PIN           UART0_TX_P14_0
-#define DEBUG_UART_RX_PIN           UART0_RX_P14_1
+#define DEBUG_UART_TX_PIN           UART2_TX_P10_5
+#define DEBUG_UART_RX_PIN           UART2_RX_P10_6
 
 //-------------------------------------------------------------------------------------------------------------------
 //  DEBUG_INFO 为 0                  不输出断言信息

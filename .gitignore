@@ -1,33 +1,51 @@
 # Prerequisites
 *.d
+<<<<<<< HEAD
 
+=======
+>>>>>>> 4f2284d3928303b6bfc73d62701a25149e115f3b
 # Object files
 *.o
 *.ko
 *.obj
 *.elf
+<<<<<<< HEAD
 
+=======
+>>>>>>> 4f2284d3928303b6bfc73d62701a25149e115f3b
 # Linker output
 *.ilk
 *.map
 *.exp
+<<<<<<< HEAD
 
 # Precompiled Headers
 *.gch
 *.pch
 
+=======
+# Precompiled Headers
+*.gch
+*.pch
+>>>>>>> 4f2284d3928303b6bfc73d62701a25149e115f3b
 # Libraries
 *.lib
 *.a
 *.la
 *.lo
+<<<<<<< HEAD
 
+=======
+>>>>>>> 4f2284d3928303b6bfc73d62701a25149e115f3b
 # Shared objects (inc. Windows DLLs)
 *.dll
 *.so
 *.so.*
 *.dylib
+<<<<<<< HEAD
 
+=======
+>>>>>>> 4f2284d3928303b6bfc73d62701a25149e115f3b
 # Executables
 *.exe
 *.out
@@ -35,13 +53,19 @@
 *.i*86
 *.x86_64
 *.hex
+<<<<<<< HEAD
 
+=======
+>>>>>>> 4f2284d3928303b6bfc73d62701a25149e115f3b
 # Debug files
 *.dSYM/
 *.su
 *.idb
 *.pdb
+<<<<<<< HEAD
 
+=======
+>>>>>>> 4f2284d3928303b6bfc73d62701a25149e115f3b
 # Kernel Module Compile Results
 *.mod*
 *.cmd
