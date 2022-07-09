@@ -88,16 +88,11 @@ void car_init(void)
     pit_init(CCU6_0, PIT_CH0, 5000);
     pit_init(CCU6_0, PIT_CH1, 20000);
 
-<<<<<<< HEAD
     vt_clearall();
-=======
-
->>>>>>> 4f2284d3928303b6bfc73d62701a25149e115f3b
 }
 
 void car_backstage(void)
 {
-<<<<<<< HEAD
     shell_run();
     vt_hide_cursor();
 
@@ -114,12 +109,6 @@ void car_backstage(void)
         vt_clearall();
         cpu0_1000ms_flag = 0;
     }
-=======
-//    pwm_duty(MOTOR_LA, 9000);
-//    pwm_duty(MOTOR_LB, 0);
-//    pwm_duty(MOTOR_RA, 9000);
-//    pwm_duty(MOTOR_RB, 0);
->>>>>>> 4f2284d3928303b6bfc73d62701a25149e115f3b
 }
 void img_backstage(void)
 {
