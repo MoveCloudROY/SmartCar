@@ -6,7 +6,7 @@
 //#define DEBUG_MOTOR_PID
 //#define OLTEST
 
-float speedL, speedR;
+float speedL = 0.0, speedR = 0.0;
 PassDisTypedef passDis;
 
 PID PID_L = {

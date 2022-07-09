@@ -16,6 +16,7 @@
 #include "ui.h"
 #include "shell.h"
 #include "vt100.h"
+#include "yawAngle.h"
 /*
 
 ≥µ¡æ–≈œ¢
@@ -92,7 +93,7 @@ void car_init(void)
 
 void car_backstage(void)
 {
-//    shell_run();
+    shell_run();
     vt_hide_cursor();
 
     if(cpu0_5ms_flag)

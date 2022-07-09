@@ -20,7 +20,7 @@
 #ifndef _headfile_h
 #define _headfile_h
 
-
+#define PI 3.14159f
 
 #include "SEEKFREE_PRINTF.h"
 
@@ -71,7 +71,6 @@
 /*========MY=========*/
 /*===只有不变的写在这里===*/
 #include "vofa.h"
-
 
 
 #endif

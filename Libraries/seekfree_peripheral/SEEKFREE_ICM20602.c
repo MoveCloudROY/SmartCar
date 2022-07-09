@@ -29,11 +29,23 @@
 #include "zf_spi.h"
 #include "SEEKFREE_IIC.h"
 #include "SEEKFREE_ICM20602.h"
+#include "headfile.h"
 
 
 int16 icm_gyro_x,icm_gyro_y,icm_gyro_z;
 int16 icm_acc_x,icm_acc_y,icm_acc_z;
 
+float gyro[3];
+float acc[3];
+
+float g = 9.8;
+float accelBias[3]={0,0,0};
+float gyroBias[3]={0,0,0};
+
+
+static inline float int2float(int num){
+    return (float)num / (num >= 0 ? 32767 : 32768);
+}
 
 //-------------------------------------------------------------------------------------------------------------------
 //  @brief      ICM20602自检函数
@@ -84,9 +96,41 @@ void icm20602_init(void)
     simiic_write_reg(ICM20602_DEV_ADDR,ICM20602_PWR_MGMT_2,0x00);               //开启陀螺仪和加速度计
     simiic_write_reg(ICM20602_DEV_ADDR,ICM20602_CONFIG,0x01);                   //176HZ 1KHZ
     simiic_write_reg(ICM20602_DEV_ADDR,ICM20602_SMPLRT_DIV,0x07);               //采样速率 SAMPLE_RATE = INTERNAL_SAMPLE_RATE / (1 + SMPLRT_DIV)
-    simiic_write_reg(ICM20602_DEV_ADDR,ICM20602_GYRO_CONFIG,0x18);              //±2000 dps
-    simiic_write_reg(ICM20602_DEV_ADDR,ICM20602_ACCEL_CONFIG,0x10);             //±8g
+    simiic_write_reg(ICM20602_DEV_ADDR,ICM20602_GYRO_CONFIG,0x18);              //±2000 dps ##[4:3]00 = ±250 dps 01= ±500 dps 10 = ±1000 dps 11 = ±2000 dps
+    simiic_write_reg(ICM20602_DEV_ADDR,ICM20602_ACCEL_CONFIG,0x10);             //±8g ##[4:3]±2g (00), ±4g (01), ±8g (10), ±16g (11)
     simiic_write_reg(ICM20602_DEV_ADDR,ICM20602_ACCEL_CONFIG_2,0x03);           //Average 4 samples   44.8HZ   //0x23 Average 16 samples
+
+    systick_delay_ms(STM0, 2);
+    icm_calibration();
+}
+
+void icm_calibration(void){
+    int asumx=0,asumy=0,asumz=0,gsumx=0,gsumy=0,gsumz=0;
+    systick_delay_ms(STM0, 200);
+    for(int i = 1; i < CALTIMES; i++){
+        get_icm20602_accdata();
+        get_icm20602_gyro();
+        asumx += icm_acc_x;
+        asumy += icm_acc_y;
+        asumz += icm_acc_z;
+        gsumx += icm_gyro_x;
+        gsumy += icm_gyro_y;
+        gsumz += icm_gyro_z;
+        systick_delay_ms(STM0, 5);
+    }
+    //校正g值
+    g= 8 * g * sqrt((int2float(asumx) / CALTIMES)*(int2float(asumx) / CALTIMES)+
+                    (int2float(asumy) / CALTIMES)*(int2float(asumy) / CALTIMES)+
+                    (int2float(asumz) / CALTIMES)*(int2float(asumz) / CALTIMES));
+//    sysNominalState.gravityAtG[2]=
+    //计算偏差量
+    accelBias[0] = -(float)asumx / CALTIMES / (asumx >= 0 ? 32767 : 32768) * (8*g);
+    accelBias[1] = -(float)asumy / CALTIMES / (asumy >= 0 ? 32767 : 32768) * (8*g);
+    accelBias[2] = -(float)asumz / CALTIMES / (asumz >= 0 ? 32767 : 32768) * (8*g);
+    gyroBias[0] = (float)gsumx / CALTIMES / (gsumx >= 0 ? 32767 : 32768) * 2000;
+    gyroBias[1] = (float)gsumy / CALTIMES / (gsumy >= 0 ? 32767 : 32768) * 2000;
+    gyroBias[2] = (float)gsumz / CALTIMES / (gsumz >= 0 ? 32767 : 32768) * 2000;
+
 }
 
 
@@ -105,6 +149,13 @@ void get_icm20602_accdata(void)
     icm_acc_x = (int16)(((uint16)dat[0]<<8 | dat[1]));
     icm_acc_y = (int16)(((uint16)dat[2]<<8 | dat[3]));
     icm_acc_z = (int16)(((uint16)dat[4]<<8 | dat[5]));
+
+//    acc[0] = (float)icm_acc_x / (icm_acc_x >= 0 ? 32767 : 32768) * (8*g) - accelBias[0];//8g
+//    acc[1] = (float)icm_acc_y / (icm_acc_y >= 0 ? 32767 : 32768) * (8*g) - accelBias[1];
+//    acc[2] = (float)icm_acc_z / (icm_acc_z >= 0 ? 32767 : 32768) * (8*g) - accelBias[2];
+    acc[0] = (float)icm_acc_x / (icm_acc_x >= 0 ? 32767 : 32768) * (8*g) + accelBias[0];//8g
+    acc[1] = (float)icm_acc_y / (icm_acc_y >= 0 ? 32767 : 32768) * (8*g) + accelBias[1];
+    acc[2] = (float)icm_acc_z / (icm_acc_z >= 0 ? 32767 : 32768) * (8*g) + accelBias[2];
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -122,6 +173,10 @@ void get_icm20602_gyro(void)
     icm_gyro_x = (int16)(((uint16)dat[0]<<8 | dat[1]));
     icm_gyro_y = (int16)(((uint16)dat[2]<<8 | dat[3]));
     icm_gyro_z = (int16)(((uint16)dat[4]<<8 | dat[5]));
+
+    gyro[0] = ((float)icm_gyro_x / (icm_gyro_x >= 0 ? 32767 : 32768) * 2000 - gyroBias[0]) / 180 * PI;//2000dps
+    gyro[1] = ((float)icm_gyro_y / (icm_gyro_y >= 0 ? 32767 : 32768) * 2000 - gyroBias[1]) / 180 * PI;
+    gyro[2] = ((float)icm_gyro_z / (icm_gyro_z >= 0 ? 32767 : 32768) * 2000 - gyroBias[2]) / 180 * PI;
 }
 
 //-------------------------------------------------------------------------------------------------------------------

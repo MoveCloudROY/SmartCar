@@ -100,9 +100,15 @@
 #define     ICM20602_ZA_OFFSET_H        0x7D
 #define     ICM20602_ZA_OFFSET_L        0x7E
 
+#define     CALTIMES                    1000
 
 extern int16 icm_gyro_x,icm_gyro_y,icm_gyro_z;
 extern int16 icm_acc_x,icm_acc_y,icm_acc_z;
+extern float gyro[3];
+extern float acc[3];
+extern float accelBias[3];
+extern float gyroBias[3];
+extern float g;
 
 
 //--------软件IIC--------------
@@ -119,6 +125,8 @@ void get_icm20602_gyro_hardware(void);
 void icm20602_init_spi(void);
 void get_icm20602_accdata_spi(void);
 void get_icm20602_gyro_spi(void);
+/// 校准函数
+void icm_calibration(void);
 
 
 #endif

@@ -2,7 +2,7 @@
  * @Author: ROY1994
  * @Date: 2022-02-04 14:01:20
  * @LastEditors: ROY1994
- * @LastEditTime: 2022-07-03 21:28:36
+ * @LastEditTime: 2022-07-08 22:31:28
  * @FilePath: \myImageDeal\ImageDeal.h
  * @Description: t
  */
@@ -120,6 +120,12 @@ typedef struct _EdgeJumpPointTypedef
     DirTypeEnum type;
 }EdgeJumpPointTypedef;
 
+typedef struct _BlackBlockTopTypedef
+{
+    int posY;
+    int posX;
+}BlackBlockTopTypedef;
+
 
 //===================================================================================================================//
 
@@ -184,6 +190,7 @@ void p_repairLine(void);
 void get_error(void);
 
 // 功能性函数
+uint8_t judge_lineBeginLost(LineTypeEnum type);
 float get_curvature(uint8_t select_top, uint8_t select_bottom, LineTypeEnum type);
 uint8_t judge_lineContinuity(uint8_t select_begin, uint8_t select_end, LineTypeEnum type);
 float calc_curvature(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t x3, uint8_t y3);

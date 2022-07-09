@@ -4,8 +4,10 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
+../CODE/ESKF.c \
 ../CODE/ImageDeal.c \
 ../CODE/ImagePreDeal.c \
+../CODE/KF.c \
 ../CODE/data.c \
 ../CODE/key.c \
 ../CODE/motor.c \
@@ -15,11 +17,14 @@ C_SRCS += \
 ../CODE/system.c \
 ../CODE/ui.c \
 ../CODE/vofa.c \
-../CODE/vt100.c 
+../CODE/vt100.c \
+../CODE/yawAngle.c 
 
 OBJS += \
+./CODE/ESKF.o \
 ./CODE/ImageDeal.o \
 ./CODE/ImagePreDeal.o \
+./CODE/KF.o \
 ./CODE/data.o \
 ./CODE/key.o \
 ./CODE/motor.o \
@@ -29,11 +34,14 @@ OBJS += \
 ./CODE/system.o \
 ./CODE/ui.o \
 ./CODE/vofa.o \
-./CODE/vt100.o 
+./CODE/vt100.o \
+./CODE/yawAngle.o 
 
 COMPILED_SRCS += \
+./CODE/ESKF.src \
 ./CODE/ImageDeal.src \
 ./CODE/ImagePreDeal.src \
+./CODE/KF.src \
 ./CODE/data.src \
 ./CODE/key.src \
 ./CODE/motor.src \
@@ -43,11 +51,14 @@ COMPILED_SRCS += \
 ./CODE/system.src \
 ./CODE/ui.src \
 ./CODE/vofa.src \
-./CODE/vt100.src 
+./CODE/vt100.src \
+./CODE/yawAngle.src 
 
 C_DEPS += \
+./CODE/ESKF.d \
 ./CODE/ImageDeal.d \
 ./CODE/ImagePreDeal.d \
+./CODE/KF.d \
 ./CODE/data.d \
 ./CODE/key.d \
 ./CODE/motor.d \
@@ -57,7 +68,8 @@ C_DEPS += \
 ./CODE/system.d \
 ./CODE/ui.d \
 ./CODE/vofa.d \
-./CODE/vt100.d 
+./CODE/vt100.d \
+./CODE/yawAngle.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes

@@ -2,7 +2,7 @@
  * @Author: ROY1994
  * @Date: 2022-04-23 21:14:50
  * @LastEditors: ROY1994
- * @LastEditTime: 2022-07-04 22:07:20
+ * @LastEditTime: 2022-07-06 21:31:17
  * @FilePath: \myImageDeal\data.h
  * @Description:
  */
@@ -38,7 +38,10 @@ typedef struct _ConstDataTypeDef
     float   kImageCrossIOUth;
     float   kImageStraightCurvTh;
     int     kImagePOutVarianceTh;
+    int     kImagePassingOffset;
+    int     kImageForkInPicCnt, kImageForkInOutPicCnt;
     int     kArcman;
+
 }ConstDataTypeDef;
 
 

@@ -2,7 +2,7 @@
  * @Author: ROY1994
  * @Date: 2022-05-10 17:23:16
  * @LastEditors: ROY1994
- * @LastEditTime: 2022-07-04 22:32:27
+ * @LastEditTime: 2022-07-09 14:17:06
  * @FilePath: \myImageDeal\ImageDeal.cpp
  * @Description:
  */
@@ -15,6 +15,7 @@
  * @Description: 搜线，元素判断等主要处理函数
  */
 #include "ImageDeal.h"
+#include <stdint.h>
 #include <stdio.h>
 
 #ifdef DEBUG
@@ -89,9 +90,9 @@ EdgeJumpPointTypedef color_TogglePos_left[10], color_TogglePos_right[10];
 // int color_TogglePos_left[10] = {0}, color_TogglePos_right[10] = {0};
 int color_toggleCnt_left = 0, color_toggleCnt_right = 0;
 // 黑->白->黑->白->黑 四个跳变点(防止可能的越界)
-uint8_t isCircle_flag_1 = 'F', isCircle_flag_2 = 'F', isP_flag = 'F', circle_in_flag = 'F';
-int CircleOrP_BlackBlock_Hrow = 0;
-
+uint8_t isCircle_flag_1 = 'F', isCircle_flag_2 = 'F', circle_in_flag = 'F';
+// int CircleOrP_BlackBlock_Hrow = 0;
+BlackBlockTopTypedef blackBlock;
 
 /**
  * @description: 图像处理调用函数
@@ -101,13 +102,14 @@ int CircleOrP_BlackBlock_Hrow = 0;
 void img_process(void)
 {
     params_init(); // 初始化参数
-    // RoadType = Cross;
     basic_searchLine(HEIGHT-1,HEIGHT-6); // 对最底下6行进行完全扫线
     advance_searchLine(HEIGHT-7); // 其余根据上一行的范围得出
 
 
-    // imgInfo.CircleStatus = CIRCLE_OUT;
-    // imgInfo.RoadType = Circle_L;
+// #ifdef DEBUG
+//     PRINT_LINE_INFO();
+// #endif
+
 
     road_judge();
 
@@ -116,7 +118,7 @@ void img_process(void)
 #endif
     //TODO
     advance_repairLine(); // 补线
-    advance_midLineFilter();
+    // advance_midLineFilter();
 
     //series_searchLine();
     //basic_getSpecialParams(imgInfo.top, imgInfo.bottom);
@@ -141,7 +143,8 @@ void params_init(void)
     // memset(leftLine, 0, sizeof(leftLine));
     // memset(rowInfo, WIDTH - 1, sizeof(rowInfo));
     ForkLinePointx_l = 0; ForkLinePointx_r = 0; ForkLinePointy = 0;
-    CircleOrP_BlackBlock_Hrow = 0;
+    blackBlock.posX = MISS;
+    blackBlock.posY = MISS;
     fork_flag_1 = 'F';
     fork_flag_2 = 'F';
     imgInfo.top = 8;//UP_LIMIT;
@@ -227,9 +230,6 @@ void basic_searchLine(int bottom,int top)
  */
 void series_searchLine(void)
 {
-    /******************************************************************/
-    //               TODO 种子生长法(under construction)
-    /*******************************************************************/
     int dx[8] = {1, 1, 0,-1,-1,-1, 0, 1,};
     int dy[8] = {0,-1,-1,-1, 0, 1, 1, 1,};
     /**
@@ -328,7 +328,7 @@ void series_searchLine(void)
         }
         if(SearchDisruptFlag == 1)// 遇到中断继续
         {
-            continue;// TODO 加入分隔符
+            continue;//
         }
 
         ++leftLineSeriesCnt;// 继续增加当前线的长度
@@ -386,7 +386,7 @@ void series_searchLine(void)
         }
         if(SearchDisruptFlag == 1)// 遇到中断继续
         {
-            continue;// TODO 加入分隔符
+            continue;
         }
 
         ++rightLineSeriesCnt;// 继续增加当前线的长度
@@ -401,7 +401,7 @@ void series_searchLine(void)
  * @param {uint8_t} select_bottom
  * @return {*}
  */
-void basic_getSpecialParams(uint8_t select_top, uint8_t select_bottom)//TODO 基于种子生长法的拐点寻找
+void basic_getSpecialParams(uint8_t select_top, uint8_t select_bottom)
 {
     int i;
     leftDownJump = MISS;
@@ -1093,10 +1093,13 @@ void advance_repairLine(void) /////绘制延长线并重新确定中线
                 TFSite = row + 2; //如果本行的右边界找到了，则把该行下面第二行坐标送个TFsite
         }
     }
-    for (int row = HEIGHT-1; row >= imgInfo.top; row--)
+    if(needExternL == 'T' || needExternR == 'T')
     {
-        rowInfo[row].midLine = (rowInfo[row].leftLine + rowInfo[row].rightLine) / 2; //扫描结束，把这一块经优化之后的中间值存入
-        rowInfo[row].width = rowInfo[row].rightLine-rowInfo[row].leftLine; //把优化之后的宽度存入
+        for (int row = HEIGHT-1; row >= imgInfo.top; row--)
+        {
+            rowInfo[row].midLine = (rowInfo[row].leftLine + rowInfo[row].rightLine) / 2; //扫描结束，把这一块经优化之后的中间值存入
+            rowInfo[row].width = rowInfo[row].rightLine-rowInfo[row].leftLine; //把优化之后的宽度存入
+        }
     }
 }
 
@@ -1214,7 +1217,7 @@ void road_judge(void)
     straight_speedUpDetect();
 
     if(
-        // imgInfo.RoadType != Cross       &&
+        imgInfo.RoadType != Cross       &&
         imgInfo.RoadType != P_L         &&
         imgInfo.RoadType != P_R         &&
         imgInfo.RoadType != Circle_L    &&
@@ -1382,7 +1385,7 @@ void fork_detect()
                     (rowInfo[row + 6].rightLine - rowInfo[row].rightLine) > 2 &&//右边的角 看到一个就可以  因为看到两个经常漏判
                     (rowInfo[row + 6].rightLine - rowInfo[row].rightLine) < 8
 
-                ))//TODO 阈值需要调整
+                ))
             {
                 fork_flag_1 = 'T'; //表示近端的角点特征找到
                 forkDetectStartLine = row; //记录第一特征点的行数
@@ -1485,7 +1488,7 @@ void fork_detect()
     static char fork_in_flag_last = 'F', fork_out_flag_last = 'F';
     static long long picNum_in = -1;
     char fork_in_flag_now = 'F', fork_out_flag_now = 'F';
-    if(fork_in_flag == 'F' || ( picNum_in != -1 && picCount - picNum_in <= 25))
+    if(fork_in_flag == 'F' || ( picNum_in != -1 && picCount - picNum_in <= ConstData.kImageForkInPicCnt))
     {
         if(fork_flag_tot == 'T' && imgInfo.RoadType != Fork_In)
         {
@@ -1509,7 +1512,7 @@ void fork_detect()
             fork_flag_tot == 'T'
             && imgInfo.RoadType != Fork_Out
             && picNum_in != -1
-            && picCount - picNum_in >= 40
+            && picCount - picNum_in >= ConstData.kImageForkInOutPicCnt
            )
         {
             fork_out_flag_now = 'T';
@@ -1632,7 +1635,7 @@ void circle_judge_2(void)
 
     // SerialCnt = 0;
     // int16_t SerialCnt = 0;//种子生长法计数
-    CircleOrP_BlackBlock_Hrow = HEIGHT - 1;
+    blackBlock.posY = HEIGHT - 1;
 
     PixelTypedef start;
 
@@ -1646,12 +1649,25 @@ void circle_judge_2(void)
      *   5 6 7
      *
      */
+    uint8_t leftDownLost = judge_lineBeginLost(LEFT);
+    uint8_t rightDownLost = judge_lineBeginLost(RIGHT);
+#ifdef DEBUG
+    printf("leftDownLost: %c    rightDownLost: %c\n", leftDownLost, rightDownLost);
+#endif
     int16_t x, y, tx, ty, s, SearchCompleteFlag = 0, SearchDisruptFlag = 0;
-    if (color_toggleCnt_left - color_toggleCnt_right >= 3 && color_TogglePos_left[2].type == WhiteToBlack) // 意味着或许是左环岛
+    if (
+        color_toggleCnt_left - color_toggleCnt_right >= 3 // 意味着或许是左环岛
+        && (
+            (leftDownLost == 'F' && color_TogglePos_left[2].type == WhiteToBlack)
+            ||
+            (leftDownLost == 'T' && color_TogglePos_left[2].type == BlackToWhite)
+           ) //TODO
+        )
     {
         int16_t SerialCnt_left = 0;
         // 记录起始点
-        start.y = color_TogglePos_left[2].posY;
+
+        start.y = leftDownLost == 'T' ? color_TogglePos_left[1].posY : color_TogglePos_left[2].posY;
         start.x = rowInfo[start.y].leftLine;
         SerialCnt_left++;
         PointSerial[SerialCnt_left] = start;
@@ -1662,7 +1678,11 @@ void circle_judge_2(void)
         SearchCompleteFlag = 0; // 搜索完成标志位
 
         // 计算起点是否为中心黑块最高点
-        CircleOrP_BlackBlock_Hrow = min(CircleOrP_BlackBlock_Hrow, start.y);
+        if (blackBlock.posY > start.y)
+        {
+            blackBlock.posY = start.y;
+            blackBlock.posX = start.x;
+        }
 
         while(1)
         {
@@ -1705,7 +1725,12 @@ void circle_judge_2(void)
                     y = ty;
 
                     // 如果更新成功, 计算当前是否为中心黑块最高点
-                    CircleOrP_BlackBlock_Hrow = min(CircleOrP_BlackBlock_Hrow, y);
+                    // 这里要取最右边的最高点, 且为左环, 逆时针, 所以使用 > 号
+                    if (blackBlock.posY > y)
+                    {
+                        blackBlock.posY = y;
+                        blackBlock.posX = x;
+                    }
 
                     s =  (s - 2 + 8) % 8; // 回退一个直角
                     break;
@@ -1724,11 +1749,18 @@ void circle_judge_2(void)
             ++SerialCnt_left;// 记步数
         }
     }
-    else if (color_toggleCnt_left - color_toggleCnt_right <= -3 && color_TogglePos_right[2].type == WhiteToBlack) // 意味着或许是右环岛
+    else if (
+            color_toggleCnt_left - color_toggleCnt_right <= -3 // 意味着或许是右环岛
+            && (
+                (rightDownLost == 'F' && color_TogglePos_right[2].type == WhiteToBlack)
+                ||
+                (rightDownLost == 'T' && color_TogglePos_right[2].type == BlackToWhite)
+               )
+            )//TODO
     {
         int16_t SerialCnt_right = 0;
         //记录起始点
-        start.y = color_TogglePos_right[2].posY;
+        start.y = rightDownLost == 'T' ? color_TogglePos_right[1].posY : color_TogglePos_right[2].posY;
         start.x = rowInfo[start.y].rightLine;
         SerialCnt_right++;
         PointSerial[SerialCnt_right] = start;
@@ -1739,7 +1771,11 @@ void circle_judge_2(void)
         SearchCompleteFlag = 0; // 搜索完成标志位
 
         // 计算起点是否为中心黑块最高点
-        CircleOrP_BlackBlock_Hrow = min(CircleOrP_BlackBlock_Hrow, start.y);
+        if (blackBlock.posY >= start.y)
+        {
+            blackBlock.posY = start.y;
+            blackBlock.posX = start.x;
+        }
 
         while(1)
         {
@@ -1782,7 +1818,12 @@ void circle_judge_2(void)
                     y = ty;
 
                     // 如果更新成功, 计算当前是否为中心黑块最高点
-                    CircleOrP_BlackBlock_Hrow = min(CircleOrP_BlackBlock_Hrow, y);
+                    // 这里要取最左边的最高点, 且为右环, 逆时针, 所以使用 >= 号
+                    if (blackBlock.posY >= y)
+                    {
+                        blackBlock.posY = y;
+                        blackBlock.posX = x;
+                    }
 
                     s =  (s - 2 + 8) % 8; // 回退一个直角
                     break;
@@ -1814,7 +1855,6 @@ void circle_judge_2(void)
  */
 void p_detect(void)
 {
-    isP_flag = 'F';
     /*  特征 1 (weak)
     *   判断 imgInfo.top 行所相交的黑色边界宽度是否大于获得的 width 值
     *
@@ -1825,7 +1865,7 @@ void p_detect(void)
     *   特征 3 (maybe)
     *   考虑环岛/P中心黑色块最高点所在行高度与左/右线相交点附近的黑白状态\
     *
-    * __--------___
+    * __**-----___
     *              -- **
     * ____           - *
     *     /            \
@@ -1838,25 +1878,25 @@ void p_detect(void)
     */
     // CircleOrP_BlackBlock_Hrow
 
-    // 首先要有中心点
     if (
             imgInfo.PStatus == P_NOT_FIND && isCircle_flag_2 == 'T'
             && color_toggleCnt_left - color_toggleCnt_right >= 3
        ) // 左侧交错数比右侧多,初步考虑左P环
     {
-        // 先得到右侧边界的表达式
-        float k = 0.0, b = 0.0;
-        least_squares(&k, &b, max(imgInfo.top + 5, HEIGHT - 70), HEIGHT - 5, RIGHT);
-        // 中心黑色块最高点所在行高度 与 右线相交点
-        int Hcol = (int)(k * CircleOrP_BlackBlock_Hrow + b);
-        // 检测该点左侧附近的黑白状态, 如果存在白色, 则认为不是P环, 进入下一步环岛判断, 否则认为是P环
-        if (
-            !imageBin[CircleOrP_BlackBlock_Hrow][Hcol]           &&
-            !imageBin[CircleOrP_BlackBlock_Hrow][Hcol - 1]       &&
-            !imageBin[CircleOrP_BlackBlock_Hrow - 1][Hcol -1]    &&
-            !imageBin[CircleOrP_BlackBlock_Hrow - 1][Hcol - 2]   &&
-            !imageBin[CircleOrP_BlackBlock_Hrow - 2][Hcol - 4]
-           )
+        int bigCircleTop = 0;
+        for (int row = blackBlock.posY - 1; row >= 8; --row)
+        {
+            if (
+                !imageBin[row - 1][blackBlock.posX]
+                && !imageBin[row][blackBlock.posX]
+                && imageBin[row + 1][blackBlock.posX]
+               )
+            {
+                bigCircleTop = row + 1;
+                break;
+            }
+        }
+        if (bigCircleTop <= imgInfo.top && imgInfo.top <= blackBlock.posY)
         {
             imgInfo.RoadType = P_L;
             imgInfo.PStatus = P_PASSING;
@@ -1867,30 +1907,80 @@ void p_detect(void)
             && color_toggleCnt_left - color_toggleCnt_right <= -3
             ) // 反之 右P环
     {
-        // 同理左侧边界
-        float k = 0.0, b = 0.0;
-        least_squares(&k, &b, max(imgInfo.top + 5, HEIGHT - 70), HEIGHT - 5, LEFT);
-
-        // 中心黑色块最高点所在行高度 与 右线相交点
-        int Hcol = (int)(k * CircleOrP_BlackBlock_Hrow + b);
-
-#ifdef DEBUG
-        printf("k: %f, b: %f\n", k, b);
-        debugVar.blackBlock_Hrow = CircleOrP_BlackBlock_Hrow;
-        debugVar.blackBlock_Hcol = Hcol;
-#endif
-        if (
-            !imageBin[CircleOrP_BlackBlock_Hrow][Hcol]           &&
-            !imageBin[CircleOrP_BlackBlock_Hrow][Hcol + 1]       &&
-            !imageBin[CircleOrP_BlackBlock_Hrow - 1][Hcol +1]    &&
-            !imageBin[CircleOrP_BlackBlock_Hrow - 1][Hcol + 2]   &&
-            !imageBin[CircleOrP_BlackBlock_Hrow - 2][Hcol + 4]
-        )
+        int bigCircleTop = 0;
+        for (int row = blackBlock.posY - 1; row >= 8; --row)
+        {
+            if (
+                !imageBin[row - 1][blackBlock.posX]
+                && !imageBin[row][blackBlock.posX]
+                && imageBin[row + 1][blackBlock.posX]
+               )
+            {
+                bigCircleTop = row + 1;
+                break;
+            }
+        }
+        if (bigCircleTop <= imgInfo.top && imgInfo.top <= blackBlock.posY)
         {
             imgInfo.RoadType = P_R;
             imgInfo.PStatus = P_PASSING;
         }
     }
+    // ================================================================== //
+    // Old
+    // 首先要有中心点
+//     if (
+//             imgInfo.PStatus == P_NOT_FIND && isCircle_flag_2 == 'T'
+//             && color_toggleCnt_left - color_toggleCnt_right >= 3
+//        ) // 左侧交错数比右侧多,初步考虑左P环
+//     {
+//         // 先得到右侧边界的表达式
+//         float k = 0.0, b = 0.0;
+//         least_squares(&k, &b, max(imgInfo.top + 5, HEIGHT - 70), HEIGHT - 5, RIGHT);
+//         // 中心黑色块最高点所在行高度 与 右线相交点
+//         int Hcol = (int)(k * CircleOrP_BlackBlock_Hrow + b);
+//         // 检测该点左侧附近的黑白状态, 如果存在白色, 则认为不是P环, 进入下一步环岛判断, 否则认为是P环
+//         if (
+//             !imageBin[CircleOrP_BlackBlock_Hrow][Hcol]           &&
+//             !imageBin[CircleOrP_BlackBlock_Hrow][Hcol - 1]       &&
+//             !imageBin[CircleOrP_BlackBlock_Hrow - 1][Hcol -1]    &&
+//             !imageBin[CircleOrP_BlackBlock_Hrow - 1][Hcol - 2]   &&
+//             !imageBin[CircleOrP_BlackBlock_Hrow - 2][Hcol - 4]
+//            )
+//         {
+//             imgInfo.RoadType = P_L;
+//             imgInfo.PStatus = P_PASSING;
+//         }
+//     }
+//     else if (
+//             imgInfo.PStatus == P_NOT_FIND && isCircle_flag_2 == 'T'
+//             && color_toggleCnt_left - color_toggleCnt_right <= -3
+//             ) // 反之 右P环
+//     {
+//         // 同理左侧边界
+//         float k = 0.0, b = 0.0;
+//         least_squares(&k, &b, max(imgInfo.top + 5, HEIGHT - 70), HEIGHT - 5, LEFT);
+
+//         // 中心黑色块最高点所在行高度 与 右线相交点
+//         int Hcol = (int)(k * CircleOrP_BlackBlock_Hrow + b);
+
+// #ifdef DEBUG
+//         printf("k: %f, b: %f\n", k, b);
+//         debugVar.blackBlock_Hrow = CircleOrP_BlackBlock_Hrow;
+//         debugVar.blackBlock_Hcol = Hcol;
+// #endif
+//         if (
+//             !imageBin[CircleOrP_BlackBlock_Hrow][Hcol]           &&
+//             !imageBin[CircleOrP_BlackBlock_Hrow][Hcol + 1]       &&
+//             !imageBin[CircleOrP_BlackBlock_Hrow - 1][Hcol +1]    &&
+//             !imageBin[CircleOrP_BlackBlock_Hrow - 1][Hcol + 2]   &&
+//             !imageBin[CircleOrP_BlackBlock_Hrow - 2][Hcol + 4]
+//         )
+//         {
+//             imgInfo.RoadType = P_R;
+//             imgInfo.PStatus = P_PASSING;
+//         }
+//     }
 
     // 判断为 P 环后, 要对出环做特殊处理
     // 判断是否到达 P_OUT_1 (出p环斜向引导)时刻
@@ -2004,42 +2094,15 @@ void p_detect(void)
             int variance_m = 0; // 方差
             GET_VARIANCE(variance_m, mid, 10);
 
-            // 检测右下角由白变黑跳变
-            static int downside_flag_last_r = 0, downside_check_flag_r = 0; // 右下角白色为 1, 黑色为 0
-            int downside_flag_now_r  =    imageBin[HEIGHT- 1][WIDTH - 2] && imageBin[HEIGHT - 1][WIDTH - 3]
-                                    && imageBin[HEIGHT - 1][WIDTH - 4] && imageBin[HEIGHT - 2][WIDTH - 4];
-            if(!downside_flag_now_r && downside_flag_last_r && !downside_check_flag_r)
-               downside_check_flag_r = 1;
-
-            if (   variance_l <= ConstData.kImagePOutVarianceTh
-                && variance_m <= ConstData.kImagePOutVarianceTh
-                && downside_check_flag_r)
-            {
-                imgInfo.PStatus = P_OFF;
-                downside_flag_last_r = 0;
-                downside_check_flag_r = 0;
-            }
-            else
-            {
-                downside_flag_last_r = downside_flag_now_r;
-            }
-        }
-        else if (imgInfo.RoadType == P_R && (HEIGHT - 10 - (imgInfo.top + 10)) > 0)
-        {
-            int variance_r = 0; // 方差
-            GET_VARIANCE(variance_r, right, 10);
-            int variance_m = 0; // 方差
-            GET_VARIANCE(variance_m, mid, 10);
-
             // 检测左下角由白变黑跳变
             static int downside_flag_last_l = 0, downside_check_flag_l = 0; // 左下角白色为 1, 黑色为 0
-            int downside_flag_now_l  =    imageBin[HEIGHT- 1][1] && imageBin[HEIGHT - 1][2]
-                && imageBin[HEIGHT - 1][3] && imageBin[HEIGHT - 2][3];
+            int downside_flag_now_l  =    imageBin[HEIGHT- 1][9] && imageBin[HEIGHT - 1][10]
+                && imageBin[HEIGHT - 1][11] && imageBin[HEIGHT - 2][12];
 
             if(!downside_flag_now_l && downside_flag_last_l && !downside_check_flag_l)
                downside_check_flag_l = 1;
 
-            if (   variance_r <= ConstData.kImagePOutVarianceTh
+            if (   variance_l <= ConstData.kImagePOutVarianceTh
                 && variance_m <= ConstData.kImagePOutVarianceTh
                 && downside_check_flag_l)
             {
@@ -2051,7 +2114,45 @@ void p_detect(void)
             {
                 downside_flag_last_l = downside_flag_now_l;
             }
+#ifdef DEBUG
+            PRINT_LINE_VARIANCE_INFO(variance_l);
+            PRINT_LINE_VARIANCE_INFO(variance_m);
+            PRINT_FLAG_INFO(downside_check_flag_l);
+#endif
         }
+        else if (imgInfo.RoadType == P_R && (HEIGHT - 10 - (imgInfo.top + 10)) > 0)
+        {
+            int variance_r = 0; // 方差
+            GET_VARIANCE(variance_r, right, 10);
+            int variance_m = 0; // 方差
+            GET_VARIANCE(variance_m, mid, 10);
+
+            // 检测右下角由白变黑跳变
+            static int downside_flag_last_r = 0, downside_check_flag_r = 0; // 右下角白色为 1, 黑色为 0
+            int downside_flag_now_r  =    imageBin[HEIGHT- 1][WIDTH - 10] && imageBin[HEIGHT - 1][WIDTH - 11]
+                                    && imageBin[HEIGHT - 1][WIDTH - 12] && imageBin[HEIGHT - 2][WIDTH - 13];
+            if(!downside_flag_now_r && downside_flag_last_r && !downside_check_flag_r)
+               downside_check_flag_r = 1;
+
+            if (   variance_r <= ConstData.kImagePOutVarianceTh
+                && variance_m <= ConstData.kImagePOutVarianceTh
+                && downside_check_flag_r)
+            {
+                imgInfo.PStatus = P_OFF;
+                downside_flag_last_r = 0;
+                downside_check_flag_r = 0;
+            }
+            else
+            {
+                downside_flag_last_r = downside_flag_now_r;
+            }
+#ifdef DEBUG
+            PRINT_LINE_VARIANCE_INFO(variance_r);
+            PRINT_LINE_VARIANCE_INFO(variance_m);
+            PRINT_FLAG_INFO(downside_check_flag_r);
+#endif
+        }
+
     }
     if(imgInfo.PStatus == P_OFF)
     {
@@ -2263,7 +2364,7 @@ float circle_k = 1.02;
 void circle_detect(void)
 {
 
-    if (isCircle_flag_1 == 'T' && isCircle_flag_2 == 'T' && imgInfo.CircleStatus == CIRCLE_NOT_FIND) // 两个判据为T 且环岛未找到 则说明找到环岛
+    if (isCircle_flag_1 == 'T' && isCircle_flag_2 == 'T' && imgInfo.CircleStatus == CIRCLE_NOT_FIND ) // 两个判据为T 且环岛未找到 则说明找到环岛
     {
 
         if (color_toggleCnt_left - color_toggleCnt_right >= 3 && imgInfo.RoadType != Circle_R) // 通过交错数 判断左环岛还是右环岛 左侧交错数较多 则为左环岛
@@ -2272,6 +2373,9 @@ void circle_detect(void)
             // 取第一个跳变(BlackToWhite)的点作为起始点, 取第三个跳变(BlackToWhite)的点作为终点
             int startRow = color_TogglePos_left[1].posY, endRow = color_TogglePos_left[3].posY;
             float curv = get_curvature(endRow, startRow, RIGHT); // 计算曲率
+#ifdef DEBUG
+            printf("Circle curvR: %f\n", curv);
+#endif
             if (abs(curv) < ConstData.kImageStraightCurvTh)
             {
                 imgInfo.CircleStatus = CIRCLE_FIND; // 标记 [发现环岛] 状态
@@ -2283,6 +2387,9 @@ void circle_detect(void)
             // 同理
             int startRow = color_TogglePos_right[1].posY, endRow = color_TogglePos_right[3].posY;
             float curv = get_curvature(endRow, startRow, LEFT); // 计算曲率
+#ifdef DEBUG
+            printf("Circle curvL: %f\n", curv);
+#endif
             if (abs(curv) < ConstData.kImageStraightCurvTh)
             {
                 imgInfo.CircleStatus = CIRCLE_FIND; // 标记 [发现环岛] 状态
@@ -2512,13 +2619,54 @@ void circle_detect(void)
 
     if(imgInfo.CircleStatus == CIRCLE_OFF) // 如果结束环岛状态, 则进入 [结束环岛] 检测状态
     {
-        if(abs(color_toggleCnt_left - color_toggleCnt_right) <= 1)
-        {
-            imgInfo.CircleStatus = CIRCLE_NOT_FIND;
-            imgInfo.RoadType = Road_None;
-        }
-    }
+            if(
+                imgInfo.RoadType == Circle_L
+                )
+            {
+                // 检测左下角由白变黑跳变
+                static int downside_flag_last_l = 0, downside_check_flag_l = 0; // 左下角白色为 1, 黑色为 0
+                int downside_flag_now_l  =    imageBin[HEIGHT- 1][1] && imageBin[HEIGHT - 1][2]
+                    && imageBin[HEIGHT - 1][3] && imageBin[HEIGHT - 2][3];
 
+                if(!downside_flag_now_l && downside_flag_last_l && !downside_check_flag_l)
+                    downside_check_flag_l = 1;
+
+                if (downside_check_flag_l && abs(color_toggleCnt_left - color_toggleCnt_right) <= 1)
+                {
+                    imgInfo.CircleStatus = CIRCLE_NOT_FIND;
+                    imgInfo.RoadType = Road_None;
+                    downside_flag_last_l = 0;
+                    downside_check_flag_l = 0;
+                }
+                else
+                {
+                    downside_flag_last_l = downside_flag_now_l;
+                }
+            }
+            else if(
+                imgInfo.RoadType == Circle_R
+                )
+            {
+                // 检测右下角由白变黑跳变
+                static int downside_flag_last_r = 0, downside_check_flag_r = 0; // 右下角白色为 1, 黑色为 0
+                int downside_flag_now_r  =    imageBin[HEIGHT- 1][WIDTH - 2] && imageBin[HEIGHT - 1][WIDTH - 3]
+                                        && imageBin[HEIGHT - 1][WIDTH - 4] && imageBin[HEIGHT - 2][WIDTH - 4];
+                if(!downside_flag_now_r && downside_flag_last_r && !downside_check_flag_r)
+                    downside_check_flag_r = 1;
+
+                if (downside_check_flag_r && abs(color_toggleCnt_left - color_toggleCnt_right) <= 1)
+                {
+                    imgInfo.CircleStatus = CIRCLE_NOT_FIND;
+                    imgInfo.RoadType = Road_None;
+                    downside_flag_last_r = 0;
+                    downside_check_flag_r = 0;
+                }
+                else
+                {
+                    downside_flag_last_r = downside_flag_now_r;
+                }
+            }
+        }
 }
 
 
@@ -2548,7 +2696,35 @@ void circle_repairLine(void)
             recalc_line(imgInfo.top, HEIGHT - 1, LEFT);
         }
     }
-
+    // if (imgInfo.CircleStatus == CIRCLE_PASSING)
+    // {
+    //     if (imgInfo.RoadType == Circle_L) // 左环岛常规补线向左偏移, 并限制范围
+    //     {
+    //         for (int row = imgInfo.top + 1; row < HEIGHT; ++row)
+    //         {
+    //             // int tmp = rowInfo[row].leftLine + regWidth[row] / 2;
+    //             if (rowInfo[row].rightLine > rowInfo[row].leftLine + regWidth[row])
+    //                 rowInfo[row].rightLine = rowInfo[row].leftLine + regWidth[row];
+    //             rowInfo[row].rightLine = rowInfo[row].rightLine - (ConstData.kImagePassingOffset << 1);
+    //             rowInfo[row].midLine = rowInfo[row].midLine - ConstData.kImagePassingOffset;
+    //             if (rowInfo[row].midLine < 1)
+    //                 rowInfo[row].midLine = 1;
+    //         }
+    //     }
+    //     else if (imgInfo.RoadType == Circle_R) // 右环岛常规补线向右偏移, 并限制范围
+    //     {
+    //         for (int row = imgInfo.top + 1; row < HEIGHT; ++row)
+    //         {
+    //             // int tmp = rowInfo[row].rightLine - regWidth[row] / 2; // rowInfo[row].midLine < tmp ? tmp - 5:
+    //             if (rowInfo[row].leftLine < rowInfo[row].rightLine - regWidth[row])
+    //                 rowInfo[row].leftLine = rowInfo[row].rightLine - regWidth[row];
+    //             rowInfo[row].leftLine = rowInfo[row].leftLine + (ConstData.kImagePassingOffset << 1);
+    //             rowInfo[row].midLine = rowInfo[row].midLine + ConstData.kImagePassingOffset;
+    //             if (rowInfo[row].midLine > WIDTH - 2)
+    //                 rowInfo[row].midLine = WIDTH - 2;
+    //         }
+    //     }
+    // }
     //出环补线
     if (imgInfo.CircleStatus == CIRCLE_OUT) //此时处于出环状态
     {
@@ -2598,6 +2774,38 @@ void circle_repairLine(void)
     }
 }
 
+const int weight_base[60] = {                        //0为图像最顶行
+    0 , 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1 , 1, 3, 3, 5, 5,10,10,10,10,
+    10,10,10,10,10,10,10,10,10,10,
+    10,10,10,10,10,10,10,10,10,10,
+    10,10,10,10,10, 5, 5, 5, 5, 5,
+    3 , 3, 3, 1, 1, 1, 0, 0, 0, 0,
+};    //基础    //注意斜率变化引起的跳变,要平滑
+const int weight_circle[60] = {                        //0为图像最顶行
+    0 , 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1 , 1, 3, 3, 5, 5,10,10,10,10,
+    10,10,10,10,10,10,10,10,10,10,
+    10,10,10,10,10,10,10,10,10,10,
+    10,10,10,10,10, 5, 5, 5, 5, 5,
+    3 , 3, 3, 1, 1, 1, 0, 0, 0, 0,
+};    //基础    //注意斜率变化引起的跳变,要平滑
+const int weight_p[60] = {                        //0为图像最顶行
+    0 , 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1 , 1, 3, 3, 5, 5,10,10,10,10,
+    10,10,10,10,10,10,10,10,10,10,
+    10,10,10,10,10,10,10,10,10,10,
+    10,10,10,10,10, 5, 5, 5, 5, 5,
+    3 , 3, 3, 1, 1, 1, 0, 0, 0, 0,
+};    //基础    //注意斜率变化引起的跳变,要平滑
+const int weight_fork[60] = {                        //0为图像最顶行
+    0 , 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1 , 1, 3, 3, 5, 5,10,10,10,10,
+    10,10,10,10,10,10,10,10,10,10,
+    10,10,10,10,10,10,10,10,10,10,
+    10,10,10,10,10, 5, 5, 5, 5, 5,
+    3 , 3, 3, 1, 1, 1, 0, 0, 0, 0,
+};    //基础    //注意斜率变化引起的跳变,要平滑
 /**
  * @description: 获取当前位置和中线位置的偏差，传递给PID处理
  * @param {*}
@@ -2630,7 +2838,45 @@ void get_error(void)//TODO 实现动态调整前瞻
     //     avePos = (rowInfo[predictedPass].midLine + rowInfo[predictedPass + 1].midLine + rowInfo[predictedPass + 2].midLine) / 3;
     // }
     // imgInfo.error = avePos-(WIDTH/2);
+}
 
+
+void calc_globalError(void)
+{
+    // for(i = startRow; i > validRow + 1; i --) {
+    // weightSum += weight1[i];
+    // lineSum += weight1[i] * middleLine[i];
+    // }   //从下往上扫
+
+    // angleErr = (float)lineSum / weightSum - middleStandard;
+    // midline_fff = midline_ff;
+    // midline_ff  = midline_f;
+    // midline_f = angleErr;
+    // angleErr = midline_fff * 0.50f + midline_ff * 0.30f + midline_f * 0.20f;
+}
+
+
+uint8_t judge_lineBeginLost(LineTypeEnum type)
+{
+    uint8_t ans = 0;
+    switch (type)
+    {
+        case LEFT:
+            ans = imageBin[HEIGHT - 1][0] && imageBin[HEIGHT - 2][0] && imageBin[HEIGHT - 4][0] && imageBin[HEIGHT - 8][0]
+                    && imageBin[HEIGHT - 1][4] && imageBin[HEIGHT - 2][2];
+                    // && rowInfo[HEIGHT - 1].leftStatus == LOST && rowInfo [HEIGHT - 2].leftStatus == LOST
+                    // && rowInfo [HEIGHT - 4].leftStatus == LOST && rowInfo [HEIGHT - 8].leftStatus == LOST;
+            break;
+        case RIGHT:
+            ans = imageBin[HEIGHT - 1][WIDTH - 1] && imageBin[HEIGHT - 2][WIDTH - 1] && imageBin[HEIGHT - 4][WIDTH - 1] && imageBin[HEIGHT - 8][WIDTH - 1]
+                    && imageBin[HEIGHT - 1][WIDTH - 5] && imageBin[HEIGHT - 2][WIDTH - 3];
+                    // && rowInfo[HEIGHT - 1].rightStatus == LOST && rowInfo [HEIGHT - 2].rightStatus == LOST
+                    // && rowInfo [HEIGHT - 4].rightStatus == LOST && rowInfo [HEIGHT - 8].rightStatus == LOST;
+            break;
+        default:
+            break;
+    }
+    return ans == 1? 'T' : 'F';
 }
 
 
@@ -2755,10 +3001,14 @@ void recalc_line(uint8_t select_top, uint8_t select_bottom, LineTypeEnum type)
 {
     for(int y = select_top + 1; y <= select_bottom; ++ y)
     {
-        rowInfo[y].leftStatus = EXIST;
-        rowInfo[y].rightStatus = EXIST;
-        rowInfo[y].midLine = (rowInfo[y].leftLine + rowInfo[y].rightLine) / 2;
-        rowInfo[y].width = rowInfo[y].rightLine - rowInfo[y].leftLine;
+        if(rowInfo[y].leftLine <= rowInfo[y].rightLine)
+        {
+            rowInfo[y].leftStatus = EXIST;
+            rowInfo[y].rightStatus = EXIST;
+            rowInfo[y].midLine = (rowInfo[y].leftLine + rowInfo[y].rightLine) / 2;
+            rowInfo[y].width = rowInfo[y].rightLine - rowInfo[y].leftLine;
+        }
+
     }
 }
 
