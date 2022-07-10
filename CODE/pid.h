@@ -8,6 +8,7 @@
 typedef struct _PID
 {
     int targetPoint;                    //目标值
+    int theoryTarget;                   //理论目标值（未经过差速处理）
     int para;        		            //增量
     int iError;             			//偏差值
     int lastError;          		    //上一个偏差值

@@ -12,6 +12,7 @@ PassDisTypedef passDis;
 
 PID PID_L = {
     .targetPoint = 70,
+    .theoryTarget = 70,
     .P = 24.5045390601805,
     .I = 0.005*216.937391941517,
     .D = 0,
@@ -31,6 +32,7 @@ PID PID_L = {
 };
 PID PID_R = {
     .targetPoint = 70,
+    .theoryTarget = 70,
     .P = 20.3031449809298,
     .I = 0.005*268.373269126206,
     .D = 0,

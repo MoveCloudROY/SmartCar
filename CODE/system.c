@@ -109,6 +109,27 @@ void car_backstage(void)
         vt_clearall();
         cpu0_1000ms_flag = 0;
     }
+    /*
+    //²âÊÔ¶æ»ú´ò½Ç
+    static int servoPWM = 1510;
+    static int sign = 1;
+    if(!gpio_get(START_KEY)){
+            sign*=-1;
+            while(!gpio_get(START_KEY));
+    }else if(!gpio_get(KEY_2)){
+        servoPWM+=sign;
+        servo_set(++servoPWM);
+        while(!gpio_get(KEY_2));
+    }else if(!gpio_get(KEY_3)){
+        servoPWM+=10*sign;
+        servo_set(servoPWM);
+        while(!gpio_get(KEY_3));
+    }else if(!gpio_get(KEY_4)){
+        servoPWM+=100*sign;
+        servo_set(++servoPWM);
+        while(!gpio_get(KEY_4));
+    }
+    */
 }
 void img_backstage(void)
 {

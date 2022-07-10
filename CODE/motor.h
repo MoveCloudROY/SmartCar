@@ -24,6 +24,8 @@ typedef struct _PassDisTypedef
 
 }PassDisTypedef;
 
+
+
 void motor_init(void);
 void startIntDis(PassDisTypedef *);
 void stopIntDis(PassDisTypedef *);
