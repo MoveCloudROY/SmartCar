@@ -2,7 +2,7 @@
  * @Author: ROY1994
  * @Date: 2022-05-10 17:23:16
  * @LastEditors: ROY1994
- * @LastEditTime: 2022-07-09 14:17:06
+ * @LastEditTime: 2022-07-10 16:15:32
  * @FilePath: \myImageDeal\ImageDeal.cpp
  * @Description:
  */
@@ -93,6 +93,9 @@ int color_toggleCnt_left = 0, color_toggleCnt_right = 0;
 uint8_t isCircle_flag_1 = 'F', isCircle_flag_2 = 'F', circle_in_flag = 'F';
 // int CircleOrP_BlackBlock_Hrow = 0;
 BlackBlockTopTypedef blackBlock;
+uint8_t leftDownLost, rightDownLost;
+int bigCircleTop = 0;
+
 
 /**
  * @description: 图像处理调用函数
@@ -116,9 +119,10 @@ void img_process(void)
 #ifdef DEBUG
     PRINT_ROADTYPE_INFO();
 #endif
+
     //TODO
     advance_repairLine(); // 补线
-    // advance_midLineFilter();
+    advance_midLineFilter();
 
     //series_searchLine();
     //basic_getSpecialParams(imgInfo.top, imgInfo.bottom);
@@ -128,7 +132,6 @@ void img_process(void)
 }
 
 /**
- * @description: 初始化每一幅图像的参数
  * @param {*}
  * @return {*}
  */
@@ -142,6 +145,7 @@ void params_init(void)
     // memset(rowInfo, 0, sizeof(rowInfo));
     // memset(leftLine, 0, sizeof(leftLine));
     // memset(rowInfo, WIDTH - 1, sizeof(rowInfo));
+    leftDownLost = 'F'; rightDownLost = 'F';
     ForkLinePointx_l = 0; ForkLinePointx_r = 0; ForkLinePointy = 0;
     blackBlock.posX = MISS;
     blackBlock.posY = MISS;
@@ -646,7 +650,7 @@ void series_getSpecialParams(void)
 }
 
 /**
- * @description: 依赖下方拐点和起点修补下方缺失线的函数
+ * @description: 依赖下方拐点和起点修补下方缺失线的函数 (废弃状态)
  * @param {*}
  * @return {*}
  */
@@ -1190,6 +1194,9 @@ void road_judge(void)
      * 一边双拐点 环岛
      *
      */
+    leftDownLost = judge_lineBeginLost(LEFT);
+    rightDownLost = judge_lineBeginLost(RIGHT);
+
     if (
         // imgInfo.RoadType != Cross       &&     //赛道类型清0  if里面的情况都需要积分退出 不能在这儿请0
         imgInfo.RoadType != Circle_L    &&
@@ -1251,6 +1258,7 @@ void road_judge(void)
     {
         circle_judge_1(); // 环岛判断函数1
         circle_judge_2(); // 环岛判断函数2
+        bigCircleTop = get_circleTop(); //获取环岛的上边缘
 #ifdef DEBUG
         PRINT_CIRCLE_DETECT_FLAG_INFO();
 #endif
@@ -1296,18 +1304,23 @@ void straight_speedUpDetect(void)
 {
     int sum = 0;
     float variance = 0;  //中线与中间方差
-    for (int row = HEIGHT - 5; row > imgInfo.top + 1; row--)
+    for (int row = HEIGHT - 5; row > imgInfo.top + 1; --row)
     {
         sum += (rowInfo[row].midLine - (WIDTH/2)) * (rowInfo[row].midLine - (WIDTH/2));
     }
     variance = (float)sum / (HEIGHT - 5 - imgInfo.top - 1);
 
-    if (variance < ConstData.kImageStraightLineSpeedUpVarianceTh && imgInfo.top <= 22 && imgInfo.RoadType != Slope)
+    if (variance < (float)ConstData.kImageStraightLineSpeedUpVarianceTh && imgInfo.top <= 22
+        && imgInfo.RoadType != Slope
+        && imgInfo.RoadType != Fork_In
+        && imgInfo.RoadType != Fork_Out
+        && fork_in_flag != 'T'
+        )
     {
-        imgInfo.straight_needSpeedUP = 1;
+        imgInfo.straight_needSpeedUP = 'T';
     }
     else
-        imgInfo.straight_needSpeedUP = 0;
+        imgInfo.straight_needSpeedUP = 'F';
 }
 
 
@@ -1649,8 +1662,6 @@ void circle_judge_2(void)
      *   5 6 7
      *
      */
-    uint8_t leftDownLost = judge_lineBeginLost(LEFT);
-    uint8_t rightDownLost = judge_lineBeginLost(RIGHT);
 #ifdef DEBUG
     printf("leftDownLost: %c    rightDownLost: %c\n", leftDownLost, rightDownLost);
 #endif
@@ -1850,6 +1861,32 @@ void circle_judge_2(void)
 }
 
 /**
+ * @description: 获取环状最高点
+ * @return {int} bigCircleTop_tmp 环状最高点
+ */
+int get_circleTop(void)
+{
+    int bigCircleTop_tmp = MISS;
+    if (isCircle_flag_2 == 'T')
+    {
+        for (int row = blackBlock.posY - 1; row >= 8; --row)
+        {
+            if (
+                !imageBin[row - 1][blackBlock.posX]
+                && !imageBin[row][blackBlock.posX]
+                && imageBin[row + 1][blackBlock.posX]
+                )
+            {
+                bigCircleTop_tmp = row + 1;
+                break;
+            }
+        }
+    }
+    return bigCircleTop_tmp;
+}
+
+
+/**
  * @description: p环补充判断函数
  * @return {*}
  */
@@ -1877,26 +1914,15 @@ void p_detect(void)
     *
     */
     // CircleOrP_BlackBlock_Hrow
-
     if (
             imgInfo.PStatus == P_NOT_FIND && isCircle_flag_2 == 'T'
             && color_toggleCnt_left - color_toggleCnt_right >= 3
+            // && leftDownLost != 'T' && rightDownLost != 'T'
        ) // 左侧交错数比右侧多,初步考虑左P环
     {
-        int bigCircleTop = 0;
-        for (int row = blackBlock.posY - 1; row >= 8; --row)
-        {
-            if (
-                !imageBin[row - 1][blackBlock.posX]
-                && !imageBin[row][blackBlock.posX]
-                && imageBin[row + 1][blackBlock.posX]
-               )
-            {
-                bigCircleTop = row + 1;
-                break;
-            }
-        }
-        if (bigCircleTop <= imgInfo.top && imgInfo.top <= blackBlock.posY)
+        int variance_r = 0;
+        GET_VARIANCE(variance_r, right, 6);
+        if (bigCircleTop <= imgInfo.top && imgInfo.top <= blackBlock.posY && variance_r < ConstData.kImageLineVarianceTh)
         {
             imgInfo.RoadType = P_L;
             imgInfo.PStatus = P_PASSING;
@@ -1905,27 +1931,18 @@ void p_detect(void)
     else if (
             imgInfo.PStatus == P_NOT_FIND && isCircle_flag_2 == 'T'
             && color_toggleCnt_left - color_toggleCnt_right <= -3
+            // && leftDownLost != 'T' && rightDownLost != 'T'
             ) // 反之 右P环
     {
-        int bigCircleTop = 0;
-        for (int row = blackBlock.posY - 1; row >= 8; --row)
-        {
-            if (
-                !imageBin[row - 1][blackBlock.posX]
-                && !imageBin[row][blackBlock.posX]
-                && imageBin[row + 1][blackBlock.posX]
-               )
-            {
-                bigCircleTop = row + 1;
-                break;
-            }
-        }
-        if (bigCircleTop <= imgInfo.top && imgInfo.top <= blackBlock.posY)
+        int variance_l = 0;
+        GET_VARIANCE(variance_l, left, 6);
+        if (bigCircleTop <= imgInfo.top && imgInfo.top <= blackBlock.posY && variance_l < ConstData.kImageLineVarianceTh)
         {
             imgInfo.RoadType = P_R;
             imgInfo.PStatus = P_PASSING;
         }
     }
+
     // ================================================================== //
     // Old
     // 首先要有中心点
@@ -2161,6 +2178,10 @@ void p_detect(void)
     }
 }
 
+/**
+ * @description: p环补线函数
+ * @return {*}
+ */
 void p_repairLine(void)
 {
     if (imgInfo.PStatus == P_OUT_1)
@@ -2363,7 +2384,6 @@ float circle_k = 1.02;
  */
 void circle_detect(void)
 {
-
     if (isCircle_flag_1 == 'T' && isCircle_flag_2 == 'T' && imgInfo.CircleStatus == CIRCLE_NOT_FIND ) // 两个判据为T 且环岛未找到 则说明找到环岛
     {
 
@@ -2371,12 +2391,12 @@ void circle_detect(void)
         {
             // 增强条件, 要求跳变点数少的一边在另一侧跳变点的纵向范围内的曲率小于阈值
             // 取第一个跳变(BlackToWhite)的点作为起始点, 取第三个跳变(BlackToWhite)的点作为终点
-            int startRow = color_TogglePos_left[1].posY, endRow = color_TogglePos_left[3].posY;
-            float curv = get_curvature(endRow, startRow, RIGHT); // 计算曲率
+            int variance_r = 0;
+            GET_VARIANCE(variance_r, right, 6); // 计算方差
 #ifdef DEBUG
-            printf("Circle curvR: %f\n", curv);
+            printf("Circle variance_r: %d\n", variance_r);
 #endif
-            if (abs(curv) < ConstData.kImageStraightCurvTh)
+            if (variance_r < ConstData.kImageLineVarianceTh && imgInfo.top < bigCircleTop)
             {
                 imgInfo.CircleStatus = CIRCLE_FIND; // 标记 [发现环岛] 状态
                 imgInfo.RoadType = Circle_L;
@@ -2385,12 +2405,12 @@ void circle_detect(void)
         else if (color_toggleCnt_left - color_toggleCnt_right <= -3 && imgInfo.RoadType != Circle_L)
         {
             // 同理
-            int startRow = color_TogglePos_right[1].posY, endRow = color_TogglePos_right[3].posY;
-            float curv = get_curvature(endRow, startRow, LEFT); // 计算曲率
+            int variance_l = 0;
+            GET_VARIANCE(variance_l, left, 6); // 计算方差
 #ifdef DEBUG
-            printf("Circle curvL: %f\n", curv);
+            printf("Circle variance_l: %d\n", variance_l);
 #endif
-            if (abs(curv) < ConstData.kImageStraightCurvTh)
+            if (variance_l < ConstData.kImageLineVarianceTh && imgInfo.top < bigCircleTop)
             {
                 imgInfo.CircleStatus = CIRCLE_FIND; // 标记 [发现环岛] 状态
                 imgInfo.RoadType = Circle_R;
@@ -2572,10 +2592,11 @@ void circle_detect(void)
             PRINT_LINE_VARIANCE_INFO(variance_m);
             printf("downside_flag_last_r = %d\n", downside_flag_last_r);
             printf("downside_flag_now_r = %d\n", downside_flag_now_r);
+            printf("downside_check_flag_r = %d\n", downside_check_flag_r);
 #endif
 
-            if (   variance_r <= ConstData.kImageCircleOutVarianceTh
-                && variance_m <= ConstData.kImageCircleOutVarianceTh
+            if (   variance_r <= ConstData.kImageLineVarianceTh
+                && variance_m <= ConstData.kImageLineVarianceTh
                 && downside_check_flag_r)
             {
                 imgInfo.CircleStatus = CIRCLE_OFF;
@@ -2601,9 +2622,15 @@ void circle_detect(void)
 
             if(!downside_flag_now_l && downside_flag_last_l && !downside_check_flag_l)
                downside_check_flag_l = 1;
-
-            if (   variance_l <= ConstData.kImageCircleOutVarianceTh
-                && variance_m <= ConstData.kImageCircleOutVarianceTh
+#ifdef DEBUG
+            PRINT_LINE_VARIANCE_INFO(variance_l);
+            PRINT_LINE_VARIANCE_INFO(variance_m);
+            printf("downside_flag_last_l = %d\n", downside_flag_last_l);
+            printf("downside_flag_now_l = %d\n", downside_flag_now_l);
+            printf("downside_check_flag_l = %d\n", downside_check_flag_l);
+#endif
+            if (   variance_l <= ConstData.kImageLineVarianceTh
+                && variance_m <= ConstData.kImageLineVarianceTh
                 && downside_check_flag_l)
             {
                 imgInfo.CircleStatus = CIRCLE_OFF;

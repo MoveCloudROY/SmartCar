@@ -2,7 +2,7 @@
  * @Author: ROY1994
  * @Date: 2022-02-04 14:01:20
  * @LastEditors: ROY1994
- * @LastEditTime: 2022-07-08 22:31:28
+ * @LastEditTime: 2022-07-10 14:08:48
  * @FilePath: \myImageDeal\ImageDeal.h
  * @Description: t
  */
@@ -10,6 +10,7 @@
 #ifndef IMAGE_DEAL_H
 #define IMAGE_DEAL_H
 
+#include <stdint.h>
 //#define __ON_PC__
  #define __ON_ROBOT__
 
@@ -80,7 +81,7 @@ typedef struct _ImgInfoTypedef
     uint8_t leftDownJump, rightDownJump, leftUpJump, rightUpJump,leftDownStart, rightDownStart, leftUpStart, rightUpStart;
     uint8_t leftSeriesBreak, rightSeriesBreak;
     int error,allLostCnt;
-    int straight_needSpeedUP;
+    uint8_t straight_needSpeedUP;
     RoadTypeEnum RoadType;
     CircleStatusTypeEnum CircleStatus;
     PStatusTypeEnum PStatus;
@@ -190,6 +191,7 @@ void p_repairLine(void);
 void get_error(void);
 
 // 功能性函数
+int get_circleTop(void);
 uint8_t judge_lineBeginLost(LineTypeEnum type);
 float get_curvature(uint8_t select_top, uint8_t select_bottom, LineTypeEnum type);
 uint8_t judge_lineContinuity(uint8_t select_begin, uint8_t select_end, LineTypeEnum type);

@@ -2,7 +2,7 @@
  * @Author: ROY1994
  * @Date: 2022-04-23 21:14:58
  * @LastEditors: ROY1994
- * @LastEditTime: 2022-07-06 21:32:16
+ * @LastEditTime: 2022-07-09 20:14:04
  * @FilePath: \myImageDeal\data.cpp
  * @Description:
  */
@@ -26,7 +26,7 @@ void data_set(void)
 
     ConstData.kImageStraightLineVarianceTh = 26;            // 直线检测阈值
     ConstData.kImageStraightLineSpeedUpVarianceTh = 20;     // 直线加速检测阈值
-    ConstData.kImageCircleOutVarianceTh = 200;              // 环岛出环线性方差阈值
+    ConstData.kImageLineVarianceTh = 200;              // 环岛出环线性方差阈值
 
     ConstData.kImageCircleInRepairLineK = 1.1;             // 环岛入环补线斜率
     ConstData.kImageCircleOutRepairLineK = 1.02;            // 环岛出环补线斜率

@@ -93,7 +93,6 @@ void motor_control(void)
 {
     int encoderL, encoderR, encoderLFilter, encoderRFilter;
     static int pwmL = 0, pwmR = 0;
-    float speedL, speedR;
     //int oldParaL, oldParaR, nowParaL, nowParaR;
     //float filterParam = 0.1;
 #ifdef OLTEST
