@@ -62,7 +62,7 @@ void icm20602_self1_check(void)
         dat = simiic_read_reg(ICM20602_DEV_ADDR,ICM20602_WHO_AM_I,SIMIIC);
         systick_delay_ms(STM0, 10);
         //卡在这里原因有以下几点
-        //1 ICM20602坏了，如果是新的这样的概率极低
+        //1 ICM 20602坏了，如果是新的这样的概率极低
         //2 接线错误或者没有接好
         //3 可能你需要外接上拉电阻，上拉到3.3V
 		//4 可能没有调用模拟IIC的初始化函数

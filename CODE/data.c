@@ -2,7 +2,7 @@
  * @Author: ROY1994
  * @Date: 2022-04-23 21:14:58
  * @LastEditors: ROY1994
- * @LastEditTime: 2022-07-09 20:14:04
+ * @LastEditTime: 2022-07-11 21:15:47
  * @FilePath: \myImageDeal\data.cpp
  * @Description:
  */
@@ -14,12 +14,14 @@
  */
 #include "data.h"
 
-
 ConstDataTypeDef ConstData;
-
+SystemDataTypedef SystemData;
 
 void data_set(void)
 {
+
+    // ================= 常数设置 ================//
+
     ConstData.kServoLowLimit = 1360;                        // 舵机右打角限制
     ConstData.kServoHighLimit = 1650;                       // 舵机中值(大致)
     ConstData.kServoMid = 1510  ;//1496;                    // 舵机左打角限制
@@ -31,6 +33,8 @@ void data_set(void)
     ConstData.kImageCircleInRepairLineK = 1.1;             // 环岛入环补线斜率
     ConstData.kImageCircleOutRepairLineK = 1.02;            // 环岛出环补线斜率
 
+    ConstData.kImageBarnOutRepairLineK = 1.2;
+
     ConstData.kImageCrossIOUth = 0.8;                       // 十字检测左右空白行交并比阈值
     ConstData.kImageStraightCurvTh = 0.001;                 // 直线曲率阈值
 
@@ -41,5 +45,9 @@ void data_set(void)
     ConstData.kImageForkInOutPicCnt = 40;
 
     ConstData.kArcman = 20;
+
+    // ================= 系统初始化设置 ================//
+
+    SystemData.isBarnOut = 'F';
 
 }

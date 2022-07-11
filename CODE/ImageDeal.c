@@ -2,7 +2,7 @@
  * @Author: ROY1994
  * @Date: 2022-05-10 17:23:16
  * @LastEditors: ROY1994
- * @LastEditTime: 2022-07-10 19:14:32
+ * @LastEditTime: 2022-07-11 21:45:23
  * @FilePath: \myImageDeal\ImageDeal.cpp
  * @Description:
  */
@@ -12,7 +12,6 @@
  * @LastEditors: ROY1994
  * @LastEditTime: 2022-07-03 14:13:56
  * @FilePath: \myImageDeal\ImageDeal.cpp
- * @Description: 搜线，元素判断等主要处理函数
  */
 #include "ImageDeal.h"
 #include <stdint.h>
@@ -57,6 +56,7 @@ uint8_t needExternR = 0;  //是否右延长标志
 extern uint8_t mt9v03x_image[120][188];//原灰度图
 extern uint8_t imageBin[HEIGHT][WIDTH];//二值化图像
 extern ConstDataTypeDef ConstData;
+extern SystemDataTypedef SystemData;
 extern long long picCount;
 
 PixelTypedef leftLineSerial[HEIGHT<<1],rightLineSerial[HEIGHT<<1];//种子生长法所需参数
@@ -105,16 +105,41 @@ int bigCircleTop = 0;
 void img_process(void)
 {
     params_init(); // 初始化参数
+
     basic_searchLine(HEIGHT-1,HEIGHT-6); // 对最底下6行进行完全扫线
     advance_searchLine(HEIGHT-7); // 其余根据上一行的范围得出
 
-
 // #ifdef DEBUG
 //     PRINT_LINE_INFO();
-// #endif
+// #
 
+#if defined(__ON_ROBOT__)
+    if (SystemData.isBarnOut == 'F')
+    {
+        static uint8_t firstFlag = 'T';
 
+        imgInfo.RoadType = Barn_Out;
+        if(firstFlag == 'T')
+        {
+            start_integrating_angle();
+            firstFlag = 'F';
+        }
+        barnOut_repairLine();
+        if (check_yaw_angle() > 0.24)
+        {
+            SystemData.isBarnOut = 'T';
+            stop_interating_angle();
+        }
+    }
+    else
+    {
+        road_judge();
+    }
+
+#else
     road_judge();
+#endif
+
 
 #ifdef DEBUG
     PRINT_ROADTYPE_INFO();
@@ -123,10 +148,6 @@ void img_process(void)
     //TODO
     advance_repairLine(); // 补线
     advance_midLineFilter();
-
-    //series_searchLine();
-    //basic_getSpecialParams(imgInfo.top, imgInfo.bottom);
-    // series_getSpecialParams();
 
     get_error();
 }
@@ -1920,9 +1941,12 @@ void p_detect(void)
             // && leftDownLost != 'T' && rightDownLost != 'T'
        ) // 左侧交错数比右侧多,初步考虑左P环
     {
-        int variance_r = 0;
-        GET_VARIANCE(variance_r, right, 10);
-        if (bigCircleTop <= imgInfo.top && imgInfo.top <= blackBlock.posY && variance_r < ConstData.kImageLineVarianceTh)
+        int p_variance_r = get_variance(blackBlock.posY + 5, HEIGHT - 10, RIGHT);
+        // GET_VARIANCE(p_variance_r, right, 10);
+#ifdef DEBUG
+        PRINT_LINE_VARIANCE_INFO(p_variance_r);
+#endif
+        if (bigCircleTop <= imgInfo.top && imgInfo.top <= blackBlock.posY && p_variance_r < ConstData.kImageLineVarianceTh)
         {
             imgInfo.RoadType = P_L;
             imgInfo.PStatus = P_PASSING;
@@ -1934,9 +1958,12 @@ void p_detect(void)
             // && leftDownLost != 'T' && rightDownLost != 'T'
             ) // 反之 右P环
     {
-        int variance_l = 0;
-        GET_VARIANCE(variance_l, left, 10);
-        if (bigCircleTop <= imgInfo.top && imgInfo.top <= blackBlock.posY && variance_l < ConstData.kImageLineVarianceTh)
+        int p_variance_l = get_variance(blackBlock.posY + 5, HEIGHT - 10, LEFT);
+        // GET_VARIANCE(p_variance_l, left, 10);
+#ifdef DEBUG
+        PRINT_LINE_VARIANCE_INFO(p_variance_l);
+#endif
+        if (bigCircleTop <= imgInfo.top && imgInfo.top <= blackBlock.posY && p_variance_l < ConstData.kImageLineVarianceTh)
         {
             imgInfo.RoadType = P_R;
             imgInfo.PStatus = P_PASSING;
@@ -2801,6 +2828,19 @@ void circle_repairLine(void)
     }
 }
 
+
+void barnOut_repairLine(void)
+{
+    for (int row = HEIGHT - 1; row > imgInfo.top + 2; --row)
+    {
+        float k, b;
+        k = (ConstData.kImageBarnOutRepairLineK * WIDTH) / (HEIGHT - 1 - imgInfo.top);
+        b = WIDTH - 1 - k * (HEIGHT - 1);
+        add_line(k, b, imgInfo.top, HEIGHT - 1, RIGHT);
+        recalc_line(imgInfo.top, HEIGHT - 1, RIGHT);
+    }
+}
+
 const int weight_base[60] = {                        //0为图像最顶行
     0 , 0, 0, 0, 0, 0, 0, 0, 0, 0,
     1 , 1, 3, 3, 5, 5,10,10,10,10,
@@ -2880,6 +2920,49 @@ void calc_globalError(void)
     // midline_ff  = midline_f;
     // midline_f = angleErr;
     // angleErr = midline_fff * 0.50f + midline_ff * 0.30f + midline_f * 0.20f;
+}
+
+
+/**
+ * @description: 获取指定区域的左右线方差和
+ * @param {uint8_t} select_top
+ * @param {uint8_t} select_bottom
+ * @param {LineTypeEnum} type
+ * @return {int} var 得到的方差
+ */
+int get_variance(uint8_t select_top, uint8_t select_bottom, LineTypeEnum type)
+{
+    int var = 0;
+    float pred_k = 0.0, pred_b = 0.0;
+    switch (type)
+    {
+        case LEFT:
+            pred_k = (float)(rowInfo[select_bottom].leftLine - rowInfo[select_top].leftLine) / (select_bottom - select_top);
+            pred_b = (float)rowInfo[(int)((select_top + select_bottom) / 2)].leftLine - pred_k * ((select_top + select_bottom) / 2.0);
+            for (int row = select_bottom; row > select_top; --row)
+            {
+                var +=  (rowInfo[row].leftLine - (int)(pred_k * row + pred_b))
+                    * (rowInfo[row].leftLine - (int)(pred_k * row + pred_b));
+            }
+            break;
+        case RIGHT:
+            pred_k = (float)(rowInfo[select_bottom].rightLine - rowInfo[select_top].rightLine) / (select_bottom - select_top);
+            pred_b = (float)rowInfo[(int)((select_top + select_bottom) / 2)].rightLine - pred_k * ((select_top + select_bottom) / 2.0);
+            for (int row = select_bottom; row > select_top; --row)
+            {
+                var +=  (rowInfo[row].rightLine - (int)(pred_k * row + pred_b))
+                    * (rowInfo[row].rightLine - (int)(pred_k * row + pred_b));
+            }
+            break;
+
+        case MID:
+            break;
+        default:
+            break;
+
+    }
+
+    return var == 0 ? 0x3f3f3f3f : var;
 }
 
 

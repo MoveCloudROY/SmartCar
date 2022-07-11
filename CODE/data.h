@@ -2,7 +2,7 @@
  * @Author: ROY1994
  * @Date: 2022-04-23 21:14:50
  * @LastEditors: ROY1994
- * @LastEditTime: 2022-07-06 21:31:17
+ * @LastEditTime: 2022-07-11 21:15:34
  * @FilePath: \myImageDeal\data.h
  * @Description:
  */
@@ -35,6 +35,7 @@ typedef struct _ConstDataTypeDef
     float   kImageStraightLineVarianceTh, kImageStraightLineSpeedUpVarianceTh;
     int     kImageLineVarianceTh;
     float   kImageCircleInRepairLineK, kImageCircleOutRepairLineK;
+    float   kImageBarnOutRepairLineK;
     float   kImageCrossIOUth;
     float   kImageStraightCurvTh;
     int     kImagePOutVarianceTh;
@@ -44,6 +45,10 @@ typedef struct _ConstDataTypeDef
 
 }ConstDataTypeDef;
 
+typedef struct _SystemDataTypedef
+{
+    char    isBarnOut;
+}SystemDataTypedef;
 
 void data_set(void);
 

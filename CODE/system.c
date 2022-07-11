@@ -70,8 +70,8 @@ void car_init(void)
 
     systick_delay_ms(STM0, 500);//延时0.5ms
 
-
     data_set();
+    icm20602_init();
     mt9v03x_init();
     servo_init();
     motor_init();
@@ -173,8 +173,8 @@ void car_statusbar(void)
         case Starting_Line:     vt_draw_str_at(3, 14, "Starting_Line");     break;
         case Fork_In:           vt_draw_str_at(3, 14, "Fork_In      ");     break;
         case Fork_Out:          vt_draw_str_at(3, 14, "Fork_Out     ");     break;
-        case Turn_Left:         vt_draw_str_at(3, 14, "Turn_Left    ");     break;
-        case Turn_Right:        vt_draw_str_at(3, 14, "Turn_Right   ");     break;
+        case Barn_In:           vt_draw_str_at(3, 14, "Barn_IN      ");     break;
+        case Barn_Out:          vt_draw_str_at(3, 14, "Barn_Out     ");     break;
         default:                                                            break;
     }
     // 输出环岛状态
@@ -220,6 +220,7 @@ void car_statusbar(void)
     vt_set_font_color(VT_F_WHITE);
     vt_draw_char_at(5, 38, isCircle_flag_2);
 
+
     vt_set_font_color(VT_F_RED);
     vt_draw_str_at(5, 50, "isCircle_in: ");
     vt_set_font_color(VT_F_WHITE);
@@ -253,4 +254,14 @@ void car_statusbar(void)
     vt_set_font_color(VT_F_WHITE);
     sprintf(ss, "%3d", ConstData.kServoMid - steer_pwm);
     vt_draw_str_at(7, 14, ss);
+
+    // 输出角度值
+    if(is_interating_angle())
+    {
+        vt_set_font_color(VT_F_RED);
+        vt_draw_str_at(7, 26, "angle: ");
+        vt_set_font_color(VT_F_WHITE);
+        sprintf(ss, "%3f", check_yaw_angle());
+        vt_draw_str_at(7, 38, ss);
+    }
 }
