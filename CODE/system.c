@@ -76,14 +76,14 @@ void car_init(void)
     servo_init();
     motor_init();
 
-    servo_set(ConstData.kServoMid);
-
 //  int t = 1100;
 //  pwm_duty(MOTOR_RA, 5000+t);
 //  pwm_duty(MOTOR_RB, 5000-t);
     seekfree_wireless_init();
 
+    systick_delay_ms(STM0, 1000);
     while(startKey_read());
+    systick_delay_ms(STM0, 2500);
 
     pit_init(CCU6_0, PIT_CH0, 5000);
     pit_init(CCU6_0, PIT_CH1, 20000);

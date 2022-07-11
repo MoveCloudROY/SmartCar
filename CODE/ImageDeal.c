@@ -2,7 +2,7 @@
  * @Author: ROY1994
  * @Date: 2022-05-10 17:23:16
  * @LastEditors: ROY1994
- * @LastEditTime: 2022-07-10 16:15:32
+ * @LastEditTime: 2022-07-10 19:14:32
  * @FilePath: \myImageDeal\ImageDeal.cpp
  * @Description:
  */
@@ -1921,7 +1921,7 @@ void p_detect(void)
        ) // 左侧交错数比右侧多,初步考虑左P环
     {
         int variance_r = 0;
-        GET_VARIANCE(variance_r, right, 6);
+        GET_VARIANCE(variance_r, right, 10);
         if (bigCircleTop <= imgInfo.top && imgInfo.top <= blackBlock.posY && variance_r < ConstData.kImageLineVarianceTh)
         {
             imgInfo.RoadType = P_L;
@@ -1935,7 +1935,7 @@ void p_detect(void)
             ) // 反之 右P环
     {
         int variance_l = 0;
-        GET_VARIANCE(variance_l, left, 6);
+        GET_VARIANCE(variance_l, left, 10);
         if (bigCircleTop <= imgInfo.top && imgInfo.top <= blackBlock.posY && variance_l < ConstData.kImageLineVarianceTh)
         {
             imgInfo.RoadType = P_R;
