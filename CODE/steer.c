@@ -60,10 +60,20 @@ void servo_control_PIDPos(void)
     steer_pwm = STEER_LIMIT_LOW(steer_pwm);
     steer_pwm = STEER_LIMIT_HIGH(steer_pwm);
     servo_set(steer_pwm);
-
+    differential_speed(-Outpid);
 //    servo_set(ConstData.kServoMid);
 //    vofa_sendFloat((float)steer_pwm);
 //    vofa_sendTail();
+}
+
+void differential_speed(int pwm_diff){
+    float angle = pwm_diff/10.0*2.0;            //认为每10pwm变化为2°
+    float R = 200.0*tan(angle);                 //认为车身前后轮轴距20cm
+    if(pwm_diff>=0){                            //大于0右转
+        PID_R.targetPoint = (int)(PID_L.theoryTarget*(R-77.5)/(R+77.5));
+    }else{
+        PID_L.targetPoint = (int)(PID_R.theoryTarget*(R-77.5)/(R+77.5));
+    }
 }
 
 ///****************************     阿克曼加减差速      ****************************/
