@@ -2,7 +2,7 @@
  * @Author: ROY1994
  * @Date: 2022-05-10 17:23:16
  * @LastEditors: ROY1994
- * @LastEditTime: 2022-07-11 21:45:23
+ * @LastEditTime: 2022-07-12 17:59:48
  * @FilePath: \myImageDeal\ImageDeal.cpp
  * @Description:
  */
@@ -114,6 +114,13 @@ void img_process(void)
 // #
 
 #if defined(__ON_ROBOT__)
+
+    if(stop_detect())
+        SystemData.isStop = 'T';
+//#define __BARN_OUT_ON__
+
+#if defined(__BARN_OUT_ON__)
+
     if (SystemData.isBarnOut == 'F')
     {
         static uint8_t firstFlag = 'T';
@@ -135,6 +142,9 @@ void img_process(void)
     {
         road_judge();
     }
+#else
+    road_judge();
+#endif
 
 #else
     road_judge();
@@ -2840,6 +2850,19 @@ void barnOut_repairLine(void)
         recalc_line(imgInfo.top, HEIGHT - 1, RIGHT);
     }
 }
+
+uint8_t stop_detect(void)
+{
+    int blackCount = 0;
+
+    for (int i = 0; i <= WIDTH - 1; ++i)
+    {
+        if (!imageBin[HEIGHT - 1][i])
+            ++blackCount;
+    }
+    return blackCount > WIDTH * 0.8;
+}
+
 
 const int weight_base[60] = {                        //0ÎªÍ¼Ïñ×î¶¥ÐÐ
     0 , 0, 0, 0, 0, 0, 0, 0, 0, 0,

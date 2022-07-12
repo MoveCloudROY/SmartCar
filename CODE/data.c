@@ -2,7 +2,7 @@
  * @Author: ROY1994
  * @Date: 2022-04-23 21:14:58
  * @LastEditors: ROY1994
- * @LastEditTime: 2022-07-11 21:15:47
+ * @LastEditTime: 2022-07-12 17:58:27
  * @FilePath: \myImageDeal\data.cpp
  * @Description:
  */
@@ -13,6 +13,7 @@
  *      Author: ROY1994
  */
 #include "data.h"
+
 
 ConstDataTypeDef ConstData;
 SystemDataTypedef SystemData;
@@ -49,5 +50,6 @@ void data_set(void)
     // ================= 系统初始化设置 ================//
 
     SystemData.isBarnOut = 'F';
+    SystemData.isStop = 'F';
 
 }

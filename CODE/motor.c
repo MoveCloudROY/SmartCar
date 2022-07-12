@@ -11,7 +11,7 @@ PassDisTypedef passDis;
 
 
 PID PID_L = {
-    .targetPoint = 70,
+    .targetPoint = 90,
     .theoryTarget = 70,
     .P = 24.5045390601805,
     .I = 0.005*216.937391941517,
@@ -31,7 +31,7 @@ PID PID_L = {
     .result = 0,
 };
 PID PID_R = {
-    .targetPoint = 70,
+    .targetPoint = 90,
     .theoryTarget = 70,
     .P = 20.3031449809298,
     .I = 0.005*268.373269126206,
@@ -202,10 +202,10 @@ void motor_stop(void)
 {
     PID_L.targetPoint = 0;
     PID_R.targetPoint = 0;
-    pwm_duty(MOTOR_LA, 5000);
-    pwm_duty(MOTOR_LB, 5000);
-    pwm_duty(MOTOR_RA, 5000);
-    pwm_duty(MOTOR_RB, 5000);
+    pwm_duty(MOTOR_LA, 0);
+    pwm_duty(MOTOR_LB, 0);
+    pwm_duty(MOTOR_RA, 0);
+    pwm_duty(MOTOR_RB, 0);
 }
 
 

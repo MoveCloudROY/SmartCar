@@ -2,7 +2,7 @@
  * @Author: ROY1994
  * @Date: 2022-02-04 14:01:20
  * @LastEditors: ROY1994
- * @LastEditTime: 2022-07-11 21:25:18
+ * @LastEditTime: 2022-07-12 17:09:47
  * @FilePath: \myImageDeal\ImageDeal.h
  * @Description: t
  */
@@ -190,6 +190,8 @@ void p_detect(void);
 void p_repairLine(void);
 
 void barnOut_repairLine(void);
+
+uint8_t stop_detect(void);
 
 // 获取偏差值传至PID
 void get_error(void);

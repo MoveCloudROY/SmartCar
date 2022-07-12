@@ -2,7 +2,7 @@
  * @Author: ROY1994
  * @Date: 2022-04-23 21:14:50
  * @LastEditors: ROY1994
- * @LastEditTime: 2022-07-11 21:15:34
+ * @LastEditTime: 2022-07-12 17:58:37
  * @FilePath: \myImageDeal\data.h
  * @Description:
  */
@@ -48,6 +48,7 @@ typedef struct _ConstDataTypeDef
 typedef struct _SystemDataTypedef
 {
     char    isBarnOut;
+    char    isStop;
 }SystemDataTypedef;
 
 void data_set(void);

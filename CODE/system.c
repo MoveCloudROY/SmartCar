@@ -36,6 +36,7 @@ extern float speedL, speedR;
 extern int steer_pwm;
 extern char fork_in_flag;
 extern uint8_t isCircle_flag_1, isCircle_flag_2, isCircle_flag_3, circle_in_flag;
+extern SystemDataTypedef SystemData;
 
 extern ImgInfoTypedef imgInfo;
 
@@ -81,9 +82,11 @@ void car_init(void)
 //  pwm_duty(MOTOR_RB, 5000-t);
     seekfree_wireless_init();
 
-    systick_delay_ms(STM0, 1000);
+    servo_set(ConstData.kServoMid);
+
+//    systick_delay_ms(STM0, 1000);
     while(startKey_read());
-    systick_delay_ms(STM0, 2500);
+    systick_delay_ms(STM0, 2000);
 
     pit_init(CCU6_0, PIT_CH0, 5000);
     pit_init(CCU6_0, PIT_CH1, 20000);
@@ -95,7 +98,10 @@ void car_backstage(void)
 {
     shell_run();
     vt_hide_cursor();
-
+    if (SystemData.isStop == 'T')
+    {
+        motor_stop();
+    }
     if(cpu0_5ms_flag)
     {
 //        vt_set_font_color(VT_F_RED);
