@@ -53,7 +53,7 @@ void interat_yaw_angle(float dt){
 * @brief    查询积分角度
 * @return   当前积分角度
 */
-inline float check_yaw_angle(){
+IFX_INLINE static float check_yaw_angle(){
     return angle;
 }
 /**
