@@ -2,7 +2,7 @@
  * @Author: ROY1994
  * @Date: 2022-02-04 14:01:20
  * @LastEditors: ROY1994
- * @LastEditTime: 2022-07-10 14:08:48
+ * @LastEditTime: 2022-07-11 21:25:18
  * @FilePath: \myImageDeal\ImageDeal.h
  * @Description: t
  */
@@ -24,6 +24,7 @@
 #else
 #include "headfile.h"
 #include "ImagePreDeal.h"
+#include "yawAngle.h"
 
 #define uint8_t uint8
 #define uint16_t uint16
@@ -53,7 +54,7 @@
 // enum ThreeForkRoadFlag{OFF, FIRST, SECOND, };
 
 typedef enum _LineTypeEnum{LEFT, MID, RIGHT, }LineTypeEnum;
-typedef enum _RoadTypeEnum{Road_None, Straight, Cross, Slope, P_L, P_R, Reflection, Circle_L, Circle_R, Starting_Line, Fork_In, Fork_Out, Turn_Left, Turn_Right}RoadTypeEnum;
+typedef enum _RoadTypeEnum{Road_None, Straight, Cross, Slope, P_L, P_R, Reflection, Circle_L, Circle_R, Starting_Line, Fork_In, Fork_Out, Barn_In, Barn_Out}RoadTypeEnum;
 typedef enum _EdgePointTypeEnum {__EdgePointTypeEnum_OCCUPY, EXIST, LOST, JUMP} EdgePointTypeEnum;
 typedef enum _CircleStatusTypeEnum {CIRCLE_NOT_FIND, CIRCLE_FIND, CIRCLE_IN, CIRCLE_PASSING, CIRCLE_OUT, CIRCLE_OFF} CircleStatusTypeEnum;
 typedef enum _PStatusTypeEnum {P_NOT_FIND, P_PASSING, P_OUT_READY, P_OUT_1, P_OUT_2, P_OFF} PStatusTypeEnum;
@@ -85,6 +86,7 @@ typedef struct _ImgInfoTypedef
     RoadTypeEnum RoadType;
     CircleStatusTypeEnum CircleStatus;
     PStatusTypeEnum PStatus;
+
     /*****道路类型相关信息*****/
 
 }ImgInfoTypedef;
@@ -187,10 +189,13 @@ void startingLine_detect(void);
 void p_detect(void);
 void p_repairLine(void);
 
+void barnOut_repairLine(void);
+
 // 获取偏差值传至PID
 void get_error(void);
 
 // 功能性函数
+int get_variance(uint8_t select_top, uint8_t select_bottom, LineTypeEnum type);
 int get_circleTop(void);
 uint8_t judge_lineBeginLost(LineTypeEnum type);
 float get_curvature(uint8_t select_top, uint8_t select_bottom, LineTypeEnum type);

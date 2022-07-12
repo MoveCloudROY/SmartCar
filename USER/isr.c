@@ -23,6 +23,7 @@
 #include "data.h"
 #include "motor.h"
 #include "steer.h"
+#include "yawAngle.h"
 
 
 uint16 delay_20ms_flag, delay_100ms_flag = 0, delay_1000ms_flag = 0;
@@ -79,6 +80,7 @@ IFX_INTERRUPT(cc60_pit_ch1_isr, 0, CCU6_0_CH1_ISR_PRIORITY)
 	PIT_CLEAR_FLAG(CCU6_0, PIT_CH1);
 	//从CPU0传递给CPU1避免CPU1频繁中断
 	servo_control_PIDPos();
+	interat_yaw_angle(0.005f);
 }
 
 IFX_INTERRUPT(cc61_pit_ch0_isr, 0, CCU6_1_CH0_ISR_PRIORITY)

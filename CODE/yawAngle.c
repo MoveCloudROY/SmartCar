@@ -17,7 +17,7 @@
 /*-------------------------------------------------Global variables--------------------------------------------------*/
 /*********************************************************************************************************************/
 boolean angle_int_flag = 0;
-float angle = 0;
+float angle = 0.0;
 extern float gyro[3];
 /*********************************************************************************************************************/
 /*--------------------------------------------Private Variables/Constants--------------------------------------------*/
@@ -53,7 +53,7 @@ void interat_yaw_angle(float dt){
 * @brief    查询积分角度
 * @return   当前积分角度
 */
-IFX_INLINE static float check_yaw_angle(){
+IFX_INLINE static float check_yaw_angle(void){
     return angle;
 }
 /**
@@ -63,4 +63,8 @@ IFX_INLINE static float check_yaw_angle(){
 void stop_interating_angle(void){
     angle_int_flag = 0;
     angle = 0;
+}
+
+IFX_INLINE static uint8 is_interating_angle(void){
+    return angle_int_flag;
 }

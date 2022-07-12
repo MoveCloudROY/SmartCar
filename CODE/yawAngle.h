@@ -39,5 +39,6 @@ void start_integrating_angle(void);
 void interat_yaw_angle(float dt);
 float check_yaw_angle(void);
 void stop_interating_angle(void);
+uint8 is_interating_angle(void);
 
 #endif /* CODE_YAWANGLE_H_ */
