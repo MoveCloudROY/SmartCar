@@ -17,6 +17,7 @@
 
 ConstDataTypeDef ConstData;
 SystemDataTypedef SystemData;
+DebugDataTypedef DebugData;
 
 void data_set(void)
 {
@@ -52,4 +53,9 @@ void data_set(void)
     SystemData.isBarnOut = 'F';
     SystemData.isStop = 'F';
 
+}
+
+void reset_debugData(void)
+{
+    memset(&DebugData, 'F', sizeof(DebugData));
 }

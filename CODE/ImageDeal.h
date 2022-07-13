@@ -25,11 +25,15 @@
 #include "headfile.h"
 #include "ImagePreDeal.h"
 #include "yawAngle.h"
+#include "data.h"
 
 #define uint8_t uint8
 #define uint16_t uint16
 #define int16_t int16
 #define int8_t int8
+
+extern DebugDataTypedef DebugData;
+#define __ROBOT_DEBUG__
 
 #define DEBUG_DEAD()
 #endif

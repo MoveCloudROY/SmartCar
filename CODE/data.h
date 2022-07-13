@@ -51,6 +51,13 @@ typedef struct _SystemDataTypedef
     char    isStop;
 }SystemDataTypedef;
 
+typedef struct _DebugDataTypedef
+{
+        char PFlagInRange;
+        char PFlagVariOK;
+}DebugDataTypedef;
+
 void data_set(void);
+void reset_debugData(void);
 
 #endif /* CODE_DATA_H_ */

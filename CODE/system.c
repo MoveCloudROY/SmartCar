@@ -52,6 +52,8 @@ volatile SystemStatusTypedef Global = {
 };
 long long picCount = 0;
 
+extern DebugDataTypedef DebugData;
+
 void car_init(void)
 {
     gpio_init(P20_8, GPO, 0, PUSHPULL);//状态提示灯
@@ -84,7 +86,7 @@ void car_init(void)
 
     servo_set(ConstData.kServoMid);
 
-//    systick_delay_ms(STM0, 1000);
+//    systick_delay_ms(STM0, 2000);
     while(startKey_read());
     systick_delay_ms(STM0, 2000);
 
@@ -104,10 +106,8 @@ void car_backstage(void)
     }
     if(cpu0_5ms_flag)
     {
-//        vt_set_font_color(VT_F_RED);
-//        vt_draw_str("aBc");
-//        vt_move_left(3);
-        car_statusbar();
+
+//        car_statusbar();
         cpu0_5ms_flag = 0;
     }
     if(cpu0_1000ms_flag)
@@ -149,7 +149,7 @@ void img_backstage(void)
 
 //            img_preProcess(MORPH_EROSION);
 
-            img_process();
+            RUN_TIME(img_process()); // 0.45ms
             gpio_toggle(P20_8);
             cpu1_5ms_flag = 0;
         }
@@ -291,4 +291,17 @@ void car_statusbar(void)
         sprintf(ss, "%3f", check_yaw_angle());
         vt_draw_str_at(7, 38, ss);
     }
+
+    // 输出 P 环 判据 (P_R)
+    vt_set_font_color(VT_F_RED);
+    vt_draw_str_at(8, 2, "PFlagInRange: ");
+    vt_set_font_color(VT_F_WHITE);
+    sprintf(ss, "%3c", DebugData.PFlagInRange);
+    vt_draw_str_at(8, 20, ss);
+
+    vt_set_font_color(VT_F_RED);
+    vt_draw_str_at(8, 30, "PFlagVariOK: ");
+    vt_set_font_color(VT_F_WHITE);
+    sprintf(ss, "%3c", DebugData.PFlagVariOK);
+    vt_draw_str_at(8, 48, ss);
 }

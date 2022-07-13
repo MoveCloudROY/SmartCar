@@ -2,7 +2,7 @@
  * @Author: ROY1994
  * @Date: 2022-05-10 17:23:16
  * @LastEditors: ROY1994
- * @LastEditTime: 2022-07-12 17:59:48
+ * @LastEditTime: 2022-07-12 18:53:54
  * @FilePath: \myImageDeal\ImageDeal.cpp
  * @Description:
  */
@@ -16,6 +16,8 @@
 #include "ImageDeal.h"
 #include <stdint.h>
 #include <stdio.h>
+//#include "system.h"
+//#include "vt100.h"
 
 #ifdef DEBUG
 #include "DEBUGDEFINE.h"
@@ -109,10 +111,6 @@ void img_process(void)
     basic_searchLine(HEIGHT-1,HEIGHT-6); // 对最底下6行进行完全扫线
     advance_searchLine(HEIGHT-7); // 其余根据上一行的范围得出
 
-// #ifdef DEBUG
-//     PRINT_LINE_INFO();
-// #
-
 #if defined(__ON_ROBOT__)
 
     if(stop_detect())
@@ -132,7 +130,7 @@ void img_process(void)
             firstFlag = 'F';
         }
         barnOut_repairLine();
-        if (check_yaw_angle() > 0.24)
+        if (check_yaw_angle() > DEGREE_60)
         {
             SystemData.isBarnOut = 'T';
             stop_interating_angle();
@@ -195,7 +193,9 @@ void params_init(void)
         rowInfo[i].fork_blackWidth = 0;
     }
 
-    // for(int i = 1;)
+#if defined(__ON_ROBOT__)
+//    reset_debugData();
+#endif
 }
 
 /**
@@ -1973,6 +1973,8 @@ void p_detect(void)
 #ifdef DEBUG
         PRINT_LINE_VARIANCE_INFO(p_variance_l);
 #endif
+        DebugData.PFlagInRange = (bigCircleTop <= imgInfo.top && imgInfo.top <= blackBlock.posY)? 'T':'F';
+        DebugData.PFlagVariOK = (p_variance_l < ConstData.kImageLineVarianceTh)? 'T' : 'F';
         if (bigCircleTop <= imgInfo.top && imgInfo.top <= blackBlock.posY && p_variance_l < ConstData.kImageLineVarianceTh)
         {
             imgInfo.RoadType = P_R;
@@ -2225,19 +2227,19 @@ void p_repairLine(void)
     {
         if(imgInfo.RoadType  == P_L)
         {
-            float k = 0.0, b = 0.0;
-            k = (float)(rowInfo[HEIGHT - 1].leftLine - rowInfo[imgInfo.top + 2].leftLine) / (HEIGHT - imgInfo.top - 2);
-            b = (float)rowInfo[HEIGHT - 1].leftLine - k * (HEIGHT - 1);
-            add_line(k, b, imgInfo.top + 1, HEIGHT - 1, LEFT);
-            recalc_line(imgInfo.top + 1, HEIGHT - 1, LEFT);
+            float k, b;
+            k = (float)(ConstData.kImageCircleInRepairLineK * WIDTH) / (imgInfo.top - (HEIGHT - 1));
+            b = (float)- k * (HEIGHT - 1);
+            add_line(k, b, imgInfo.top, HEIGHT - 1, LEFT);
+            recalc_line(imgInfo.top, HEIGHT - 1, LEFT);
         }
         else if (imgInfo.RoadType == P_R)
         {
-            float k = 0.0, b = 0.0;
-            k = (float)(rowInfo[HEIGHT - 1].rightLine - rowInfo[imgInfo.top + 2].rightLine) / (HEIGHT - imgInfo.top - 2);
-            b = (float)rowInfo[HEIGHT - 1].rightLine - k * (HEIGHT - 1);
-            add_line(k, b, imgInfo.top + 1, HEIGHT - 1, RIGHT);
-            recalc_line(imgInfo.top + 1, HEIGHT - 1, RIGHT);
+            float k, b;
+            k = (float)(ConstData.kImageCircleInRepairLineK * WIDTH) / (HEIGHT - 1 - imgInfo.top);
+            b = (float)WIDTH - 1 - k * (HEIGHT - 1);
+            add_line(k, b, imgInfo.top, HEIGHT - 1, RIGHT);
+            recalc_line(imgInfo.top, HEIGHT - 1, RIGHT);
         }
     }
 }
@@ -2474,6 +2476,7 @@ void circle_detect(void)
 
             if (circle_in_flag == 'F' && leftdown_check_flag_F2I) // 如果没有找到黑色闭环, 则说明应当入环岛, 标记状态位
             {
+                start_integrating_angle();
                 imgInfo.CircleStatus = CIRCLE_IN;
                 leftdown_flag_last_F2I = 0;
                 leftdown_check_flag_F2I = 0;
@@ -2495,6 +2498,7 @@ void circle_detect(void)
 
             if (circle_in_flag == 'F' && rightdown_check_flag_F2I) // 如果没有找到黑色闭环, 则说明应当入环岛, 标记状态位
             {
+                start_integrating_angle();
                 imgInfo.CircleStatus = CIRCLE_IN;
                 rightdown_flag_last_F2I = 0;
                 rightdown_check_flag_F2I = 0;
@@ -2555,13 +2559,21 @@ void circle_detect(void)
     if (imgInfo.CircleStatus == CIRCLE_IN) // 如果入环岛状态, 则进入 [经过环岛] 检测状态
     {
         if  (
-                color_toggleCnt_left <= 1 && color_toggleCnt_right <= 1 &&// 如果左右两侧交错数都小于等于1, 则说明正在经过环岛
+                color_toggleCnt_left <= 1 && color_toggleCnt_right <= 1 // 如果左右两侧交错数都小于等于1, 则说明正在经过环岛
+                &&
+                ((imgInfo.RoadType == Circle_L && check_yaw_angle() >= DEGREE_45)
+                 ||
+                 (imgInfo.RoadType == Circle_R && check_yaw_angle() <= -DEGREE_45))
+                &&
                 ((! imageBin[HEIGHT - 1][WIDTH - 1] && ! imageBin[HEIGHT - 1][WIDTH - 2] && ! imageBin[HEIGHT - 1][WIDTH - 3])
-                ||
+                 ||
                 (! imageBin[HEIGHT - 1][0] && ! imageBin[HEIGHT - 1][1] && !imageBin[HEIGHT - 1][2]))
                 // 如果左右两侧交错数都小于等于1, 则说明正在经过环岛
             )
+        {
             imgInfo.CircleStatus = CIRCLE_PASSING;
+            stop_interating_angle();
+        }
     }
     if(imgInfo.CircleStatus == CIRCLE_PASSING) // 如果经过环岛状态, 则进入 [出环岛] 检测状态
     {
