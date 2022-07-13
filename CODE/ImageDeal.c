@@ -2,7 +2,7 @@
  * @Author: ROY1994
  * @Date: 2022-05-10 17:23:16
  * @LastEditors: ROY1994
- * @LastEditTime: 2022-07-12 18:53:54
+ * @LastEditTime: 2022-07-13 15:27:07
  * @FilePath: \myImageDeal\ImageDeal.cpp
  * @Description:
  */
@@ -47,7 +47,9 @@ do {\
 DebugVaribleTypedef debugVar;
 #endif
 
-
+#if defined (__ON_ROBOT__)
+extern DebugDataTypedef DebugData;
+#endif
 
 int LineEdgeScanWindow_Cross = 3;  //十字扫线范围
 int LineEdgeScanWindow = 5;    //直道方差阈值
@@ -1973,8 +1975,10 @@ void p_detect(void)
 #ifdef DEBUG
         PRINT_LINE_VARIANCE_INFO(p_variance_l);
 #endif
+#if defined (__ON_ROBOT__)
         DebugData.PFlagInRange = (bigCircleTop <= imgInfo.top && imgInfo.top <= blackBlock.posY)? 'T':'F';
         DebugData.PFlagVariOK = (p_variance_l < ConstData.kImageLineVarianceTh)? 'T' : 'F';
+#endif
         if (bigCircleTop <= imgInfo.top && imgInfo.top <= blackBlock.posY && p_variance_l < ConstData.kImageLineVarianceTh)
         {
             imgInfo.RoadType = P_R;
@@ -2228,7 +2232,7 @@ void p_repairLine(void)
         if(imgInfo.RoadType  == P_L)
         {
             float k, b;
-            k = (float)(ConstData.kImageCircleInRepairLineK * WIDTH) / (imgInfo.top - (HEIGHT - 1));
+            k = (float)(ConstData.kImagePOutRepairLineK * WIDTH) / (imgInfo.top - (HEIGHT - 1));
             b = (float)- k * (HEIGHT - 1);
             add_line(k, b, imgInfo.top, HEIGHT - 1, LEFT);
             recalc_line(imgInfo.top, HEIGHT - 1, LEFT);
@@ -2236,7 +2240,7 @@ void p_repairLine(void)
         else if (imgInfo.RoadType == P_R)
         {
             float k, b;
-            k = (float)(ConstData.kImageCircleInRepairLineK * WIDTH) / (HEIGHT - 1 - imgInfo.top);
+            k = (float)(ConstData.kImagePOutRepairLineK * WIDTH) / (HEIGHT - 1 - imgInfo.top);
             b = (float)WIDTH - 1 - k * (HEIGHT - 1);
             add_line(k, b, imgInfo.top, HEIGHT - 1, RIGHT);
             recalc_line(imgInfo.top, HEIGHT - 1, RIGHT);
@@ -2476,7 +2480,9 @@ void circle_detect(void)
 
             if (circle_in_flag == 'F' && leftdown_check_flag_F2I) // 如果没有找到黑色闭环, 则说明应当入环岛, 标记状态位
             {
+#if defined (__ON_ROBOT__)
                 start_integrating_angle();
+#endif
                 imgInfo.CircleStatus = CIRCLE_IN;
                 leftdown_flag_last_F2I = 0;
                 leftdown_check_flag_F2I = 0;
@@ -2498,7 +2504,9 @@ void circle_detect(void)
 
             if (circle_in_flag == 'F' && rightdown_check_flag_F2I) // 如果没有找到黑色闭环, 则说明应当入环岛, 标记状态位
             {
+#if defined (__ON_ROBOT__)
                 start_integrating_angle();
+#endif
                 imgInfo.CircleStatus = CIRCLE_IN;
                 rightdown_flag_last_F2I = 0;
                 rightdown_check_flag_F2I = 0;
@@ -2561,10 +2569,12 @@ void circle_detect(void)
         if  (
                 color_toggleCnt_left <= 1 && color_toggleCnt_right <= 1 // 如果左右两侧交错数都小于等于1, 则说明正在经过环岛
                 &&
+#if defined (__ON_ROBOT__)
                 ((imgInfo.RoadType == Circle_L && check_yaw_angle() >= DEGREE_45)
                  ||
                  (imgInfo.RoadType == Circle_R && check_yaw_angle() <= -DEGREE_45))
                 &&
+#endif
                 ((! imageBin[HEIGHT - 1][WIDTH - 1] && ! imageBin[HEIGHT - 1][WIDTH - 2] && ! imageBin[HEIGHT - 1][WIDTH - 3])
                  ||
                 (! imageBin[HEIGHT - 1][0] && ! imageBin[HEIGHT - 1][1] && !imageBin[HEIGHT - 1][2]))
@@ -2572,7 +2582,9 @@ void circle_detect(void)
             )
         {
             imgInfo.CircleStatus = CIRCLE_PASSING;
+#if defined (__ON_ROBOT__)
             stop_interating_angle();
+#endif
         }
     }
     if(imgInfo.CircleStatus == CIRCLE_PASSING) // 如果经过环岛状态, 则进入 [出环岛] 检测状态
@@ -2697,7 +2709,7 @@ void circle_detect(void)
     {
             if(
                 imgInfo.RoadType == Circle_L
-                )
+              )
             {
                 // 检测左下角由白变黑跳变
                 static int downside_flag_last_l = 0, downside_check_flag_l = 0; // 左下角白色为 1, 黑色为 0
@@ -2707,7 +2719,7 @@ void circle_detect(void)
                 if(!downside_flag_now_l && downside_flag_last_l && !downside_check_flag_l)
                     downside_check_flag_l = 1;
 
-                if (downside_check_flag_l && abs(color_toggleCnt_left - color_toggleCnt_right) <= 1)
+                if (downside_check_flag_l)// && abs(color_toggleCnt_left - color_toggleCnt_right) <= 1)
                 {
                     imgInfo.CircleStatus = CIRCLE_NOT_FIND;
                     imgInfo.RoadType = Road_None;
@@ -2729,8 +2741,13 @@ void circle_detect(void)
                                         && imageBin[HEIGHT - 1][WIDTH - 4] && imageBin[HEIGHT - 2][WIDTH - 4];
                 if(!downside_flag_now_r && downside_flag_last_r && !downside_check_flag_r)
                     downside_check_flag_r = 1;
-
-                if (downside_check_flag_r && abs(color_toggleCnt_left - color_toggleCnt_right) <= 1)
+#ifdef DEBUG
+                printf("Circle_R OFF -> Road_None: \n");
+                printf("    downside_flag_last_r  = %c\n", downside_flag_last_r == 1?'W':'B');
+                printf("    downside_flag_now_r   = %c\n", downside_flag_now_r == 1?'W':'B');
+                printf("    downside_check_flag_r = %c\n", downside_check_flag_r == 1?'T':'F');
+#endif
+                if (downside_check_flag_r)// && abs(color_toggleCnt_left - color_toggleCnt_right) <= 1)
                 {
                     imgInfo.CircleStatus = CIRCLE_NOT_FIND;
                     imgInfo.RoadType = Road_None;
@@ -3177,6 +3194,8 @@ void add_line(float k, float b, uint8_t select_top, uint8_t select_bottom, LineT
             for(int i = select_top + 1; i <= select_bottom; ++i)
             {
                 tmp = k * i + b;
+                if(tmp < 0) tmp = 0;
+                if(tmp > WIDTH - 1) tmp = WIDTH - 1;
                 if(tmp > rowInfo[i].leftLine)
                     rowInfo[i].leftLine = tmp;
                 if(rowInfo[i].leftLine < 0)
@@ -3197,6 +3216,8 @@ void add_line(float k, float b, uint8_t select_top, uint8_t select_bottom, LineT
             for(int i = select_top + 1; i <= select_bottom; ++i)
             {
                 tmp = k * i + b;
+                if(tmp < 0) tmp = 0;
+                if(tmp > WIDTH - 1) tmp = WIDTH - 1;
                 if(tmp < rowInfo[i].rightLine)
                     rowInfo[i].rightLine = tmp;
                 if(rowInfo[i].rightLine > WIDTH - 1)

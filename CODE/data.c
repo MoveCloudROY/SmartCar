@@ -2,7 +2,7 @@
  * @Author: ROY1994
  * @Date: 2022-04-23 21:14:58
  * @LastEditors: ROY1994
- * @LastEditTime: 2022-07-12 17:58:27
+ * @LastEditTime: 2022-07-13 15:24:37
  * @FilePath: \myImageDeal\data.cpp
  * @Description:
  */
@@ -40,7 +40,8 @@ void data_set(void)
     ConstData.kImageCrossIOUth = 0.8;                       // 十字检测左右空白行交并比阈值
     ConstData.kImageStraightCurvTh = 0.001;                 // 直线曲率阈值
 
-    ConstData.kImagePOutVarianceTh = 200;                   // 环岛出环线性方差阈值
+    ConstData.kImagePOutRepairLineK = 1.02;                 // P环出环补线斜率
+    ConstData.kImagePOutVarianceTh = 200;                   // P环出环线性方差阈值
     ConstData.kImagePassingOffset = 10;
 
     ConstData.kImageForkInPicCnt = 25;

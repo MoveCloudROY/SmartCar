@@ -2,7 +2,7 @@
  * @Author: ROY1994
  * @Date: 2022-04-23 21:14:50
  * @LastEditors: ROY1994
- * @LastEditTime: 2022-07-12 17:58:37
+ * @LastEditTime: 2022-07-13 15:25:08
  * @FilePath: \myImageDeal\data.h
  * @Description:
  */
@@ -16,7 +16,7 @@
 #ifndef CODE_DATA_H_
 #define CODE_DATA_H_
 
-#if _ON_PC_
+#if defined (__ON_ROBOT__)
 
 #include "pid.h"
 #include "ImageDeal.h"
@@ -25,7 +25,7 @@
 #include "steer.h"
 
 #else
-
+#include <string.h>
 #endif
 
 
@@ -38,6 +38,7 @@ typedef struct _ConstDataTypeDef
     float   kImageBarnOutRepairLineK;
     float   kImageCrossIOUth;
     float   kImageStraightCurvTh;
+    float   kImagePOutRepairLineK;
     int     kImagePOutVarianceTh;
     int     kImagePassingOffset;
     int     kImageForkInPicCnt, kImageForkInOutPicCnt;

@@ -107,7 +107,7 @@ void car_backstage(void)
     if(cpu0_5ms_flag)
     {
 
-//        car_statusbar();
+        car_statusbar();
         cpu0_5ms_flag = 0;
     }
     if(cpu0_1000ms_flag)
@@ -149,7 +149,7 @@ void img_backstage(void)
 
 //            img_preProcess(MORPH_EROSION);
 
-            RUN_TIME(img_process()); // 0.45ms
+            img_process(); // 0.45ms
             gpio_toggle(P20_8);
             cpu1_5ms_flag = 0;
         }

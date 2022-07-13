@@ -12,7 +12,7 @@
 
 #include <stdint.h>
 //#define __ON_PC__
- #define __ON_ROBOT__
+  #define __ON_ROBOT__
 
 
 #ifdef __ON_PC__
