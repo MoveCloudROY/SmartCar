@@ -1,7 +1,5 @@
 #include "motor.h"
-#include "pid.h"
-//#include "stdlib.h"
-//#include "math.h"
+
 #include "vofa.h"
 //#define DEBUG_MOTOR_PID
 //#define OLTEST
@@ -11,8 +9,8 @@ PassDisTypedef passDis;
 
 
 PID PID_L = {
-    .targetPoint = 90,
-    .theoryTarget = 70,
+    .targetPoint = 120,
+    .theoryTarget = 120,
     .P = 24.5045390601805,
     .I = 0.005*216.937391941517,
     .D = 0,
@@ -31,8 +29,8 @@ PID PID_L = {
     .result = 0,
 };
 PID PID_R = {
-    .targetPoint = 90,
-    .theoryTarget = 70,
+    .targetPoint = 120,
+    .theoryTarget = 120,
     .P = 20.3031449809298,
     .I = 0.005*268.373269126206,
     .D = 0,
@@ -54,14 +52,14 @@ PID PID_R = {
 
 
 
-static void startIntDis(PassDisTypedef * passDis)
+void startIntDis(PassDisTypedef * passDis)
 {
     passDis->intFlag = TRUE;
     passDis->disL = 0.0;
     passDis->disR = 0.0;
 }
 
-static void stopIntDis(PassDisTypedef * passDis)
+void stopIntDis(PassDisTypedef * passDis)
 {
     passDis->intFlag = FALSE;
 }

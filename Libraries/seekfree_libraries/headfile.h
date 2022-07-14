@@ -71,6 +71,8 @@
 /*========MY=========*/
 /*===只有不变的写在这里===*/
 #include "vofa.h"
+#include "vt100.h"
+#include "buzzer.h"
 
 
 #endif

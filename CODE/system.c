@@ -17,6 +17,9 @@
 #include "shell.h"
 #include "vt100.h"
 #include "yawAngle.h"
+#include "buzzer.h"
+#include "speed.h"
+
 /*
 
 车辆信息
@@ -78,6 +81,7 @@ void car_init(void)
     mt9v03x_init();
     servo_init();
     motor_init();
+//    buzzer_init();
 
 //  int t = 1100;
 //  pwm_duty(MOTOR_RA, 5000+t);
@@ -89,10 +93,11 @@ void car_init(void)
 //    systick_delay_ms(STM0, 2000);
     while(startKey_read());
     systick_delay_ms(STM0, 2000);
-
     pit_init(CCU6_0, PIT_CH0, 5000);
     pit_init(CCU6_0, PIT_CH1, 20000);
+//    pit_init(CCU6_1, PIT_CH0, 5000);
 
+//    call_buzzer();
     vt_clearall();
 }
 
@@ -104,6 +109,7 @@ void car_backstage(void)
     {
         motor_stop();
     }
+//    deal_buzzer();
     if(cpu0_5ms_flag)
     {
 
@@ -150,6 +156,7 @@ void img_backstage(void)
 //            img_preProcess(MORPH_EROSION);
 
             img_process(); // 0.45ms
+            speed_control();
             gpio_toggle(P20_8);
             cpu1_5ms_flag = 0;
         }
@@ -304,4 +311,11 @@ void car_statusbar(void)
     vt_set_font_color(VT_F_WHITE);
     sprintf(ss, "%3c", DebugData.PFlagVariOK);
     vt_draw_str_at(8, 48, ss);
+
+    // 输出是否需要加速
+    vt_set_font_color(VT_F_RED);
+    vt_draw_str_at(9, 2, "NeedSpeedUP: ");
+    vt_set_font_color(VT_F_WHITE);
+    sprintf(ss, "%3c", imgInfo.straight_needSpeedUP);
+    vt_draw_str_at(9, 18, ss);
 }

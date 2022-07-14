@@ -33,8 +33,13 @@
 #define int8_t int8
 
 extern DebugDataTypedef DebugData;
-#define __ROBOT_DEBUG__
 
+// ========== Control ========= //
+#define __ROBOT_DEBUG__
+#define __BARN_OUT_ON__
+
+
+// ============================ //
 #define DEBUG_DEAD()
 #endif
 

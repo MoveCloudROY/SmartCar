@@ -2,7 +2,7 @@
  * @Author: ROY1994
  * @Date: 2022-05-10 17:23:16
  * @LastEditors: ROY1994
- * @LastEditTime: 2022-07-13 15:27:07
+ * @LastEditTime: 2022-07-13 22:03:59
  * @FilePath: \myImageDeal\ImageDeal.cpp
  * @Description:
  */
@@ -24,8 +24,6 @@
 #endif
 
 #define PIXEL(ROW_NUM, LINE) imageBin[ROW_NUM][rowInfo[ROW_NUM].LINE##Line]
-#define BLACK 0
-#define WHITE 255
 
 
 #define GET_VARIANCE(VAR, LINE_TYPE, TOLERANT)\
@@ -132,7 +130,7 @@ void img_process(void)
             firstFlag = 'F';
         }
         barnOut_repairLine();
-        if (check_yaw_angle() > DEGREE_60)
+        if (check_yaw_angle() > DEGREE_67)
         {
             SystemData.isBarnOut = 'T';
             stop_interating_angle();
@@ -2605,6 +2603,9 @@ void circle_detect(void)
                     )//阈值需要调整
                     {
                         imgInfo.CircleStatus = CIRCLE_OUT;
+#if defined (__ON_ROBOT__)
+                        start_integrating_angle();
+#endif
                         break;
                     }
 
@@ -2625,6 +2626,9 @@ void circle_detect(void)
                         )//阈值需要调整
                     {
                         imgInfo.CircleStatus = CIRCLE_OUT;
+#if defined (__ON_ROBOT__)
+                        start_integrating_angle();
+#endif
                         break;
                     }
 
@@ -2656,11 +2660,19 @@ void circle_detect(void)
             printf("downside_check_flag_r = %d\n", downside_check_flag_r);
 #endif
 
-            if (   variance_r <= ConstData.kImageLineVarianceTh
+            if (
+                (variance_r <= ConstData.kImageLineVarianceTh
                 && variance_m <= ConstData.kImageLineVarianceTh
                 && downside_check_flag_r)
+#if defined (__ON_ROBOT__)
+                || check_yaw_angle() >= DEGREE_80
+#endif
+                )
             {
                 imgInfo.CircleStatus = CIRCLE_OFF;
+#if defined (__ON_ROBOT__)
+                stop_interating_angle();
+#endif
                 downside_flag_last_r = 0;
                 downside_check_flag_r = 0;
             }
@@ -2690,11 +2702,19 @@ void circle_detect(void)
             printf("downside_flag_now_l = %d\n", downside_flag_now_l);
             printf("downside_check_flag_l = %d\n", downside_check_flag_l);
 #endif
-            if (   variance_l <= ConstData.kImageLineVarianceTh
+            if (
+                (variance_l <= ConstData.kImageLineVarianceTh
                 && variance_m <= ConstData.kImageLineVarianceTh
                 && downside_check_flag_l)
+#if defined (__ON_ROBOT__)
+                || check_yaw_angle() <= -DEGREE_80
+#endif
+                )
             {
                 imgInfo.CircleStatus = CIRCLE_OFF;
+#if defined (__ON_ROBOT__)
+                stop_interating_angle();
+#endif
                 downside_flag_last_l = 0;
                 downside_check_flag_l = 0;
             }
@@ -2933,10 +2953,16 @@ const int weight_fork[60] = {                        //0为图像最顶行
 void get_error(void)//TODO 实现动态调整前瞻
 {
     int avePos = 0, predictedPass = 0;
-    float spd = 2.5;// = get_speed() 之后写成由speed动态选择前瞻的模式
+    float spd = 3.4;// = get_speed() 之后写成由speed动态选择前瞻的模式
     predictedPass = max (imgInfo.bottom - (int)(spd * 10), imgInfo.top + 3); //之后根据实际情况写出关系式
     avePos = (rowInfo[predictedPass].midLine + rowInfo[predictedPass + 1].midLine + rowInfo[predictedPass + 2].midLine) / 3;
+    /*  90  -->  HEIGHT - 25    25 / 90 = 0.28
+        120 -->  HEIGHT - 34
 
+
+
+
+    */
     imgInfo.error = avePos-(WIDTH/2);
     // printf("%d :   %d\n", predictedPass, rowInfo[predictedPass].midLine);
     // printf("avePos = %d\nimgInfo.error = %d\n", avePos, imgInfo.error);

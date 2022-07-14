@@ -40,19 +40,28 @@ void data_set(void)
     ConstData.kImageCrossIOUth = 0.8;                       // 十字检测左右空白行交并比阈值
     ConstData.kImageStraightCurvTh = 0.001;                 // 直线曲率阈值
 
-    ConstData.kImagePOutRepairLineK = 1.02;                 // P环出环补线斜率
+    ConstData.kImagePOutRepairLineK =0.7;                 // P环出环补线斜率
     ConstData.kImagePOutVarianceTh = 200;                   // P环出环线性方差阈值
     ConstData.kImagePassingOffset = 10;
 
     ConstData.kImageForkInPicCnt = 25;
     ConstData.kImageForkInOutPicCnt = 40;
 
-    ConstData.kArcman = 20;
+//    ConstData.kArcman = 20;
 
-    // ================= 系统初始化设置 ================//
+    // ================= 速度初始化设置 ================= //
+
+    ConstData.speed.kMaxSpeed = 120;
+    ConstData.speed.kNormalSpeed = 100;
+    ConstData.speed.kCircleSpeed = 90;
+    ConstData.speed.kPSpeed = 90;
+    ConstData.speed.kForkSpeed = 80;
+
+    // ================= 系统初始化设置 ================= //
 
     SystemData.isBarnOut = 'F';
     SystemData.isStop = 'F';
+    SystemData.isBuzzerOn = 'F';
 
 }
 

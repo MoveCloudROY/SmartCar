@@ -61,7 +61,7 @@ IFX_INTERRUPT(cc60_pit_ch0_isr, 0, CCU6_0_CH0_ISR_PRIORITY)
 	}
 
 	motor_control();
-
+	servo_control_PIDPos();
 //	static float time = 0;
 //	time +=0.005;
 //    //读取编码器
@@ -79,7 +79,6 @@ IFX_INTERRUPT(cc60_pit_ch1_isr, 0, CCU6_0_CH1_ISR_PRIORITY)
 	enableInterrupts();//开启中断嵌套
 	PIT_CLEAR_FLAG(CCU6_0, PIT_CH1);
 	//从CPU0传递给CPU1避免CPU1频繁中断
-	servo_control_PIDPos();
 	interat_yaw_angle(0.005f);
 }
 

@@ -2,6 +2,7 @@
 #define _MOTOR_H_
 
 #include "headfile.h"
+#include "pid.h"
 #include "stdlib.h"
 #include "math.h"
 

@@ -29,6 +29,16 @@
 #endif
 
 
+typedef struct _SpeedSubDataTypeDef
+{
+    int     kMaxSpeed;
+    int     kNormalSpeed;
+    int     kCircleSpeed;
+    int     kPSpeed;
+    int     kForkSpeed;
+
+}SpeedSubDataTypeDef;
+
 typedef struct _ConstDataTypeDef
 {
     int     kServoLowLimit, kServoHighLimit, kServoMid;
@@ -42,7 +52,8 @@ typedef struct _ConstDataTypeDef
     int     kImagePOutVarianceTh;
     int     kImagePassingOffset;
     int     kImageForkInPicCnt, kImageForkInOutPicCnt;
-    int     kArcman;
+//    int     kArcman;
+    SpeedSubDataTypeDef speed;
 
 }ConstDataTypeDef;
 
@@ -50,6 +61,7 @@ typedef struct _SystemDataTypedef
 {
     char    isBarnOut;
     char    isStop;
+    char    isBuzzerOn;
 }SystemDataTypedef;
 
 typedef struct _DebugDataTypedef
