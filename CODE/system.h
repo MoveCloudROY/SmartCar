@@ -27,6 +27,15 @@ do{                                                         \
     vt_draw_str_at(16, 44, sss);                            \
 }while(0)
 
+#define VT_OUT(FORMAT, VAR, LINE, BEGIN)        \
+do{                                             \
+    vt_set_font_color(VT_F_RED);                \
+    vt_draw_str_at(LINE, BEGIN, #VAR ": ");     \
+    vt_set_font_color(VT_F_WHITE);              \
+    sprintf(ss, FORMAT, VAR);                   \
+    vt_draw_str_at(LINE, BEGIN+25, ss);         \
+}while(0)
+
 typedef struct _SystemStatusTypedef
 {
     int cpu0_usage, cpu1_usage;

@@ -13,9 +13,12 @@
 
 extern ImgInfoTypedef imgInfo;
 extern ConstDataTypeDef ConstData;
+extern DebugDataTypedef DebugData;
 
 #define STEER_LIMIT_LOW(pwm) ((pwm)<ConstData.kServoLowLimit?(ConstData.kServoLowLimit):(pwm))
 #define STEER_LIMIT_HIGH(pwm) ((pwm)>ConstData.kServoHighLimit?(ConstData.kServoHighLimit):(pwm))
+#define OUTPUT_LIMIE_LOW(pwm) ((pwm) < -SERVO_INTV?(-SERVO_INTV):(pwm))
+#define OUTPUT_LIMIE_HIGH(pwm) ((pwm)> SERVO_INTV?(SERVO_INTV):(pwm))
 
 PID PID_Servo = {
     .targetPoint = 0,
@@ -60,20 +63,41 @@ void servo_control_PIDPos(void)
     steer_pwm = STEER_LIMIT_LOW(steer_pwm);
     steer_pwm = STEER_LIMIT_HIGH(steer_pwm);
     servo_set(steer_pwm);
-//    differential_speed(-Outpid);
+
+    // =========  差速 ========= //
+#if 1
+    Outpid = OUTPUT_LIMIE_LOW(Outpid);
+    Outpid = OUTPUT_LIMIE_HIGH(Outpid);
+    if (Outpid / 20 != 0) {
+         differential_speed(Outpid);
+    }
+    else {
+        PID_L.targetPoint = PID_L.theoryTarget;
+        PID_R.targetPoint = PID_R.theoryTarget;
+    }
+#endif
 //    servo_set(ConstData.kServoMid);
 //    vofa_sendFloat((float)steer_pwm);
 //    vofa_sendTail();
 }
 
 void differential_speed(int pwm_diff){
-    float angle = pwm_diff/10.0*2.0;            //认为每10pwm变化为2°
-    float R = 200.0*tan(angle);                 //认为车身前后轮轴距20cm
-    if(pwm_diff>=0){                            //大于0右转
-        PID_R.targetPoint = (int)(PID_L.theoryTarget*(R-77.5)/(R+77.5));
-    }else{
-        PID_L.targetPoint = (int)(PID_R.theoryTarget*(R-77.5)/(R+77.5));
+    float angle = abs(pwm_diff)*ConstData.speed.kDiffAnglePerPWM;            //认为每10pwm变化为2°
+    float R = 0.2*tan(angle*PI/180);                 //认为车身前后轮轴距20cm
+#if 1
+    DebugData.SteerAngle = angle;
+    DebugData.SteerR = R;
+#endif
+
+    if (pwm_diff>=0) {                            //大于0右转
+        PID_R.targetPoint = (int)(PID_L.theoryTarget*(R-0.0775)/(R+0.0775));
+        PID_L.targetPoint = PID_L.theoryTarget;
     }
+    else {
+        PID_L.targetPoint = (int)(PID_R.theoryTarget*(R-0.0775)/(R+0.0775));
+        PID_R.targetPoint = PID_R.theoryTarget;
+    }
+
 }
 
 ///****************************     阿克曼加减差速      ****************************/

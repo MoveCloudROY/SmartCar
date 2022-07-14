@@ -16,26 +16,36 @@ void speed_control(void)
     {
         PID_L.targetPoint = ConstData.speed.kMaxSpeed;
         PID_R.targetPoint = ConstData.speed.kMaxSpeed;
+        PID_L.theoryTarget = ConstData.speed.kMaxSpeed;
+        PID_R.theoryTarget = ConstData.speed.kMaxSpeed;
     }
     else if (imgInfo.RoadType == Circle_L || imgInfo.RoadType == Circle_R)
     {
         PID_L.targetPoint = ConstData.speed.kCircleSpeed;
         PID_R.targetPoint = ConstData.speed.kCircleSpeed;
+        PID_L.theoryTarget = ConstData.speed.kCircleSpeed;
+        PID_R.theoryTarget = ConstData.speed.kCircleSpeed;
     }
     else if (imgInfo.RoadType == P_L || imgInfo.RoadType == P_R)
     {
         PID_L.targetPoint = ConstData.speed.kPSpeed;
         PID_R.targetPoint = ConstData.speed.kPSpeed;
+        PID_L.theoryTarget = ConstData.speed.kPSpeed;
+        PID_R.theoryTarget = ConstData.speed.kPSpeed;
     }
     else if (imgInfo.RoadType == Fork_In || imgInfo.RoadType == Fork_Out)
     {
         PID_L.targetPoint = ConstData.speed.kForkSpeed;
         PID_R.targetPoint = ConstData.speed.kForkSpeed;
+        PID_L.theoryTarget = ConstData.speed.kForkSpeed;
+        PID_R.theoryTarget = ConstData.speed.kForkSpeed;
     }
     else
     {
         PID_L.targetPoint = ConstData.speed.kNormalSpeed;
         PID_R.targetPoint = ConstData.speed.kNormalSpeed;
+        PID_L.theoryTarget = ConstData.speed.kNormalSpeed;
+        PID_R.theoryTarget = ConstData.speed.kNormalSpeed;
     }
 }
 

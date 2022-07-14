@@ -23,10 +23,10 @@ void data_set(void)
 {
 
     // ================= 常数设置 ================//
-
-    ConstData.kServoLowLimit = 1360;                        // 舵机右打角限制
-    ConstData.kServoHighLimit = 1650;                       // 舵机中值(大致)
     ConstData.kServoMid = 1510  ;//1496;                    // 舵机左打角限制
+    ConstData.kServoLowLimit = ConstData.kServoMid - SERVO_INTV;                        // 舵机右打角限制
+    ConstData.kServoHighLimit = ConstData.kServoMid + SERVO_INTV;                       // 舵机中值(大致)
+
 
     ConstData.kImageStraightLineVarianceTh = 26;            // 直线检测阈值
     ConstData.kImageStraightLineSpeedUpVarianceTh = 20;     // 直线加速检测阈值
@@ -51,11 +51,13 @@ void data_set(void)
 
     // ================= 速度初始化设置 ================= //
 
-    ConstData.speed.kMaxSpeed = 120;
-    ConstData.speed.kNormalSpeed = 100;
-    ConstData.speed.kCircleSpeed = 90;
-    ConstData.speed.kPSpeed = 90;
-    ConstData.speed.kForkSpeed = 80;
+    ConstData.speed.kMaxSpeed = 220;
+    ConstData.speed.kNormalSpeed = 200;
+    ConstData.speed.kCircleSpeed = 190;
+    ConstData.speed.kPSpeed = 190;
+    ConstData.speed.kForkSpeed = 180;
+    ConstData.speed.kDiffAnglePerPWM = 0.17;
+
 
     // ================= 系统初始化设置 ================= //
 

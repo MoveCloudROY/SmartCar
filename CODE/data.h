@@ -28,6 +28,7 @@
 #include <string.h>
 #endif
 
+#define SERVO_INTV 150
 
 typedef struct _SpeedSubDataTypeDef
 {
@@ -36,7 +37,7 @@ typedef struct _SpeedSubDataTypeDef
     int     kCircleSpeed;
     int     kPSpeed;
     int     kForkSpeed;
-
+    float   kDiffAnglePerPWM;
 }SpeedSubDataTypeDef;
 
 typedef struct _ConstDataTypeDef
@@ -68,6 +69,8 @@ typedef struct _DebugDataTypedef
 {
         char PFlagInRange;
         char PFlagVariOK;
+        float SteerR;
+        float SteerAngle;
 }DebugDataTypedef;
 
 void data_set(void);

@@ -156,7 +156,9 @@ void img_backstage(void)
 //            img_preProcess(MORPH_EROSION);
 
             img_process(); // 0.45ms
+            // ========= 速度控制 ======== //
             speed_control();
+
             gpio_toggle(P20_8);
             cpu1_5ms_flag = 0;
         }
@@ -318,4 +320,11 @@ void car_statusbar(void)
     vt_set_font_color(VT_F_WHITE);
     sprintf(ss, "%3c", imgInfo.straight_needSpeedUP);
     vt_draw_str_at(9, 18, ss);
+
+    // 输出 差速 R
+    VT_OUT("%.2f", DebugData.SteerR, 9, 28);
+
+    // 输出 差速 Angle
+    VT_OUT("%.2f", DebugData.SteerAngle, 10, 2);
+
 }
