@@ -2458,6 +2458,9 @@ void circle_detect(void)
             if (variance_r < ConstData.kImageLineVarianceTh && imgInfo.top < bigCircleTop)
             {
                 imgInfo.CircleStatus = CIRCLE_FIND; // 标记 [发现环岛] 状态
+#if defined (__ON_ROBOT__)
+                passDis.start(&passDis);
+#endif
                 imgInfo.RoadType = Circle_L;
             }
         }
@@ -2472,6 +2475,9 @@ void circle_detect(void)
             if (variance_l < ConstData.kImageLineVarianceTh && imgInfo.top < bigCircleTop)
             {
                 imgInfo.CircleStatus = CIRCLE_FIND; // 标记 [发现环岛] 状态
+#if defined (__ON_ROBOT__)
+                passDis.start(&passDis);
+#endif
                 imgInfo.RoadType = Circle_R;
             }
         }
@@ -2494,10 +2500,17 @@ void circle_detect(void)
             if(!leftdown_flag_now && leftdown_flag_last_F2I && !leftdown_check_flag_F2I)
                 leftdown_check_flag_F2I = 1;
 
-            if (circle_in_flag == 'F' && leftdown_check_flag_F2I) // 如果没有找到黑色闭环, 则说明应当入环岛, 标记状态位
+            if (
+                    circle_in_flag == 'F'
+                    && leftdown_check_flag_F2I
+#if defined (__ON_ROBOT__)
+                    && (passDis.disL + passDis.disR) / 2 > ConstData.kImageCircleInIntegralDis
+#endif
+                ) // 如果没有找到黑色闭环, 则说明应当入环岛, 标记状态位
             {
 #if defined (__ON_ROBOT__)
                 start_integrating_angle();
+                passDis.stop(&passDis);
 #endif
                 imgInfo.CircleStatus = CIRCLE_IN;
                 leftdown_flag_last_F2I = 0;
@@ -2518,10 +2531,17 @@ void circle_detect(void)
             if(!rightdown_flag_now && rightdown_flag_last_F2I && !rightdown_check_flag_F2I)
                rightdown_check_flag_F2I = 1;
 
-            if (circle_in_flag == 'F' && rightdown_check_flag_F2I) // 如果没有找到黑色闭环, 则说明应当入环岛, 标记状态位
+            if (
+                    circle_in_flag == 'F'
+                    && rightdown_check_flag_F2I
+#if defined (__ON_ROBOT__)
+                    && (passDis.disL + passDis.disR) / 2 > ConstData.kImageCircleInIntegralDis
+#endif
+                ) // 如果没有找到黑色闭环, 则说明应当入环岛, 标记状态位
             {
 #if defined (__ON_ROBOT__)
                 start_integrating_angle();
+                passDis.stop(&passDis);
 #endif
                 imgInfo.CircleStatus = CIRCLE_IN;
                 rightdown_flag_last_F2I = 0;
@@ -2762,7 +2782,7 @@ void circle_detect(void)
                 if (
                         downside_check_flag_l
 #if defined (__ON_ROBOT__)
-                        && (passDis.disL + passDis.disR ) / 2  > 0.25
+                        && (passDis.disL + passDis.disR ) / 2  > ConstData.kImageCircleOffIntegralDis
 #endif
                    ) // && abs(color_toggleCnt_left - color_toggleCnt_right) <= 1)
                 {
@@ -2796,7 +2816,7 @@ void circle_detect(void)
                 if (
                         downside_check_flag_r
 #if defined (__ON_ROBOT__)
-                        && (passDis.disL + passDis.disR ) / 2  > 0.25
+                        && (passDis.disL + passDis.disR ) / 2  > ConstData.kImageCircleOffIntegralDis
 #endif
                     )// && abs(color_toggleCnt_left - color_toggleCnt_right) <= 1)
                 {

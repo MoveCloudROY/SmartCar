@@ -34,13 +34,15 @@ void data_set(void)
 
     ConstData.kImageCircleInRepairLineK = 1.1;             // 环岛入环补线斜率
     ConstData.kImageCircleOutRepairLineK = 1.02;            // 环岛出环补线斜率
+    ConstData.kImageCircleInIntegralDis = 0.25;             // 环岛发现到入环路程积分
+    ConstData.kImageCircleOffIntegralDis = 0.25;            // 环岛OFF到清空路程积分
 
     ConstData.kImageBarnOutRepairLineK = 1.2;
 
     ConstData.kImageCrossIOUth = 0.8;                       // 十字检测左右空白行交并比阈值
     ConstData.kImageStraightCurvTh = 0.001;                 // 直线曲率阈值
 
-    ConstData.kImagePOutRepairLineK =0.7;                 // P环出环补线斜率
+    ConstData.kImagePOutRepairLineK = 0.9;                 // P环出环补线斜率
     ConstData.kImagePOutVarianceTh = 200;                   // P环出环线性方差阈值
     ConstData.kImagePassingOffset = 10;
 
@@ -53,11 +55,11 @@ void data_set(void)
 
     // ================= 速度初始化设置 ================= //
 
-    ConstData.speed.kMaxSpeed = 140;
-    ConstData.speed.kNormalSpeed = 120;
-    ConstData.speed.kCircleSpeed = 110;
-    ConstData.speed.kPSpeed = 110;
-    ConstData.speed.kForkSpeed = 100;
+    ConstData.speed.kMaxSpeed = 150;
+    ConstData.speed.kNormalSpeed = 130;
+    ConstData.speed.kCircleSpeed = 120;
+    ConstData.speed.kPSpeed = 120;
+    ConstData.speed.kForkSpeed = 110;
     ConstData.speed.kDiffAnglePerPWM = 0.2;
 
 

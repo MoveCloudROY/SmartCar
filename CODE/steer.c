@@ -44,7 +44,7 @@ int steer_pwm;
 
 void servo_init(void)
 {
-    gtm_pwm_init(SERVO_PIN, 50, SERVO_MID);
+    gtm_pwm_init(SERVO_PIN, 50, ConstData.kServoMid);
 }
 void servo_set(int duty)
 {
