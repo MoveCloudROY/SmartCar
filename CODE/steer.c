@@ -85,10 +85,12 @@ void servo_control_PIDPos(void)
 void differential_speed(int pwm_diff){
     float angle = abs(pwm_diff)*ConstData.speed.kDiffAnglePerPWM;            //认为每10pwm变化为2°
     float tanval = tan(angle*PI/180);
-        float R;
-        if(tanval){
-            R = 0.2/tanval;                 //认为车身前后轮轴距20cm
-        }else R = FLT_MAX;
+    float R;
+    if(abs(tanval) < 1e-7){
+        R = 0.2/tanval;                 //认为车身前后轮轴距20cm
+    }
+    else
+        R = FLT_MAX;
 #if 1
     DebugData.SteerAngle = angle;
     DebugData.SteerR = R;
