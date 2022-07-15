@@ -219,5 +219,6 @@ inline void recalc_line(uint8_t select_top, uint8_t select_bottom, LineTypeEnum 
 // ÔÝÇÒ·ÏÆúµÄ
 // void find_RDJump(uint8_t start_point, uint8_t end_point);
 void advanced_regression(int type, int startline1, int endline1, int startline2, int endline2);
+void perspective_transform(int raw, int col, float* xpos, float* ypos);
 
 #endif /*IMAGE_DEAL_H*/

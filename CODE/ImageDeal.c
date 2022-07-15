@@ -3451,3 +3451,12 @@ void advanced_regression(int type, int startline1, int endline1, int startline2,
     }
 }
 
+void perspective_transform(int raw, int col, float* xpos, float* ypos)
+{
+    const float hd[3][3]={  {-1.62607300518144e-05,-1.32752034677776e-05,-0.0240139052766472},\
+                            {-1.92677047602663e-06,-0.000218541935085821,0.0209577226134506},\
+                            {-0.000639661265653287,-1.17866800190587e-05,-0.000652298005048857}};
+    *ypos = (raw * hd[0][0] + col * hd[0][1] + hd[0][2]) / (raw * hd[2][0] + col * hd[2][1] + hd[2][2]);
+    *xpos = (raw * hd[1][0] + col * hd[1][1] + hd[1][2]) / (raw * hd[2][0] + col * hd[2][1] + hd[2][2]);
+}
+

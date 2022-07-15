@@ -90,11 +90,11 @@ void differential_speed(int pwm_diff){
 #endif
 
     if (pwm_diff>=0) {                            //´óÓÚ0ÓÒ×ª
-        PID_R.targetPoint = (int)(PID_L.theoryTarget*(R-0.0775)/(R+0.0775));
+        PID_R.targetPoint = (int)(PID_L.theoryTarget*(R-0.02)/(R+0.02));
         PID_L.targetPoint = PID_L.theoryTarget;
     }
     else {
-        PID_L.targetPoint = (int)(PID_R.theoryTarget*(R-0.0775)/(R+0.0775));
+        PID_L.targetPoint = (int)(PID_R.theoryTarget*(R-0.02)/(R+0.02));
         PID_R.targetPoint = PID_R.theoryTarget;
     }
 
