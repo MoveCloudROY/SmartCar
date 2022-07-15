@@ -2,7 +2,7 @@
  * @Author: ROY1994
  * @Date: 2022-05-10 17:23:16
  * @LastEditors: ROY1994
- * @LastEditTime: 2022-07-15 18:20:57
+ * @LastEditTime: 2022-07-15 23:17:07
  * @FilePath: \myImageDeal\ImageDeal.cpp
  * @Description:
  */
@@ -1235,7 +1235,8 @@ void road_judge(void)
         imgInfo.RoadType != Circle_R    &&
         imgInfo.RoadType != P_L         &&
         imgInfo.RoadType != P_R         &&
-        imgInfo.RoadType != Slope
+        imgInfo.RoadType != Slope       &&
+        imgInfo.RoadType != Barn_In
       )
     {
         imgInfo.RoadType = Road_None;
@@ -2786,7 +2787,13 @@ void circle_detect(void)
 #endif
                    ) // && abs(color_toggleCnt_left - color_toggleCnt_right) <= 1)
                 {
+#if defined (__ON_ROBOT__)
+//                    motor_stop();
+//                    abort();
                     passDis.stop(&passDis);
+
+
+#endif
                     imgInfo.CircleStatus = CIRCLE_NOT_FIND;
                     imgInfo.RoadType = Road_None;
                     downside_flag_last_l = 0;
@@ -2820,7 +2827,12 @@ void circle_detect(void)
 #endif
                     )// && abs(color_toggleCnt_left - color_toggleCnt_right) <= 1)
                 {
+#if defined (__ON_ROBOT__)
+//                    motor_stop();
+//                    abort();
                     passDis.stop(&passDis);
+
+#endif
                     imgInfo.CircleStatus = CIRCLE_NOT_FIND;
                     imgInfo.RoadType = Road_None;
                     downside_flag_last_r = 0;
@@ -2964,20 +2976,20 @@ void barnIn_detect(void)
     uint8_t jumpCnt = 0, isBarnLineCnt = 0;
     static uint8_t detectStartFlag = 'F';
     static int picBegin = 0;
-    for (int row = 50; row <= 100; ++row)
+    for (int row = HEIGHT / 2; row <= HEIGHT - 5; ++row)
     {
         jumpCnt = 0;
-        for (int i = 10; i < WIDTH - 10; ++i)
+        for (int i = rowInfo[row].leftLine; i <= rowInfo[row].rightLine; ++i)
         {
             if (imageBin[row][i] != imageBin[row][i + 1])
                 ++ jumpCnt;
         }
-        if (jumpCnt >= 9)
+        if (jumpCnt >= 12)
             ++ isBarnLineCnt;
     }
     if (SystemData.barnInDetectCnt == 0)
     {
-        if (isBarnLineCnt >= 3  && detectStartFlag == 'F')
+        if (isBarnLineCnt >= 4  && detectStartFlag == 'F')
         {
             detectStartFlag = 'T';
             picBegin = picCount;
@@ -2996,7 +3008,10 @@ void barnIn_detect(void)
     {
         SystemData.barnInDetectCnt = 2;
         imgInfo.RoadType = Barn_In;
+#if defined (__ON_ROBOT__)
         start_integrating_angle();
+        passDis.start(&passDis);
+#endif
     }
 }
 
@@ -3007,34 +3022,23 @@ void barnIn_detect(void)
  */
 void barnIn_repairLine(void)
 {
-
-    uint8_t CornerLine;
-    if (check_yaw_angle() > DEGREE_80)
+#if defined (__ON_ROBOT__)
+    if (check_yaw_angle() < -DEGREE_60 || (passDis.disL + passDis.disR) / 2.0 > 0.1)
     {
         stop_interating_angle();
+        passDis.stop(&passDis);
         SystemData.isStop = 'T';
     }
+#endif
     if (SystemData.barnInDetectCnt == 2 && imgInfo.RoadType == Barn_In)
     {
-        for (int row = HEIGHT - 5; row > imgInfo.top + 10; --row)
+        for (int row = HEIGHT - 1; row > imgInfo.top + 2; --row)
         {
-            if ((rowInfo[row].leftLine - rowInfo[row - 2].leftLine) > 5)
-            {
-                CornerLine = row - 2;
-                break;
-            }
-        }
-        imgInfo.top = CornerLine;
-        if (CornerLine > 0)
-        {
-            for (int row = CornerLine; row < HEIGHT - 5; --row)
-            {
-                int tmp = (int)(rowInfo[CornerLine].leftLine + (row - CornerLine));
-                if (tmp >= WIDTH) tmp = WIDTH - 1;
-                rowInfo[row].leftLine  = 0;
-                rowInfo[row].rightLine = tmp;
-                rowInfo[row].midLine = (rowInfo[row].leftLine + rowInfo[row].rightLine) / 2;
-            }
+            float k, b;
+            k = (ConstData.kImageBarnOutRepairLineK * WIDTH) / (HEIGHT - 1 - imgInfo.top);
+            b = WIDTH - 1 - k * (HEIGHT - 1);
+            add_line(k, b, imgInfo.top, HEIGHT - 1, RIGHT);
+            recalc_line(imgInfo.top, HEIGHT - 1, RIGHT);
         }
     }
 }
@@ -3053,37 +3057,42 @@ uint8_t stop_detect(void)
 }
 
 
-const int weight_base[60] = {                        //0为图像最顶行
-    0 , 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    1 , 1, 3, 3, 5, 5,10,10,10,10,
-    10,10,10,10,10,10,10,10,10,10,
-    10,10,10,10,10,10,10,10,10,10,
-    10,10,10,10,10, 5, 5, 5, 5, 5,
-    3 , 3, 3, 1, 1, 1, 0, 0, 0, 0,
+const int weight_base[120] = {                        //0为图像最顶行
+    0 , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1 , 1, 1, 1, 3, 3, 3, 3, 5, 5, 5, 5,10,10,10,10,10,10,10,10,
+    10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,
+
+    10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,
+    10,10,10,10,10,10,10,10,10,10, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+    3 , 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
 };    //基础    //注意斜率变化引起的跳变,要平滑
-const int weight_circle[60] = {                        //0为图像最顶行
-    0 , 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    1 , 1, 3, 3, 5, 5,10,10,10,10,
-    10,10,10,10,10,10,10,10,10,10,
-    10,10,10,10,10,10,10,10,10,10,
-    10,10,10,10,10, 5, 5, 5, 5, 5,
-    3 , 3, 3, 1, 1, 1, 0, 0, 0, 0,
+
+const int weight_circle[120] = {                        //0为图像最顶行
+    0 , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0 , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1 , 1, 1, 3, 3, 3, 3, 5, 5, 5, 5, 5, 5,10,10,10,10,10,10,10,
+
+    10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,
+    10,10,10,10,10,10,10,10,10,10, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+    3 , 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
 };    //基础    //注意斜率变化引起的跳变,要平滑
-const int weight_p[60] = {                        //0为图像最顶行
-    0 , 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    1 , 1, 3, 3, 5, 5,10,10,10,10,
-    10,10,10,10,10,10,10,10,10,10,
-    10,10,10,10,10,10,10,10,10,10,
-    10,10,10,10,10, 5, 5, 5, 5, 5,
-    3 , 3, 3, 1, 1, 1, 0, 0, 0, 0,
+const int weight_p[120] = {                        //0为图像最顶行
+    0 , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0 , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1 , 1, 1, 3, 3, 3, 3, 5, 5, 5, 5, 5, 5,10,10,10,10,10,10,10,
+
+    10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,
+    10,10,10,10,10,10,10,10,10,10, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+    3 , 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
 };    //基础    //注意斜率变化引起的跳变,要平滑
-const int weight_fork[60] = {                        //0为图像最顶行
-    0 , 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    1 , 1, 3, 3, 5, 5,10,10,10,10,
-    10,10,10,10,10,10,10,10,10,10,
-    10,10,10,10,10,10,10,10,10,10,
-    10,10,10,10,10, 5, 5, 5, 5, 5,
-    3 , 3, 3, 1, 1, 1, 0, 0, 0, 0,
+const int weight_fork[120] = {                        //0为图像最顶行
+    0 , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0 , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1 , 1, 1, 3, 3, 3, 3, 5, 5, 5, 5, 5, 5,10,10,10,10,10,10,10,
+
+    10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,
+    10,10,10,10,10,10,10,10,10,10, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+    3 , 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
 };    //基础    //注意斜率变化引起的跳变,要平滑
 /**
  * @description: 获取当前位置和中线位置的偏差，传递给PID处理
@@ -3093,16 +3102,14 @@ const int weight_fork[60] = {                        //0为图像最顶行
 void get_error(void)//TODO 实现动态调整前瞻
 {
     int avePos = 0, predictedPass = 0;
-    float spd = 3.4;// = get_speed() 之后写成由speed动态选择前瞻的模式
-    predictedPass = max (imgInfo.bottom - (int)(spd * 10), imgInfo.top + 3); //之后根据实际情况写出关系式
+    float pwm = (PID_L.targetPoint + PID_R.targetPoint) / 2.0;
+    predictedPass = max (imgInfo.bottom - (int)(pwm * 0.28), imgInfo.top + 3); //之后根据实际情况写出关系式
     avePos = (rowInfo[predictedPass].midLine + rowInfo[predictedPass + 1].midLine + rowInfo[predictedPass + 2].midLine) / 3;
     /*  90  -->  HEIGHT - 25    25 / 90 = 0.28
         120 -->  HEIGHT - 34
-
-
-
-
     */
+
+
     imgInfo.error = avePos-(WIDTH/2);
     // printf("%d :   %d\n", predictedPass, rowInfo[predictedPass].midLine);
     // printf("avePos = %d\nimgInfo.error = %d\n", avePos, imgInfo.error);

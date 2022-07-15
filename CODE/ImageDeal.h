@@ -26,6 +26,7 @@
 #include "ImagePreDeal.h"
 #include "yawAngle.h"
 #include "data.h"
+#include "pid.h"
 
 #define uint8_t uint8
 #define uint16_t uint16
@@ -33,6 +34,7 @@
 #define int8_t int8
 
 extern DebugDataTypedef DebugData;
+extern PID PID_L, PID_R;
 
 // ========== Control ========= //
 #define __ROBOT_DEBUG__

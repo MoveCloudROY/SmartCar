@@ -19,14 +19,14 @@ void speed_control(void)
         PID_L.theoryTarget = ConstData.speed.kMaxSpeed;
         PID_R.theoryTarget = ConstData.speed.kMaxSpeed;
     }
-    else if (imgInfo.RoadType == Circle_L || imgInfo.RoadType == Circle_R)
+    else if ((imgInfo.RoadType == Circle_L || imgInfo.RoadType == Circle_R) && imgInfo.CircleStatus != CIRCLE_OFF)
     {
         PID_L.targetPoint = ConstData.speed.kCircleSpeed;
         PID_R.targetPoint = ConstData.speed.kCircleSpeed;
         PID_L.theoryTarget = ConstData.speed.kCircleSpeed;
         PID_R.theoryTarget = ConstData.speed.kCircleSpeed;
     }
-    else if (imgInfo.RoadType == P_L || imgInfo.RoadType == P_R)
+    else if ((imgInfo.RoadType == P_L || imgInfo.RoadType == P_R) && imgInfo.PStatus != P_PASSING)
     {
         PID_L.targetPoint = ConstData.speed.kPSpeed;
         PID_R.targetPoint = ConstData.speed.kPSpeed;

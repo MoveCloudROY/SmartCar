@@ -110,6 +110,7 @@ void car_backstage(void)
     if (SystemData.isStop == 'T')
     {
         motor_stop();
+//        abort();
     }
 //    deal_buzzer();
     if(cpu0_5ms_flag)
@@ -190,6 +191,7 @@ void car_statusbar(void)
     // 画盒子
 //    vt_draw_box(1, 1, 20, 80, ' ', ' ', ' ');
     //标题
+    vt_clear_attr();
     vt_set_font_color(VT_F_CYAN);
     vt_draw_str_at(2, 34, "Car Status");
 
@@ -266,18 +268,18 @@ void car_statusbar(void)
 
 
     // 输出左轮速度
-    vt_set_font_color(VT_F_RED);
-    vt_draw_str_at(6, 2, "LeftSpeed: ");
-    vt_set_font_color(VT_F_WHITE);
-    sprintf(ss, "%.2f", speedL);
-    vt_draw_str_at(6, 14, ss);
-
-    // 输出右轮速度
-    vt_set_font_color(VT_F_RED);
-    vt_draw_str_at(6, 24, "RightSpeed: ");
-    vt_set_font_color(VT_F_WHITE);
-    sprintf(ss, "%.2f", speedR);
-    vt_draw_str_at(6, 36, ss);
+//    vt_set_font_color(VT_F_RED);
+//    vt_draw_str_at(6, 2, "LeftSpeed: ");
+//    vt_set_font_color(VT_F_WHITE);
+//    sprintf(ss, "%.2f", speedL);
+//    vt_draw_str_at(6, 14, ss);
+//
+//    // 输出右轮速度
+//    vt_set_font_color(VT_F_RED);
+//    vt_draw_str_at(6, 24, "RightSpeed: ");
+//    vt_set_font_color(VT_F_WHITE);
+//    sprintf(ss, "%.2f", speedR);
+//    vt_draw_str_at(6, 36, ss);
 
     // 输出平均速度
     vt_set_font_color(VT_F_RED);
@@ -287,11 +289,11 @@ void car_statusbar(void)
     vt_draw_str_at(6, 60, ss);
 
     // 输出舵机打角
-    vt_set_font_color(VT_F_RED);
-    vt_draw_str_at(7, 2, "Steer: ");
-    vt_set_font_color(VT_F_WHITE);
-    sprintf(ss, "%3d", ConstData.kServoMid - steer_pwm);
-    vt_draw_str_at(7, 14, ss);
+//    vt_set_font_color(VT_F_RED);
+//    vt_draw_str_at(7, 2, "Steer: ");
+//    vt_set_font_color(VT_F_WHITE);
+//    sprintf(ss, "%3d", ConstData.kServoMid - steer_pwm);
+//    vt_draw_str_at(7, 14, ss);
 
     // 输出角度值
     if(is_interating_angle())
@@ -323,11 +325,11 @@ void car_statusbar(void)
     sprintf(ss, "%3c", imgInfo.straight_needSpeedUP);
     vt_draw_str_at(9, 18, ss);
 
-    // 输出 差速 R
-    VT_OUT("%.2f", DebugData.SteerR, 9, 28);
-
-    // 输出 差速 Angle
-    VT_OUT("%.2f", DebugData.SteerAngle, 10, 2);
+//    // 输出 差速 R
+//    VT_OUT("%.2f", DebugData.SteerR, 9, 28);
+//
+//    // 输出 差速 Angle
+//    VT_OUT("%.2f", DebugData.SteerAngle, 10, 2);
 
     // 输出 积分距离 dis
     float dis = (passDis.disL + passDis.disR) / 2;
@@ -336,5 +338,10 @@ void car_statusbar(void)
     // 输出车库检测到的次数
     int barnInDetectCnt = SystemData.barnInDetectCnt;
     VT_OUT("%3d", barnInDetectCnt, 11, 2);
+
+    // 输出 PID target
+    VT_OUT("%3d", PID_L.targetPoint, 12, 2);
+    VT_OUT("%3d", PID_R.targetPoint, 12, 37);
+
 
 }

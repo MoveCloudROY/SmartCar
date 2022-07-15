@@ -32,12 +32,12 @@ void data_set(void)
     ConstData.kImageStraightLineSpeedUpVarianceTh = 20;     // 直线加速检测阈值
     ConstData.kImageLineVarianceTh = 200;              // 环岛出环线性方差阈值
 
-    ConstData.kImageCircleInRepairLineK = 1.1;             // 环岛入环补线斜率
+    ConstData.kImageCircleInRepairLineK = 1.02;             // 环岛入环补线斜率
     ConstData.kImageCircleOutRepairLineK = 1.02;            // 环岛出环补线斜率
     ConstData.kImageCircleInIntegralDis = 0.25;             // 环岛发现到入环路程积分
-    ConstData.kImageCircleOffIntegralDis = 0.25;            // 环岛OFF到清空路程积分
+    ConstData.kImageCircleOffIntegralDis = 0.28;            // 环岛OFF到清空路程积分
 
-    ConstData.kImageBarnOutRepairLineK = 1.2;
+    ConstData.kImageBarnOutRepairLineK = 1.05;
 
     ConstData.kImageCrossIOUth = 0.8;                       // 十字检测左右空白行交并比阈值
     ConstData.kImageStraightCurvTh = 0.001;                 // 直线曲率阈值
