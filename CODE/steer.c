@@ -50,6 +50,7 @@ void servo_set(int duty)
 {
     pwm_duty(SERVO_PIN, duty);
 }
+
 void servo_control_PIDPos(void)
 {
     PID_Servo.iError = imgInfo.error;
