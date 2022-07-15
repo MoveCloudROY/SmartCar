@@ -2,7 +2,7 @@
  * @Author: ROY1994
  * @Date: 2022-04-23 21:14:50
  * @LastEditors: ROY1994
- * @LastEditTime: 2022-07-13 15:25:08
+ * @LastEditTime: 2022-07-15 17:43:44
  * @FilePath: \myImageDeal\data.h
  * @Description:
  */
@@ -16,6 +16,7 @@
 #ifndef CODE_DATA_H_
 #define CODE_DATA_H_
 
+#include <stdint.h>
 #if defined (__ON_ROBOT__)
 
 #include "pid.h"
@@ -53,6 +54,7 @@ typedef struct _ConstDataTypeDef
     int     kImagePOutVarianceTh;
     int     kImagePassingOffset;
     int     kImageForkInPicCnt, kImageForkInOutPicCnt;
+    int     kImageBarnInPicCnt;
 //    int     kArcman;
     SpeedSubDataTypeDef speed;
 
@@ -63,6 +65,7 @@ typedef struct _SystemDataTypedef
     char    isBarnOut;
     char    isStop;
     char    isBuzzerOn;
+    uint8_t barnInDetectCnt;
 }SystemDataTypedef;
 
 typedef struct _DebugDataTypedef

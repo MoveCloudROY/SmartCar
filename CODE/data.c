@@ -2,7 +2,7 @@
  * @Author: ROY1994
  * @Date: 2022-04-23 21:14:58
  * @LastEditors: ROY1994
- * @LastEditTime: 2022-07-13 15:24:37
+ * @LastEditTime: 2022-07-15 17:44:38
  * @FilePath: \myImageDeal\data.cpp
  * @Description:
  */
@@ -23,7 +23,7 @@ void data_set(void)
 {
 
     // ================= 常数设置 ================//
-    ConstData.kServoMid = 1510  ;//1496;                    // 舵机左打角限制
+    ConstData.kServoMid = 1490  ;//1496;                    // 舵机左打角限制
     ConstData.kServoLowLimit = ConstData.kServoMid - SERVO_INTV;                        // 舵机右打角限制
     ConstData.kServoHighLimit = ConstData.kServoMid + SERVO_INTV;                       // 舵机中值(大致)
 
@@ -47,16 +47,18 @@ void data_set(void)
     ConstData.kImageForkInPicCnt = 25;
     ConstData.kImageForkInOutPicCnt = 40;
 
+    ConstData.kImageBarnInPicCnt = 20;
+
 //    ConstData.kArcman = 20;
 
     // ================= 速度初始化设置 ================= //
 
-    ConstData.speed.kMaxSpeed = 170;
-    ConstData.speed.kNormalSpeed = 150;
-    ConstData.speed.kCircleSpeed = 140;
-    ConstData.speed.kPSpeed = 140;
-    ConstData.speed.kForkSpeed = 130;
-    ConstData.speed.kDiffAnglePerPWM = 0.17;
+    ConstData.speed.kMaxSpeed = 140;
+    ConstData.speed.kNormalSpeed = 120;
+    ConstData.speed.kCircleSpeed = 110;
+    ConstData.speed.kPSpeed = 110;
+    ConstData.speed.kForkSpeed = 100;
+    ConstData.speed.kDiffAnglePerPWM = 0.2;
 
 
     // ================= 系统初始化设置 ================= //
@@ -64,6 +66,7 @@ void data_set(void)
     SystemData.isBarnOut = 'F';
     SystemData.isStop = 'F';
     SystemData.isBuzzerOn = 'F';
+    SystemData.barnInDetectCnt = 0;
 
 }
 

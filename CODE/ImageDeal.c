@@ -2,7 +2,7 @@
  * @Author: ROY1994
  * @Date: 2022-05-10 17:23:16
  * @LastEditors: ROY1994
- * @LastEditTime: 2022-07-13 22:03:59
+ * @LastEditTime: 2022-07-15 18:20:57
  * @FilePath: \myImageDeal\ImageDeal.cpp
  * @Description:
  */
@@ -46,6 +46,7 @@ DebugVaribleTypedef debugVar;
 #endif
 
 #if defined (__ON_ROBOT__)
+extern PassDisTypedef passDis;
 extern DebugDataTypedef DebugData;
 #endif
 
@@ -1240,12 +1241,25 @@ void road_judge(void)
         imgInfo.RoadType = Road_None;
     }
     if (
+        // imgInfo.RoadType != Cross       &&     //赛道类型清0  if里面的情况都需要积分退出 不能在这儿请0
+        imgInfo.RoadType != Circle_L    &&
+        imgInfo.RoadType != Circle_R    &&
+        imgInfo.RoadType != P_L         &&
+        imgInfo.RoadType != P_R         &&
+        imgInfo.RoadType != Slope
+       )
+    {
+        barnIn_detect();
+    }
+
+    if (
         imgInfo.RoadType != Cross       &&
         imgInfo.RoadType != Circle_L    &&
         imgInfo.RoadType != Circle_R    &&
         imgInfo.RoadType != P_L         &&
         imgInfo.RoadType != P_R         &&
         imgInfo.RoadType != Slope       &&
+        imgInfo.RoadType != Barn_In     &&
         fork_in_flag != 'T'
       )
     {
@@ -1259,7 +1273,8 @@ void road_judge(void)
         imgInfo.RoadType != P_L         &&
         imgInfo.RoadType != P_R         &&
         imgInfo.RoadType != Circle_L    &&
-        imgInfo.RoadType != Circle_R
+        imgInfo.RoadType != Circle_R    &&
+        imgInfo.RoadType != Barn_In
       )
     {
         fork_detect();
@@ -1273,6 +1288,7 @@ void road_judge(void)
         imgInfo.RoadType != Slope       &&
         imgInfo.RoadType != Fork_In     &&
         imgInfo.RoadType != Fork_Out    &&
+        imgInfo.RoadType != Barn_In     &&
         fork_in_flag != 'T'
        )
     {
@@ -1284,6 +1300,7 @@ void road_judge(void)
         imgInfo.RoadType != Cross       &&
         imgInfo.RoadType != Fork_In     &&
         imgInfo.RoadType != Fork_Out    &&
+        imgInfo.RoadType != Barn_In     &&
         fork_in_flag != 'T'
        )
     {
@@ -1305,6 +1322,7 @@ void road_judge(void)
 
 
     // TODO
+    barnIn_repairLine();
     p_repairLine();
     circle_repairLine();
     fork_repairLine();
@@ -2672,6 +2690,7 @@ void circle_detect(void)
                 imgInfo.CircleStatus = CIRCLE_OFF;
 #if defined (__ON_ROBOT__)
                 stop_interating_angle();
+                passDis.start(&passDis);
 #endif
                 downside_flag_last_r = 0;
                 downside_check_flag_r = 0;
@@ -2714,6 +2733,7 @@ void circle_detect(void)
                 imgInfo.CircleStatus = CIRCLE_OFF;
 #if defined (__ON_ROBOT__)
                 stop_interating_angle();
+                passDis.start(&passDis);
 #endif
                 downside_flag_last_l = 0;
                 downside_check_flag_l = 0;
@@ -2739,8 +2759,14 @@ void circle_detect(void)
                 if(!downside_flag_now_l && downside_flag_last_l && !downside_check_flag_l)
                     downside_check_flag_l = 1;
 
-                if (downside_check_flag_l)// && abs(color_toggleCnt_left - color_toggleCnt_right) <= 1)
+                if (
+                        downside_check_flag_l
+#if defined (__ON_ROBOT__)
+                        && (passDis.disL + passDis.disR ) / 2  > 0.25
+#endif
+                   ) // && abs(color_toggleCnt_left - color_toggleCnt_right) <= 1)
                 {
+                    passDis.stop(&passDis);
                     imgInfo.CircleStatus = CIRCLE_NOT_FIND;
                     imgInfo.RoadType = Road_None;
                     downside_flag_last_l = 0;
@@ -2767,8 +2793,14 @@ void circle_detect(void)
                 printf("    downside_flag_now_r   = %c\n", downside_flag_now_r == 1?'W':'B');
                 printf("    downside_check_flag_r = %c\n", downside_check_flag_r == 1?'T':'F');
 #endif
-                if (downside_check_flag_r)// && abs(color_toggleCnt_left - color_toggleCnt_right) <= 1)
+                if (
+                        downside_check_flag_r
+#if defined (__ON_ROBOT__)
+                        && (passDis.disL + passDis.disR ) / 2  > 0.25
+#endif
+                    )// && abs(color_toggleCnt_left - color_toggleCnt_right) <= 1)
                 {
+                    passDis.stop(&passDis);
                     imgInfo.CircleStatus = CIRCLE_NOT_FIND;
                     imgInfo.RoadType = Road_None;
                     downside_flag_last_r = 0;
@@ -2887,7 +2919,10 @@ void circle_repairLine(void)
     }
 }
 
-
+/**
+ * @description: 出车库补线函数
+ * @return {*}
+ */
 void barnOut_repairLine(void)
 {
     for (int row = HEIGHT - 1; row > imgInfo.top + 2; --row)
@@ -2899,6 +2934,91 @@ void barnOut_repairLine(void)
         recalc_line(imgInfo.top, HEIGHT - 1, RIGHT);
     }
 }
+
+/**
+ * @description: 入车库检测函数
+ * @return {*}
+ */
+void barnIn_detect(void)
+{
+    uint8_t jumpCnt = 0, isBarnLineCnt = 0;
+    static uint8_t detectStartFlag = 'F';
+    static int picBegin = 0;
+    for (int row = 50; row <= 100; ++row)
+    {
+        jumpCnt = 0;
+        for (int i = 10; i < WIDTH - 10; ++i)
+        {
+            if (imageBin[row][i] != imageBin[row][i + 1])
+                ++ jumpCnt;
+        }
+        if (jumpCnt >= 9)
+            ++ isBarnLineCnt;
+    }
+    if (SystemData.barnInDetectCnt == 0)
+    {
+        if (isBarnLineCnt >= 3  && detectStartFlag == 'F')
+        {
+            detectStartFlag = 'T';
+            picBegin = picCount;
+            // ++ SystemData.barnInDetectCnt;
+        }
+        if (detectStartFlag == 'T')
+        {
+            if (picCount - picBegin > ConstData.kImageBarnInPicCnt)
+            {
+                detectStartFlag = 'F';
+                SystemData.barnInDetectCnt = 1;
+            }
+        }
+    }
+    else if (SystemData.barnInDetectCnt == 1)
+    {
+        SystemData.barnInDetectCnt = 2;
+        imgInfo.RoadType = Barn_In;
+        start_integrating_angle();
+    }
+}
+
+
+/**
+ * @description: 入车库补线函数
+ * @return {*}
+ */
+void barnIn_repairLine(void)
+{
+
+    uint8_t CornerLine;
+    if (check_yaw_angle() > DEGREE_80)
+    {
+        stop_interating_angle();
+        SystemData.isStop = 'T';
+    }
+    if (SystemData.barnInDetectCnt == 2 && imgInfo.RoadType == Barn_In)
+    {
+        for (int row = HEIGHT - 5; row > imgInfo.top + 10; --row)
+        {
+            if ((rowInfo[row].leftLine - rowInfo[row - 2].leftLine) > 5)
+            {
+                CornerLine = row - 2;
+                break;
+            }
+        }
+        imgInfo.top = CornerLine;
+        if (CornerLine > 0)
+        {
+            for (int row = CornerLine; row < HEIGHT - 5; --row)
+            {
+                int tmp = (int)(rowInfo[CornerLine].leftLine + (row - CornerLine));
+                if (tmp >= WIDTH) tmp = WIDTH - 1;
+                rowInfo[row].leftLine  = 0;
+                rowInfo[row].rightLine = tmp;
+                rowInfo[row].midLine = (rowInfo[row].leftLine + rowInfo[row].rightLine) / 2;
+            }
+        }
+    }
+}
+
 
 uint8_t stop_detect(void)
 {

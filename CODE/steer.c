@@ -91,18 +91,18 @@ void differential_speed(int pwm_diff){
         R = 0.2/tanval;                 //认为车身前后轮轴距20cm
     }
     else
-        R = FLT_MAX;
+        R = (float)1e9;
 #if 1
     DebugData.SteerAngle = angle;
     DebugData.SteerR = R;
 #endif
 
     if (pwm_diff>=0) {                            //大于0右转
-        PID_R.targetPoint = (int)(PID_L.theoryTarget*(R-0.02)/(R+0.02));
+        PID_R.targetPoint = (int)(PID_L.theoryTarget*(R-0.0775)/(R+0.0775));
         PID_L.targetPoint = PID_L.theoryTarget;
     }
     else {
-        PID_L.targetPoint = (int)(PID_R.theoryTarget*(R-0.02)/(R+0.02));
+        PID_L.targetPoint = (int)(PID_R.theoryTarget*(R-0.0775)/(R+0.0775));
         PID_R.targetPoint = PID_R.theoryTarget;
     }
 

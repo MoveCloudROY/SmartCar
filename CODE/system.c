@@ -97,6 +97,7 @@ void car_init(void)
     pit_init(CCU6_0, PIT_CH1, 20000);
 //    pit_init(CCU6_1, PIT_CH0, 5000);
 
+
 //    call_buzzer();
     vt_clearall();
 }
@@ -105,6 +106,7 @@ void car_backstage(void)
 {
     shell_run();
     vt_hide_cursor();
+
     if (SystemData.isStop == 'T')
     {
         motor_stop();
@@ -326,5 +328,13 @@ void car_statusbar(void)
 
     // 输出 差速 Angle
     VT_OUT("%.2f", DebugData.SteerAngle, 10, 2);
+
+    // 输出 积分距离 dis
+    float dis = (passDis.disL + passDis.disR) / 2;
+    VT_OUT("%.2f", dis, 10, 34);
+
+    // 输出车库检测到的次数
+    int barnInDetectCnt = SystemData.barnInDetectCnt;
+    VT_OUT("%3d", barnInDetectCnt, 11, 2);
 
 }

@@ -2,7 +2,7 @@
  * @Author: ROY1994
  * @Date: 2022-02-04 14:01:20
  * @LastEditors: ROY1994
- * @LastEditTime: 2022-07-12 17:09:47
+ * @LastEditTime: 2022-07-15 16:43:22
  * @FilePath: \myImageDeal\ImageDeal.h
  * @Description: t
  */
@@ -12,7 +12,7 @@
 
 #include <stdint.h>
 //#define __ON_PC__
-  #define __ON_ROBOT__
+#define __ON_ROBOT__
 
 
 #ifdef __ON_PC__
@@ -199,6 +199,9 @@ void p_detect(void);
 void p_repairLine(void);
 
 void barnOut_repairLine(void);
+
+void barnIn_detect(void);
+void barnIn_repairLine(void);
 
 uint8_t stop_detect(void);
 
