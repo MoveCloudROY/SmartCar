@@ -49,13 +49,14 @@ typedef struct _ConstDataTypeDef
     float   kImageCircleInRepairLineK, kImageCircleOutRepairLineK;
     float   kImageCircleInIntegralDis, kImageCircleOffIntegralDis;
     float   kImageBarnOutRepairLineK;
+    float   kImageBarnInRepairLineK;
     float   kImageCrossIOUth;
     float   kImageStraightCurvTh;
     float   kImagePOutRepairLineK;
     int     kImagePOutVarianceTh;
     int     kImagePassingOffset;
     int     kImageForkInPicCnt, kImageForkInOutPicCnt;
-    int     kImageBarnInPicCnt;
+    float   kImageBarnInFirIntegralDis, kImageBarnInSecIntegralDis;
 //    int     kArcman;
     SpeedSubDataTypeDef speed;
 

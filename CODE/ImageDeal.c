@@ -158,6 +158,7 @@ void img_process(void)
     advance_repairLine(); // 补线
     advance_midLineFilter();
 
+//    get_error();
     calc_globalError();
 }
 
@@ -2505,7 +2506,7 @@ void circle_detect(void)
                     circle_in_flag == 'F'
                     && leftdown_check_flag_F2I
 #if defined (__ON_ROBOT__)
-                    && (passDis.disL + passDis.disR) / 2 > ConstData.kImageCircleInIntegralDis
+                    && (passDis.disL + passDis.disR) / 2.0f > ConstData.kImageCircleInIntegralDis
 #endif
                 ) // 如果没有找到黑色闭环, 则说明应当入环岛, 标记状态位
             {
@@ -2536,7 +2537,7 @@ void circle_detect(void)
                     circle_in_flag == 'F'
                     && rightdown_check_flag_F2I
 #if defined (__ON_ROBOT__)
-                    && (passDis.disL + passDis.disR) / 2 > ConstData.kImageCircleInIntegralDis
+                    && (passDis.disL + passDis.disR) / 2.0f > ConstData.kImageCircleInIntegralDis
 #endif
                 ) // 如果没有找到黑色闭环, 则说明应当入环岛, 标记状态位
             {
@@ -2975,8 +2976,8 @@ void barnIn_detect(void)
 {
     uint8_t jumpCnt = 0, isBarnLineCnt = 0;
     static uint8_t detectStartFlag = 'F';
-    static int picBegin = 0;
-    for (int row = HEIGHT / 2; row <= HEIGHT - 5; ++row)
+
+    for (int row = HEIGHT / 3; row <= HEIGHT - 5; ++row)
     {
         jumpCnt = 0;
         for (int i = rowInfo[row].leftLine; i <= rowInfo[row].rightLine; ++i)
@@ -2987,24 +2988,28 @@ void barnIn_detect(void)
         if (jumpCnt >= 12)
             ++ isBarnLineCnt;
     }
-    if (SystemData.barnInDetectCnt == 0)
+    if (SystemData.barnInDetectCnt == 0 && isBarnLineCnt >= 4)
     {
-        if (isBarnLineCnt >= 4  && detectStartFlag == 'F')
+        if (detectStartFlag == 'F')
         {
             detectStartFlag = 'T';
-            picBegin = picCount;
+            passDis.start(&passDis);
             // ++ SystemData.barnInDetectCnt;
         }
-        if (detectStartFlag == 'T')
+
+    }
+    if (detectStartFlag == 'T')
+    {
+        if ((passDis.disL + passDis.disR) / 2.0f > ConstData.kImageBarnInFirIntegralDis)
         {
-            if (picCount - picBegin > ConstData.kImageBarnInPicCnt)
-            {
-                detectStartFlag = 'F';
-                SystemData.barnInDetectCnt = 1;
-            }
+            passDis.stop(&passDis);
+            detectStartFlag = 'F';
+            SystemData.barnInDetectCnt = 1;
+//            SystemData.isStop = 'T';
+//            abort();
         }
     }
-    else if (SystemData.barnInDetectCnt == 1)
+    if (SystemData.barnInDetectCnt == 1 && isBarnLineCnt >= 4)
     {
         SystemData.barnInDetectCnt = 2;
         imgInfo.RoadType = Barn_In;
@@ -3022,20 +3027,20 @@ void barnIn_detect(void)
  */
 void barnIn_repairLine(void)
 {
-#if defined (__ON_ROBOT__)
-    if (check_yaw_angle() < -DEGREE_60 || (passDis.disL + passDis.disR) / 2.0 > 0.1)
-    {
-        stop_interating_angle();
-        passDis.stop(&passDis);
-        SystemData.isStop = 'T';
-    }
-#endif
     if (SystemData.barnInDetectCnt == 2 && imgInfo.RoadType == Barn_In)
     {
+#if defined (__ON_ROBOT__)
+        if (check_yaw_angle() < -DEGREE_60 || (passDis.disL + passDis.disR) / 2.0 > ConstData.kImageBarnInSecIntegralDis)
+        {
+            stop_interating_angle();
+            passDis.stop(&passDis);
+            SystemData.isStop = 'T';
+        }
+#endif
         for (int row = HEIGHT - 1; row > imgInfo.top + 2; --row)
         {
             float k, b;
-            k = (ConstData.kImageBarnOutRepairLineK * WIDTH) / (HEIGHT - 1 - imgInfo.top);
+            k = (ConstData.kImageBarnInRepairLineK * WIDTH) / (HEIGHT - 1 - imgInfo.top);
             b = WIDTH - 1 - k * (HEIGHT - 1);
             add_line(k, b, imgInfo.top, HEIGHT - 1, RIGHT);
             recalc_line(imgInfo.top, HEIGHT - 1, RIGHT);
@@ -3059,7 +3064,7 @@ uint8_t stop_detect(void)
 
 const int weight_base[120] = {                        //0为图像最顶行
     0 , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0 , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,
+    0 , 0, 0, 0, 0, 0, 0,0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,
     3 , 3, 3, 3, 5, 5, 10, 10,10,10,10,10,10,15,15,15,15,15,15,15,
 
     15,15,15,15,15,15,15,15,15,15,15,15,10,10,10,10,10,10,10,10,
@@ -3070,29 +3075,29 @@ const int weight_base[120] = {                        //0为图像最顶行
 const int weight_circle[120] = {                        //0为图像最顶行
     0 , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0 , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    1 , 1, 1, 3, 3, 3, 3, 5, 5, 5, 5, 5, 5,10,10,10,10,10,10,10,
+    1 , 1, 1, 1, 1, 3, 3, 3, 3, 3, 3, 5, 5, 5, 5, 5, 5, 5,10,10,
 
-    10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,
-    10,10,10,10,10,10,10,10,10,10, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-    3 , 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+    10,10,10,10,10,10,10,10,10,10,10,15,15,15, 15,15,15,15,15,15,
+    15,15,15,15,15,15,15,15,15,15,15,10,10,10,10,10,10,10,10, 5,
+    5 , 5, 5, 5, 5, 3, 3, 3, 3, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
 };    //基础    //注意斜率变化引起的跳变,要平滑
 const int weight_p[120] = {                        //0为图像最顶行
     0 , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0 , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    1 , 1, 1, 3, 3, 3, 3, 5, 5, 5, 5, 5, 5,10,10,10,10,10,10,10,
+    1 , 1, 1, 3, 3, 3, 3, 3, 5, 5, 5, 5, 5, 5,10,10,10,10,10,10,
 
-    10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,
-    10,10,10,10,10,10,10,10,10,10, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-    3 , 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+    10,10,10,10,10,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,
+    15,15,15,15,15,15,15,10,10,10,10,10,10,10,10,10, 5, 5, 5, 5,
+    5 , 5, 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
 };    //基础    //注意斜率变化引起的跳变,要平滑
 const int weight_fork[120] = {                        //0为图像最顶行
     0 , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0 , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    1 , 1, 1, 3, 3, 3, 3, 5, 5, 5, 5, 5, 5,10,10,10,10,10,10,10,
+    1 , 1, 1, 3, 3, 3, 3, 3, 5, 5, 5, 5, 5, 5,10,10,10,10,10,10,
 
-    10,10,10,10,15,15,15,15,15,15,15,15,15,15,15,10,10,10,10,10,
-    10,10,10,10,10,10,10,10,10,10, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-    3 , 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+    10,10,10,10,10,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,
+    15,15,15,15,15,15,15,10,10,10,10,10,10,10,10,10, 5, 5, 5, 5,
+    5 , 5, 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
 };    //基础    //注意斜率变化引起的跳变,要平滑
 /**
  * @description: 获取当前位置和中线位置的偏差，传递给PID处理
@@ -3103,7 +3108,7 @@ void get_error(void)//TODO 实现动态调整前瞻
 {
     int avePos = 0, predictedPass = 0;
     float pwm = (PID_L.targetPoint + PID_R.targetPoint) / 2.0;
-    predictedPass = max (imgInfo.bottom - (int)(pwm * 0.4), imgInfo.top + 3); //之后根据实际情况写出关系式
+    predictedPass = max (imgInfo.bottom - (int)(pwm * 0.28), imgInfo.top + 3); //之后根据实际情况写出关系式
     avePos = (rowInfo[predictedPass].midLine + rowInfo[predictedPass + 1].midLine + rowInfo[predictedPass + 2].midLine) / 3;
     /*  90  -->  HEIGHT - 25    25 / 90 = 0.28
         120 -->  HEIGHT - 34
@@ -3140,8 +3145,28 @@ void calc_globalError(void)
 
     for (int row = imgInfo.bottom; row > imgInfo.top + 5; --row)
     {
-        weightSum   += weight_base[row];
-        lineSum     += weight_base[row] * rowInfo[row].midLine;
+        if ((imgInfo.RoadType == Circle_L || imgInfo.RoadType == Circle_R)
+                &&
+            (imgInfo.CircleStatus == CIRCLE_IN || imgInfo.CircleStatus == CIRCLE_OUT))
+        {
+            weightSum   += weight_circle[row];
+            lineSum     += weight_circle[row] * rowInfo[row].midLine;
+        }
+        else if (imgInfo.RoadType == P_L || imgInfo.RoadType == P_R)
+        {
+            weightSum   += weight_p[row];
+            lineSum     += weight_p[row] * rowInfo[row].midLine;
+        }
+        else if (imgInfo.RoadType == Fork_In || imgInfo.RoadType == Fork_Out)
+        {
+            weightSum   += weight_fork[row];
+            lineSum     += weight_fork[row] * rowInfo[row].midLine;
+        }
+        else
+        {
+            weightSum   += weight_base[row];
+            lineSum     += weight_base[row] * rowInfo[row].midLine;
+        }
     }
 
     float tmpError  = (float)lineSum / weightSum - WIDTH / 2.0f;

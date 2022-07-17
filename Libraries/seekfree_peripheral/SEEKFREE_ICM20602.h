@@ -100,7 +100,7 @@
 #define     ICM20602_ZA_OFFSET_H        0x7D
 #define     ICM20602_ZA_OFFSET_L        0x7E
 
-#define     CALTIMES                    1000
+#define     CALTIMES                    100
 
 extern int16 icm_gyro_x,icm_gyro_y,icm_gyro_z;
 extern int16 icm_acc_x,icm_acc_y,icm_acc_z;

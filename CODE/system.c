@@ -343,5 +343,8 @@ void car_statusbar(void)
     VT_OUT("%3d", PID_L.targetPoint, 12, 2);
     VT_OUT("%3d", PID_R.targetPoint, 12, 37);
 
+    // Êä³ö Error
+    VT_OUT("%3d", imgInfo.error, 13, 2);
+
 
 }

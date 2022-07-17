@@ -37,19 +37,21 @@ void data_set(void)
     ConstData.kImageCircleInIntegralDis = 0.25;             // 环岛发现到入环路程积分
     ConstData.kImageCircleOffIntegralDis = 0.28;            // 环岛OFF到清空路程积分
 
-    ConstData.kImageBarnOutRepairLineK = 1.05;
+    ConstData.kImageBarnOutRepairLineK = 0.9;
+    ConstData.kImageBarnInRepairLineK = 2.0;
 
     ConstData.kImageCrossIOUth = 0.8;                       // 十字检测左右空白行交并比阈值
     ConstData.kImageStraightCurvTh = 0.001;                 // 直线曲率阈值
 
-    ConstData.kImagePOutRepairLineK = 0.9;                 // P环出环补线斜率
+    ConstData.kImagePOutRepairLineK = 0.8;                 // P环出环补线斜率
     ConstData.kImagePOutVarianceTh = 200;                   // P环出环线性方差阈值
     ConstData.kImagePassingOffset = 10;
 
     ConstData.kImageForkInPicCnt = 25;
     ConstData.kImageForkInOutPicCnt = 40;
 
-    ConstData.kImageBarnInPicCnt = 20;
+    ConstData.kImageBarnInFirIntegralDis = 0.4;
+    ConstData.kImageBarnInSecIntegralDis = 0.4;
 
 //    ConstData.kArcman = 20;
 
