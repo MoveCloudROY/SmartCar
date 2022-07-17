@@ -29,8 +29,8 @@ PID PID_L = {
     .result = 0,
 };
 PID PID_R = {
-    .targetPoint = 120,
-    .theoryTarget = 120,
+    .targetPoint = 130,
+    .theoryTarget = 130,
     .P = 20.3031449809298,
     .I = 0.005*268.373269126206,
     .D = 0,

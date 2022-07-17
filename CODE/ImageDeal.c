@@ -158,7 +158,7 @@ void img_process(void)
     advance_repairLine(); // 补线
     advance_midLineFilter();
 
-    get_error();
+    calc_globalError();
 }
 
 /**
@@ -3059,11 +3059,11 @@ uint8_t stop_detect(void)
 
 const int weight_base[120] = {                        //0为图像最顶行
     0 , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    1 , 1, 1, 1, 3, 3, 3, 3, 5, 5, 5, 5,10,10,10,10,10,10,10,10,
-    10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,
+    0 , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,
+    3 , 3, 3, 3, 5, 5, 10, 10,10,10,10,10,10,15,15,15,15,15,15,15,
 
-    10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,
-    10,10,10,10,10,10,10,10,10,10, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+    15,15,15,15,15,15,15,15,15,15,15,15,10,10,10,10,10,10,10,10,
+    10,10,10,10,10,10, 5, 5, 5,5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
     3 , 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
 };    //基础    //注意斜率变化引起的跳变,要平滑
 
@@ -3090,7 +3090,7 @@ const int weight_fork[120] = {                        //0为图像最顶行
     0 , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     1 , 1, 1, 3, 3, 3, 3, 5, 5, 5, 5, 5, 5,10,10,10,10,10,10,10,
 
-    10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,
+    10,10,10,10,15,15,15,15,15,15,15,15,15,15,15,10,10,10,10,10,
     10,10,10,10,10,10,10,10,10,10, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
     3 , 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
 };    //基础    //注意斜率变化引起的跳变,要平滑
@@ -3103,7 +3103,7 @@ void get_error(void)//TODO 实现动态调整前瞻
 {
     int avePos = 0, predictedPass = 0;
     float pwm = (PID_L.targetPoint + PID_R.targetPoint) / 2.0;
-    predictedPass = max (imgInfo.bottom - (int)(pwm * 0.28), imgInfo.top + 3); //之后根据实际情况写出关系式
+    predictedPass = max (imgInfo.bottom - (int)(pwm * 0.4), imgInfo.top + 3); //之后根据实际情况写出关系式
     avePos = (rowInfo[predictedPass].midLine + rowInfo[predictedPass + 1].midLine + rowInfo[predictedPass + 2].midLine) / 3;
     /*  90  -->  HEIGHT - 25    25 / 90 = 0.28
         120 -->  HEIGHT - 34
@@ -3135,16 +3135,21 @@ void get_error(void)//TODO 实现动态调整前瞻
 
 void calc_globalError(void)
 {
-    // for(i = startRow; i > validRow + 1; i --) {
-    // weightSum += weight1[i];
-    // lineSum += weight1[i] * middleLine[i];
-    // }   //从下往上扫
+    static float midline_f = 0.0, midline_ff = 0.0, midline_fff = 0.0;
+    int weightSum = 0, lineSum = 0;
 
-    // angleErr = (float)lineSum / weightSum - middleStandard;
-    // midline_fff = midline_ff;
-    // midline_ff  = midline_f;
-    // midline_f = angleErr;
-    // angleErr = midline_fff * 0.50f + midline_ff * 0.30f + midline_f * 0.20f;
+    for (int row = imgInfo.bottom; row > imgInfo.top + 5; --row)
+    {
+        weightSum   += weight_base[row];
+        lineSum     += weight_base[row] * rowInfo[row].midLine;
+    }
+
+    float tmpError  = (float)lineSum / weightSum - WIDTH / 2.0f;
+    midline_fff     = midline_ff;
+    midline_ff      = midline_f;
+    midline_f       = tmpError;
+//    imgInfo.error   = midline_fff * 0.50f + midline_ff * 0.30f + midline_f * 0.20f;
+    imgInfo.error = tmpError;
 }
 
 

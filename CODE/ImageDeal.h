@@ -209,6 +209,7 @@ uint8_t stop_detect(void);
 
 // 获取偏差值传至PID
 void get_error(void);
+void calc_globalError(void);
 
 // 功能性函数
 int get_variance(uint8_t select_top, uint8_t select_bottom, LineTypeEnum type);
