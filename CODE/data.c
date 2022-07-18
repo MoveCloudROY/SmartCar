@@ -48,10 +48,10 @@ void data_set(void)
     ConstData.kImagePassingOffset = 10;
 
 //    ConstData.kImageForkInPicCnt = 25;
-    ConstData.kImageForkInOutIntegralDis = 0.3;
+    ConstData.kImageForkIntegralDis = 0.25;
 
-    ConstData.kImageBarnInFirIntegralDis = 0.4;
-    ConstData.kImageBarnInSecIntegralDis = 0.4;
+    ConstData.kImageBarnInFirIntegralDis = 0.6;
+    ConstData.kImageBarnInSecIntegralDis = 0.2;
 
 //    ConstData.kArcman = 20;
 

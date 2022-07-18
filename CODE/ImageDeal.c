@@ -1549,50 +1549,52 @@ void fork_detect()
     //                     -------------------------------------
     // fork_in_flag        |                                   |-----------------
     //
-    static char fork_in_flag_last = 'F', fork_out_flag_last = 'F';
 //    static long long picNum_in = -1;
-    char fork_in_flag_now = 'F', fork_out_flag_now = 'F';
-    if(fork_in_flag == 'F' || (passDis.disL + passDis.disR) / 2.0f <= ConstData.kImageForkInOutIntegralDis)
+    static char isForkIn = 'F', isForkOut = 'F';
+    // isForkIn 正在入三岔, isForkOut 正在出三岔
+    // fork_in_flag 在三岔中
+    if(fork_in_flag == 'F')
     {
         if(fork_flag_tot == 'T' && imgInfo.RoadType != Fork_In)
         {
-            fork_in_flag_now = 'T';
+            passDis.start(&passDis);
+            isForkIn = 'T';
             imgInfo.RoadType = Fork_In;
         }
-        if(fork_in_flag_last == 'T' && fork_in_flag_now == 'F')
+        if(isForkIn == 'T')
         {
-//            picNum_in = picCount;
-            passDis.start(&passDis);
-            fork_in_flag = 'T';
-            fork_in_flag_last = 'F';
-        }
-        else
-        {
-            fork_in_flag_last = fork_in_flag_now;
+            if((passDis.disL + passDis.disR) / 2.0f <= ConstData.kImageForkIntegralDis)
+            {
+                imgInfo.RoadType = Fork_In;
+            }
+            else
+            {
+                passDis.stop(&passDis);
+                fork_in_flag = 'T';
+                isForkIn = 'F';
+            }
         }
     }
     else // fork_in_flag == 'T'
     {
-        if (
-            fork_flag_tot == 'T'
-            && imgInfo.RoadType != Fork_Out
-//            && picNum_in != -1
-            && (passDis.disL + passDis.disR) / 2.0f >= ConstData.kImageForkInOutIntegralDis
-           )
+        if(fork_flag_tot == 'T' && imgInfo.RoadType != Fork_Out)
         {
-            fork_out_flag_now = 'T';
+            passDis.start(&passDis);
+            isForkOut = 'T';
             imgInfo.RoadType = Fork_Out;
         }
-        if(fork_out_flag_last == 'T' && fork_out_flag_now == 'F')
+        if(isForkOut == 'T')
         {
-//            picNum_in = -1;
-            passDis.stop(&passDis);
-            fork_in_flag = 'F';
-            fork_out_flag_last = 'F';
-        }
-        else
-        {
-            fork_out_flag_last = fork_out_flag_now;
+            if((passDis.disL + passDis.disR) / 2.0f <= ConstData.kImageForkIntegralDis)
+            {
+                imgInfo.RoadType = Fork_Out;
+            }
+            else
+            {
+                passDis.stop(&passDis);
+                fork_in_flag = 'F';
+                isForkOut = 'F';
+            }
         }
     }
 #ifdef DEBUG
@@ -3154,7 +3156,7 @@ void calc_globalError(void)
             weightSum   += weight_circle[row];
             lineSum     += weight_circle[row] * rowInfo[row].midLine;
         }
-        else if (imgInfo.RoadType == P_L || imgInfo.RoadType == P_R)
+        else if ((imgInfo.RoadType == P_L || imgInfo.RoadType == P_R) && imgInfo.PStatus != P_OUT_1)
         {
             weightSum   += weight_p[row];
             lineSum     += weight_p[row] * rowInfo[row].midLine;
