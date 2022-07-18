@@ -22,8 +22,8 @@
 extern IfxCpu_spinLock g_shellSpinLock;
 extern Ifx_Shell g_shellInterface;
 
-void shell_init(void);  //!< @reference isr.c
-void shell_run(void);
+void my_shell_init(void);  //!< @reference isr.c
+void my_shell_run(void);
 void cpu_usage_refresh(void);
 
 #endif /* CODE_SHELL_H_ */

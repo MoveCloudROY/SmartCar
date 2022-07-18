@@ -47,8 +47,8 @@ void data_set(void)
     ConstData.kImagePOutVarianceTh = 200;                   // P环出环线性方差阈值
     ConstData.kImagePassingOffset = 10;
 
-    ConstData.kImageForkInPicCnt = 25;
-    ConstData.kImageForkInOutPicCnt = 40;
+//    ConstData.kImageForkInPicCnt = 25;
+    ConstData.kImageForkInOutIntegralDis = 0.3;
 
     ConstData.kImageBarnInFirIntegralDis = 0.4;
     ConstData.kImageBarnInSecIntegralDis = 0.4;

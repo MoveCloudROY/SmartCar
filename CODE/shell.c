@@ -44,7 +44,7 @@ static const Ifx_Shell_Command g_shellCommands[] =
     IFX_SHELL_COMMAND_LIST_END
 };
 
-void shell_init(void) {
+void my_shell_init(void) {
     //uart_init(DEBUG_UART, DEBUG_UART_BAUD, DEBUG_UART_TX_PIN, DEBUG_UART_RX_PIN);
 
     /* Initialize the Standard Interface */
@@ -68,7 +68,7 @@ void shell_init(void) {
     ); /* Initialize the Shell with the given configuration    */
 }
 
-void shell_run(void)
+void my_shell_run(void)
 {
     ++cpu_counter;
     /* Process the received data */

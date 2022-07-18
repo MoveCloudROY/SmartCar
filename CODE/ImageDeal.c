@@ -1550,9 +1550,9 @@ void fork_detect()
     // fork_in_flag        |                                   |-----------------
     //
     static char fork_in_flag_last = 'F', fork_out_flag_last = 'F';
-    static long long picNum_in = -1;
+//    static long long picNum_in = -1;
     char fork_in_flag_now = 'F', fork_out_flag_now = 'F';
-    if(fork_in_flag == 'F' || ( picNum_in != -1 && picCount - picNum_in <= ConstData.kImageForkInPicCnt))
+    if(fork_in_flag == 'F' || (passDis.disL + passDis.disR) / 2.0f <= ConstData.kImageForkInOutIntegralDis)
     {
         if(fork_flag_tot == 'T' && imgInfo.RoadType != Fork_In)
         {
@@ -1561,7 +1561,8 @@ void fork_detect()
         }
         if(fork_in_flag_last == 'T' && fork_in_flag_now == 'F')
         {
-            picNum_in = picCount;
+//            picNum_in = picCount;
+            passDis.start(&passDis);
             fork_in_flag = 'T';
             fork_in_flag_last = 'F';
         }
@@ -1575,8 +1576,8 @@ void fork_detect()
         if (
             fork_flag_tot == 'T'
             && imgInfo.RoadType != Fork_Out
-            && picNum_in != -1
-            && picCount - picNum_in >= ConstData.kImageForkInOutPicCnt
+//            && picNum_in != -1
+            && (passDis.disL + passDis.disR) / 2.0f >= ConstData.kImageForkInOutIntegralDis
            )
         {
             fork_out_flag_now = 'T';
@@ -1584,7 +1585,8 @@ void fork_detect()
         }
         if(fork_out_flag_last == 'T' && fork_out_flag_now == 'F')
         {
-            picNum_in = -1;
+//            picNum_in = -1;
+            passDis.stop(&passDis);
             fork_in_flag = 'F';
             fork_out_flag_last = 'F';
         }

@@ -20,6 +20,8 @@
 #include "buzzer.h"
 #include "speed.h"
 
+
+#include "nr_micro_shell.h"
 /*
 
 ≥µ¡æ–≈œ¢
@@ -68,7 +70,7 @@ void car_init(void)
     ips200_init();
 #endif
 
-    shell_init();
+    my_shell_init();
 
     key_init();
 
@@ -99,12 +101,14 @@ void car_init(void)
 
 
 //    call_buzzer();
+
+
     vt_clearall();
 }
 
 void car_backstage(void)
 {
-    shell_run();
+//    my_shell_run();
     vt_hide_cursor();
 
     if (SystemData.isStop == 'T')
