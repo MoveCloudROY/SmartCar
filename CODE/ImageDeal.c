@@ -2083,6 +2083,10 @@ void p_detect(void)
                        )//阈值需要调整
                     {
                         imgInfo.PStatus = P_OUT_READY;
+#if defined (__ON_ROBOT__)
+                        start_integrating_angle();
+                        passDis.start(&passDis);
+#endif
                         break;
                     }
 
@@ -2103,6 +2107,10 @@ void p_detect(void)
                         )//阈值需要调整
                     {
                         imgInfo.PStatus = P_OUT_READY;
+#if defined (__ON_ROBOT__)
+                        start_integrating_angle();
+                        passDis.start(&passDis);
+#endif
                         break;
                     }
 
@@ -2184,11 +2192,20 @@ void p_detect(void)
             if(!downside_flag_now_l && downside_flag_last_l && !downside_check_flag_l)
                downside_check_flag_l = 1;
 
-            if (   variance_l <= ConstData.kImagePOutVarianceTh
+            if (   (variance_l <= ConstData.kImagePOutVarianceTh
                 && variance_m <= ConstData.kImagePOutVarianceTh
                 && downside_check_flag_l)
+#if defined (__ON_ROBOT__)
+                    || check_yaw_angle() <= -DEGREE_40
+                    || (passDis.disL + passDis.disR) / 2.0f >= ConstData.kImagePOutIntegralDis
+#endif
+                )
             {
                 imgInfo.PStatus = P_OFF;
+//                SystemData.isStop = 'T';
+#if defined (__ON_ROBOT__)
+                stop_interating_angle();
+#endif
                 downside_flag_last_l = 0;
                 downside_check_flag_l = 0;
             }
@@ -2216,11 +2233,21 @@ void p_detect(void)
             if(!downside_flag_now_r && downside_flag_last_r && !downside_check_flag_r)
                downside_check_flag_r = 1;
 
-            if (   variance_r <= ConstData.kImagePOutVarianceTh
+            if (   (variance_r <= ConstData.kImagePOutVarianceTh
                 && variance_m <= ConstData.kImagePOutVarianceTh
                 && downside_check_flag_r)
+#if defined (__ON_ROBOT__)
+                    || check_yaw_angle() >= DEGREE_40
+                    || (passDis.disL + passDis.disR) / 2.0f >= ConstData.kImagePOutIntegralDis
+#endif
+               )
             {
+
                 imgInfo.PStatus = P_OFF;
+//                SystemData.isStop = 'T';
+#if defined (__ON_ROBOT__)
+                stop_interating_angle();
+#endif
                 downside_flag_last_r = 0;
                 downside_check_flag_r = 0;
             }
@@ -2249,25 +2276,46 @@ void p_detect(void)
  */
 void p_repairLine(void)
 {
+//    if (imgInfo.PStatus == P_OUT_1)
+//    {
+//        if(imgInfo.RoadType  == P_L)
+//        {
+//            float k, b;
+//            k = (float)(ConstData.kImagePOutRepairLineK * WIDTH) / (imgInfo.top - (HEIGHT - 1));
+//            b = (float)- k * (HEIGHT - 1);
+//            add_line(k, b, imgInfo.top, HEIGHT - 1, LEFT);
+//            recalc_line(imgInfo.top, HEIGHT - 1, LEFT);
+//        }
+//        else if (imgInfo.RoadType == P_R)
+//        {
+//            float k, b;
+//            k = (float)(ConstData.kImagePOutRepairLineK * WIDTH) / (HEIGHT - 1 - imgInfo.top);
+//            b = (float)WIDTH - 1 - k * (HEIGHT - 1);
+//            add_line(k, b, imgInfo.top, HEIGHT - 1, RIGHT);
+//            recalc_line(imgInfo.top, HEIGHT - 1, RIGHT);
+//        }
+//    }
+
     if (imgInfo.PStatus == P_OUT_1)
     {
         if(imgInfo.RoadType  == P_L)
         {
-            float k, b;
-            k = (float)(ConstData.kImagePOutRepairLineK * WIDTH) / (imgInfo.top - (HEIGHT - 1));
-            b = (float)- k * (HEIGHT - 1);
-            add_line(k, b, imgInfo.top, HEIGHT - 1, LEFT);
-            recalc_line(imgInfo.top, HEIGHT - 1, LEFT);
+            float k = 0.0, b = 0.0;
+            k = (float)(rowInfo[HEIGHT - 1].leftLine - rowInfo[imgInfo.top + 2].leftLine) / (HEIGHT - imgInfo.top - 2);
+            b = (float)rowInfo[HEIGHT - 1].leftLine - k * (HEIGHT - 1);
+            add_line(k, b, imgInfo.top + 1, HEIGHT - 1, LEFT);
+            recalc_line(imgInfo.top + 1, HEIGHT - 1, LEFT);
         }
         else if (imgInfo.RoadType == P_R)
         {
-            float k, b;
-            k = (float)(ConstData.kImagePOutRepairLineK * WIDTH) / (HEIGHT - 1 - imgInfo.top);
-            b = (float)WIDTH - 1 - k * (HEIGHT - 1);
-            add_line(k, b, imgInfo.top, HEIGHT - 1, RIGHT);
-            recalc_line(imgInfo.top, HEIGHT - 1, RIGHT);
+            float k = 0.0, b = 0.0;
+            k = (float)(rowInfo[HEIGHT - 1].rightLine - rowInfo[imgInfo.top + 2].rightLine) / (HEIGHT - imgInfo.top - 2);
+            b = (float)rowInfo[HEIGHT - 1].rightLine - k * (HEIGHT - 1);
+            add_line(k, b, imgInfo.top + 1, HEIGHT - 1, RIGHT);
+            recalc_line(imgInfo.top + 1, HEIGHT - 1, RIGHT);
         }
     }
+
 }
 
 /**

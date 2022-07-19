@@ -53,6 +53,7 @@ typedef struct _ConstDataTypeDef
     float   kImageCrossIOUth;
     float   kImageStraightCurvTh;
     float   kImagePOutRepairLineK;
+    float   kImagePOutIntegralDis;
     int     kImagePOutVarianceTh;
     int     kImagePassingOffset;
     float   kImageForkIntegralDis;

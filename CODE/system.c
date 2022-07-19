@@ -20,7 +20,6 @@
 #include "buzzer.h"
 #include "speed.h"
 
-
 #include "nr_micro_shell.h"
 /*
 
@@ -69,12 +68,14 @@ void car_init(void)
 #ifdef __DEBUG_IPS_ON__
     ips200_init();
 #endif
+    seekfree_wireless_init();
+    uart_init(UART_0, 2000000, UART0_TX_P14_0, UART0_RX_P14_1);//图像发送串口
 
     my_shell_init();
 
     key_init();
 
-    uart_init(UART_0, 2000000, UART0_TX_P14_0, UART0_RX_P14_1);//图像发送串口
+
 
     systick_delay_ms(STM0, 500);//延时0.5ms
 
@@ -88,7 +89,7 @@ void car_init(void)
 //  int t = 1100;
 //  pwm_duty(MOTOR_RA, 5000+t);
 //  pwm_duty(MOTOR_RB, 5000-t);
-    seekfree_wireless_init();
+
 
     servo_set(ConstData.kServoMid);
 
@@ -96,21 +97,20 @@ void car_init(void)
     while(startKey_read());
     systick_delay_ms(STM0, 2000);
     pit_init(CCU6_0, PIT_CH0, 5000);
-    pit_init(CCU6_0, PIT_CH1, 20000);
+    pit_init(CCU6_0, PIT_CH1, 5000);
 //    pit_init(CCU6_1, PIT_CH0, 5000);
 
 
 //    call_buzzer();
 
 
-    vt_clearall();
+//    vt_clearall();
 }
 
 void car_backstage(void)
 {
 //    my_shell_run();
-    vt_hide_cursor();
-
+//    vt_hide_cursor();
     if (SystemData.isStop == 'T')
     {
         motor_stop();
@@ -120,14 +120,15 @@ void car_backstage(void)
     if(cpu0_5ms_flag)
     {
 
-        car_statusbar();
+//        car_statusbar();
         cpu0_5ms_flag = 0;
     }
     if(cpu0_1000ms_flag)
     {
-        vt_clearall();
+//        vt_clearall();
         cpu0_1000ms_flag = 0;
     }
+
     /*
     //测试舵机打角
     static int servoPWM = 1510;
@@ -334,6 +335,10 @@ void car_statusbar(void)
 //
 //    // 输出 差速 Angle
 //    VT_OUT("%.2f", DebugData.SteerAngle, 10, 2);
+
+    // 输出 积分角度
+    float intAng = check_yaw_angle();
+    VT_OUT("%.2f", intAng, 10, 2);
 
     // 输出 积分距离 dis
     float dis = (passDis.disL + passDis.disR) / 2;

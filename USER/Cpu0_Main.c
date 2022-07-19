@@ -28,6 +28,8 @@
 
 #include "headfile.h"
 #include "system.h"
+#include "nr_micro_shell.h"
+
 #pragma section all "cpu0_dsram"
 //将本语句与#pragma section all restore语句之间的全局变量都放在CPU0的RAM中
 
@@ -59,6 +61,8 @@ int core0_main(void)
 	//注意 从V1.1.6版本之后  printf打印的信息从串口输出具体可以学习库例程Printf_Demo
     //注意 从V1.1.6版本之后  printf打印的信息从串口输出具体可以学习库例程Printf_Demo
     //注意 从V1.1.6版本之后  printf打印的信息从串口输出具体可以学习库例程Printf_Demo
+
+	shell_init();
 
 	while (TRUE)
 	{

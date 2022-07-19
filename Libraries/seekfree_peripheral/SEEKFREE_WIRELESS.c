@@ -31,7 +31,7 @@
 #include "zf_gpio.h"
 #include "zf_uart.h"
 #include "SEEKFREE_WIRELESS.h"
-
+#include "nr_micro_shell.h"
 
 uint8 wireless_send_buffer[WIRELESS_BUFFER_SIZE];
 uint32 wireless_rx_index = 0;
@@ -64,8 +64,10 @@ void wireless_uart_callback(void)
     else
     {
         wireless_send_buffer[wireless_rx_index++] = wireless_rx_buffer;
+        shell(wireless_rx_buffer);
         if(wireless_rx_index == WIRELESS_BUFFER_SIZE)
             wireless_rx_index=0;
+
     }
 }
 
@@ -150,22 +152,22 @@ uint32 seekfree_wireless_send_buff(uint8 *buff, uint32 len)
 {
     while(len>30)
     {
-//        if(gpio_get(RTS_PIN))
-//        {
-//            return len;//模块忙,如果允许当前程序使用while等待 则可以使用后面注释的while等待语句替换本if语句
-//        }
-        while(gpio_get(RTS_PIN));  //如果RTS为低电平，则继续发送数据
+        if(gpio_get(RTS_PIN))
+        {
+            return len;//模块忙,如果允许当前程序使用while等待 则可以使用后面注释的while等待语句替换本if语句
+        }
+//        while(gpio_get(RTS_PIN));  //如果RTS为低电平，则继续发送数据
         uart_putbuff(WIRELESS_UART,buff,30);
 
         buff += 30; //地址偏移
         len -= 30;//数量
     }
     
-//    if(gpio_get(RTS_PIN))
-//    {
-//        return len;//模块忙,如果允许当前程序使用while等待 则可以使用后面注释的while等待语句替换本if语句
-//    }
-    while(gpio_get(RTS_PIN));  //如果RTS为低电平，则继续发送数据
+    if(gpio_get(RTS_PIN))
+    {
+        return len;//模块忙,如果允许当前程序使用while等待 则可以使用后面注释的while等待语句替换本if语句
+    }
+//    while(gpio_get(RTS_PIN));  //如果RTS为低电平，则继续发送数据
     uart_putbuff(WIRELESS_UART,buff,len);//发送最后的数据
     
     return 0;

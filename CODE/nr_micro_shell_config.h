@@ -45,7 +45,6 @@ extern "C"
 //#include <rtthread.h>
 #include "shell.h"
 #include "headfile.h"
-extern
 #endif
 
 
@@ -132,7 +131,7 @@ The end of line.
 1: \r
 2: \r\n
 */
-#define NR_SHELL_END_OF_LINE 0
+#define NR_SHELL_END_OF_LINE 1
 
 /* Weather the terminal support all ANSI codes. */
 #define NR_SHLL_FULL_ANSI 1
@@ -146,7 +145,9 @@ The end of line.
 /* If you use RTOS, you may need to do some special processing for printf(). */
 #define shell_printf(...)                                      \
   do{                                                         \
-    IfxStdIf_DPipe_print(g_shellInterface.io, __VA_ARGS__); \
+      IfxCpu_setSpinLock(&g_shellSpinLock, -1);               \
+      IfxStdIf_DPipe_print(g_shellInterface.io, __VA_ARGS__); \
+      IfxCpu_resetSpinLock(&g_shellSpinLock);                 \
   }while(0)
 #define ansi_show_char(x) uart_putchar(WIRELESS_UART, x)
 

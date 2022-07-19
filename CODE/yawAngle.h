@@ -20,16 +20,16 @@
 /*********************************************************************************************************************/
 /*------------------------------------------------------Macros-------------------------------------------------------*/
 /*********************************************************************************************************************/
-#define DEGREE_30   PI/24.0f
-#define DEGREE_40   PI/18.0f
-#define DEGREE_45   PI/16.0f
-#define DEGREE_60   PI/12.0f
-#define DEGREE_67   PI/10.8f
-#define DEGREE_75   PI/9.6f
-#define DEGREE_80   PI/9.0f
-#define DEGREE_90   PI/8.0f
-#define DEGREE_180  PI/4.0f
-#define DEGREE_360  PI/2.0f
+#define DEGREE_30   PI/6.0f
+#define DEGREE_40   PI/4.5f
+#define DEGREE_45   PI/4.0f
+#define DEGREE_60   PI/3.0f
+#define DEGREE_67   PI/2.7f
+#define DEGREE_75   PI/2.4f
+#define DEGREE_80   4.0f * PI/9.0f
+#define DEGREE_90   PI/2.0f
+#define DEGREE_180  PI
+#define DEGREE_360  2.0f * PI
 
 
 /*********************************************************************************************************************/

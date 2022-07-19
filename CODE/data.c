@@ -45,10 +45,11 @@ void data_set(void)
 
     ConstData.kImagePOutRepairLineK = 0.8;                 // P环出环补线斜率
     ConstData.kImagePOutVarianceTh = 200;                   // P环出环线性方差阈值
+    ConstData.kImagePOutIntegralDis = 0.25;
     ConstData.kImagePassingOffset = 10;
 
 //    ConstData.kImageForkInPicCnt = 25;
-    ConstData.kImageForkIntegralDis = 0.25;
+    ConstData.kImageForkIntegralDis = 0.23;
 
     ConstData.kImageBarnInFirIntegralDis = 0.6;
     ConstData.kImageBarnInSecIntegralDis = 0.2;
