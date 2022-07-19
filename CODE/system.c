@@ -30,7 +30,8 @@
 图像中心到车最前端                  40 cm
 
 */
-//#define __DEBUG_IPS_ON__
+#define __DEBUG_IPS_ON__
+
 
 extern ConstDataTypeDef ConstData;
 extern uint8_t imageBin[HEIGHT][WIDTH];
@@ -75,8 +76,6 @@ void car_init(void)
 
     key_init();
 
-
-
     systick_delay_ms(STM0, 500);//延时0.5ms
 
     data_set();
@@ -84,7 +83,7 @@ void car_init(void)
     mt9v03x_init();
     servo_init();
     motor_init();
-//    buzzer_init();
+    buzzer_init();
 
 //  int t = 1100;
 //  pwm_duty(MOTOR_RA, 5000+t);
@@ -93,7 +92,7 @@ void car_init(void)
 
     servo_set(ConstData.kServoMid);
 
-//    systick_delay_ms(STM0, 2000);
+    systick_delay_ms(STM0, 1000);
     while(startKey_read());
     systick_delay_ms(STM0, 2000);
     pit_init(CCU6_0, PIT_CH0, 5000);
@@ -101,34 +100,31 @@ void car_init(void)
 //    pit_init(CCU6_1, PIT_CH0, 5000);
 
 
-//    call_buzzer();
-
-
-//    vt_clearall();
+    vt_clearall();
 }
 
 void car_backstage(void)
 {
 //    my_shell_run();
-//    vt_hide_cursor();
+    vt_hide_cursor();
     if (SystemData.isStop == 'T')
     {
         motor_stop();
 //        abort();
     }
-//    deal_buzzer();
+
     if(cpu0_5ms_flag)
     {
 
-//        car_statusbar();
+        car_statusbar();
         cpu0_5ms_flag = 0;
     }
     if(cpu0_1000ms_flag)
     {
-//        vt_clearall();
+        vt_clearall();
         cpu0_1000ms_flag = 0;
     }
-
+    deal_buzzer();
     /*
     //测试舵机打角
     static int servoPWM = 1510;
@@ -189,7 +185,7 @@ void img_backstage(void)
     }
 }
 
-
+float rad = 100.0;
 void car_statusbar(void)
 {
     char ss[100] = "";
@@ -355,5 +351,8 @@ void car_statusbar(void)
     // 输出 Error
     VT_OUT("%3d", imgInfo.error, 13, 2);
 
+    // 输出 俯仰角速度
 
+    rad = min(rad, check_pitch_rad());
+    VT_OUT("%.2f", rad, 13, 35);
 }

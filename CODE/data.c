@@ -43,7 +43,7 @@ void data_set(void)
     ConstData.kImageCrossIOUth = 0.8;                       // 十字检测左右空白行交并比阈值
     ConstData.kImageStraightCurvTh = 0.001;                 // 直线曲率阈值
 
-    ConstData.kImagePOutRepairLineK = 0.8;                 // P环出环补线斜率
+    ConstData.kImagePOutRepairLineK = 0.6;                 // P环出环补线斜率
     ConstData.kImagePOutVarianceTh = 200;                   // P环出环线性方差阈值
     ConstData.kImagePOutIntegralDis = 0.25;
     ConstData.kImagePassingOffset = 10;

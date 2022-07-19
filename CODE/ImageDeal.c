@@ -1248,7 +1248,10 @@ void road_judge(void)
         imgInfo.RoadType != Circle_R    &&
         imgInfo.RoadType != P_L         &&
         imgInfo.RoadType != P_R         &&
-        imgInfo.RoadType != Slope
+        imgInfo.RoadType != Slope       &&
+        imgInfo.RoadType != Fork_In     &&
+        imgInfo.RoadType != Fork_Out    &&
+        fork_in_flag != 'T'
        )
     {
         barnIn_detect();
@@ -1282,21 +1285,6 @@ void road_judge(void)
         fork_detect();
     }
 
-    if (
-        imgInfo.RoadType != Circle_L    &&
-        imgInfo.RoadType != Circle_R    &&
-        imgInfo.RoadType != P_L         &&
-        imgInfo.RoadType != P_R         &&
-        imgInfo.RoadType != Slope       &&
-        imgInfo.RoadType != Fork_In     &&
-        imgInfo.RoadType != Fork_Out    &&
-        imgInfo.RoadType != Barn_In     &&
-        fork_in_flag != 'T'
-       )
-    {
-        cross_detect();
-    }
-
 
     if (
         imgInfo.RoadType != Cross       &&
@@ -1322,7 +1310,20 @@ void road_judge(void)
         }
     }
 
-
+    if (
+            imgInfo.RoadType != Circle_L    &&
+            imgInfo.RoadType != Circle_R    &&
+            imgInfo.RoadType != P_L         &&
+            imgInfo.RoadType != P_R         &&
+            imgInfo.RoadType != Slope       &&
+            imgInfo.RoadType != Fork_In     &&
+            imgInfo.RoadType != Fork_Out    &&
+            imgInfo.RoadType != Barn_In     &&
+            fork_in_flag != 'T'
+           )
+    {
+        cross_detect();
+    }
     // TODO
     barnIn_repairLine();
     p_repairLine();
@@ -1984,6 +1985,8 @@ void p_detect(void)
         {
             imgInfo.RoadType = P_L;
             imgInfo.PStatus = P_PASSING;
+            start_integrating_angle();
+            call_buzzer();
         }
     }
     else if (
@@ -2005,64 +2008,10 @@ void p_detect(void)
         {
             imgInfo.RoadType = P_R;
             imgInfo.PStatus = P_PASSING;
+            start_integrating_angle();
+            call_buzzer();
         }
     }
-
-    // ================================================================== //
-    // Old
-    // 首先要有中心点
-//     if (
-//             imgInfo.PStatus == P_NOT_FIND && isCircle_flag_2 == 'T'
-//             && color_toggleCnt_left - color_toggleCnt_right >= 3
-//        ) // 左侧交错数比右侧多,初步考虑左P环
-//     {
-//         // 先得到右侧边界的表达式
-//         float k = 0.0, b = 0.0;
-//         least_squares(&k, &b, max(imgInfo.top + 5, HEIGHT - 70), HEIGHT - 5, RIGHT);
-//         // 中心黑色块最高点所在行高度 与 右线相交点
-//         int Hcol = (int)(k * CircleOrP_BlackBlock_Hrow + b);
-//         // 检测该点左侧附近的黑白状态, 如果存在白色, 则认为不是P环, 进入下一步环岛判断, 否则认为是P环
-//         if (
-//             !imageBin[CircleOrP_BlackBlock_Hrow][Hcol]           &&
-//             !imageBin[CircleOrP_BlackBlock_Hrow][Hcol - 1]       &&
-//             !imageBin[CircleOrP_BlackBlock_Hrow - 1][Hcol -1]    &&
-//             !imageBin[CircleOrP_BlackBlock_Hrow - 1][Hcol - 2]   &&
-//             !imageBin[CircleOrP_BlackBlock_Hrow - 2][Hcol - 4]
-//            )
-//         {
-//             imgInfo.RoadType = P_L;
-//             imgInfo.PStatus = P_PASSING;
-//         }
-//     }
-//     else if (
-//             imgInfo.PStatus == P_NOT_FIND && isCircle_flag_2 == 'T'
-//             && color_toggleCnt_left - color_toggleCnt_right <= -3
-//             ) // 反之 右P环
-//     {
-//         // 同理左侧边界
-//         float k = 0.0, b = 0.0;
-//         least_squares(&k, &b, max(imgInfo.top + 5, HEIGHT - 70), HEIGHT - 5, LEFT);
-
-//         // 中心黑色块最高点所在行高度 与 右线相交点
-//         int Hcol = (int)(k * CircleOrP_BlackBlock_Hrow + b);
-
-// #ifdef DEBUG
-//         printf("k: %f, b: %f\n", k, b);
-//         debugVar.blackBlock_Hrow = CircleOrP_BlackBlock_Hrow;
-//         debugVar.blackBlock_Hcol = Hcol;
-// #endif
-//         if (
-//             !imageBin[CircleOrP_BlackBlock_Hrow][Hcol]           &&
-//             !imageBin[CircleOrP_BlackBlock_Hrow][Hcol + 1]       &&
-//             !imageBin[CircleOrP_BlackBlock_Hrow - 1][Hcol +1]    &&
-//             !imageBin[CircleOrP_BlackBlock_Hrow - 1][Hcol + 2]   &&
-//             !imageBin[CircleOrP_BlackBlock_Hrow - 2][Hcol + 4]
-//         )
-//         {
-//             imgInfo.RoadType = P_R;
-//             imgInfo.PStatus = P_PASSING;
-//         }
-//     }
 
     // 判断为 P 环后, 要对出环做特殊处理
     // 判断是否到达 P_OUT_1 (出p环斜向引导)时刻
@@ -2083,10 +2032,6 @@ void p_detect(void)
                        )//阈值需要调整
                     {
                         imgInfo.PStatus = P_OUT_READY;
-#if defined (__ON_ROBOT__)
-                        start_integrating_angle();
-                        passDis.start(&passDis);
-#endif
                         break;
                     }
 
@@ -2107,10 +2052,6 @@ void p_detect(void)
                         )//阈值需要调整
                     {
                         imgInfo.PStatus = P_OUT_READY;
-#if defined (__ON_ROBOT__)
-                        start_integrating_angle();
-                        passDis.start(&passDis);
-#endif
                         break;
                     }
 
@@ -2129,8 +2070,13 @@ void p_detect(void)
 #ifdef DEBUG
             printf("curv: %f\n", curv);
 #endif
-            if(abs(curv) < ConstData.kImageStraightCurvTh)
+            if(abs(curv) < ConstData.kImageStraightCurvTh && check_yaw_angle() > DEGREE_250)
             {
+#if defined (__ON_ROBOT__)
+                stop_interating_angle();
+//                SystemData.isStop = 'T';
+//                start_integrating_angle();
+#endif
                 imgInfo.PStatus = P_OUT_1;
             }
         }
@@ -2140,8 +2086,13 @@ void p_detect(void)
 #ifdef DEBUG
             printf("curv: %f\n", curv);
 #endif
-            if(abs(curv) < ConstData.kImageStraightCurvTh)
+            if(abs(curv) < ConstData.kImageStraightCurvTh && check_yaw_angle() <= -DEGREE_250)
             {
+#if defined (__ON_ROBOT__)
+                stop_interating_angle();
+//                SystemData.isStop = 'T';
+//                start_integrating_angle();
+#endif
                 imgInfo.PStatus = P_OUT_1;
             }
         }
@@ -2196,15 +2147,15 @@ void p_detect(void)
                 && variance_m <= ConstData.kImagePOutVarianceTh
                 && downside_check_flag_l)
 #if defined (__ON_ROBOT__)
-                    || check_yaw_angle() <= -DEGREE_40
-                    || (passDis.disL + passDis.disR) / 2.0f >= ConstData.kImagePOutIntegralDis
+//                    || check_yaw_angle() <= -DEGREE_67
+//                    || (passDis.disL + passDis.disR) / 2.0f >= ConstData.kImagePOutIntegralDis
 #endif
                 )
             {
                 imgInfo.PStatus = P_OFF;
 //                SystemData.isStop = 'T';
 #if defined (__ON_ROBOT__)
-                stop_interating_angle();
+//                stop_interating_angle();
 #endif
                 downside_flag_last_l = 0;
                 downside_check_flag_l = 0;
@@ -2237,8 +2188,8 @@ void p_detect(void)
                 && variance_m <= ConstData.kImagePOutVarianceTh
                 && downside_check_flag_r)
 #if defined (__ON_ROBOT__)
-                    || check_yaw_angle() >= DEGREE_40
-                    || (passDis.disL + passDis.disR) / 2.0f >= ConstData.kImagePOutIntegralDis
+//                    || check_yaw_angle() >= DEGREE_67
+//                    || (passDis.disL + passDis.disR) / 2.0f >= ConstData.kImagePOutIntegralDis
 #endif
                )
             {
@@ -2246,7 +2197,7 @@ void p_detect(void)
                 imgInfo.PStatus = P_OFF;
 //                SystemData.isStop = 'T';
 #if defined (__ON_ROBOT__)
-                stop_interating_angle();
+//                stop_interating_angle();
 #endif
                 downside_flag_last_r = 0;
                 downside_check_flag_r = 0;
@@ -2276,45 +2227,46 @@ void p_detect(void)
  */
 void p_repairLine(void)
 {
-//    if (imgInfo.PStatus == P_OUT_1)
-//    {
-//        if(imgInfo.RoadType  == P_L)
-//        {
-//            float k, b;
-//            k = (float)(ConstData.kImagePOutRepairLineK * WIDTH) / (imgInfo.top - (HEIGHT - 1));
-//            b = (float)- k * (HEIGHT - 1);
-//            add_line(k, b, imgInfo.top, HEIGHT - 1, LEFT);
-//            recalc_line(imgInfo.top, HEIGHT - 1, LEFT);
-//        }
-//        else if (imgInfo.RoadType == P_R)
-//        {
-//            float k, b;
-//            k = (float)(ConstData.kImagePOutRepairLineK * WIDTH) / (HEIGHT - 1 - imgInfo.top);
-//            b = (float)WIDTH - 1 - k * (HEIGHT - 1);
-//            add_line(k, b, imgInfo.top, HEIGHT - 1, RIGHT);
-//            recalc_line(imgInfo.top, HEIGHT - 1, RIGHT);
-//        }
-//    }
-
     if (imgInfo.PStatus == P_OUT_1)
     {
         if(imgInfo.RoadType  == P_L)
         {
-            float k = 0.0, b = 0.0;
-            k = (float)(rowInfo[HEIGHT - 1].leftLine - rowInfo[imgInfo.top + 2].leftLine) / (HEIGHT - imgInfo.top - 2);
-            b = (float)rowInfo[HEIGHT - 1].leftLine - k * (HEIGHT - 1);
-            add_line(k, b, imgInfo.top + 1, HEIGHT - 1, LEFT);
-            recalc_line(imgInfo.top + 1, HEIGHT - 1, LEFT);
+            float k, b;
+            k = (float)(ConstData.kImagePOutRepairLineK * WIDTH) / (imgInfo.top - (HEIGHT - 1));
+            b = (float)- k * (HEIGHT - 1);
+            add_line(k, b, imgInfo.top, HEIGHT - 1, LEFT);
+            recalc_line(imgInfo.top, HEIGHT - 1, LEFT);
         }
         else if (imgInfo.RoadType == P_R)
         {
-            float k = 0.0, b = 0.0;
-            k = (float)(rowInfo[HEIGHT - 1].rightLine - rowInfo[imgInfo.top + 2].rightLine) / (HEIGHT - imgInfo.top - 2);
-            b = (float)rowInfo[HEIGHT - 1].rightLine - k * (HEIGHT - 1);
-            add_line(k, b, imgInfo.top + 1, HEIGHT - 1, RIGHT);
-            recalc_line(imgInfo.top + 1, HEIGHT - 1, RIGHT);
+            float k, b;
+            k = (float)(ConstData.kImagePOutRepairLineK * WIDTH) / (HEIGHT - 1 - imgInfo.top);
+            b = (float)WIDTH - 1 - k * (HEIGHT - 1);
+            add_line(k, b, imgInfo.top, HEIGHT - 1, RIGHT);
+            recalc_line(imgInfo.top, HEIGHT - 1, RIGHT);
         }
     }
+
+//    if (imgInfo.PStatus == P_OUT_1)
+//    {
+//        if(imgInfo.RoadType  == P_L)
+//        {
+//            float k = 0.0, b = 0.0;
+//            k = (float)(rowInfo[HEIGHT - 1].leftLine - rowInfo[imgInfo.top + 2].leftLine) / (HEIGHT - imgInfo.top - 2);
+//            b = (float)rowInfo[HEIGHT - 1].leftLine - k * (HEIGHT - 1);
+//            add_line(k, b, imgInfo.top + 1, HEIGHT - 1, LEFT);
+//            recalc_line(imgInfo.top + 1, HEIGHT - 1, LEFT);
+//        }
+//        else if (imgInfo.RoadType == P_R)
+//        {
+//            float k = 0.0, b = 0.0;
+//            k = (float)(rowInfo[HEIGHT - 1].rightLine - rowInfo[imgInfo.top + 2].rightLine) / (HEIGHT - imgInfo.top - 2);
+//            b = (float)rowInfo[HEIGHT - 1].rightLine - k * (HEIGHT - 1);
+//            add_line(k, b, imgInfo.top + 1, HEIGHT - 1, RIGHT);
+//            recalc_line(imgInfo.top + 1, HEIGHT - 1, RIGHT);
+//        }
+//    }
+
 
 }
 
@@ -3145,11 +3097,11 @@ const int weight_p[120] = {                        //0为图像最顶行
 const int weight_fork[120] = {                        //0为图像最顶行
     0 , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0 , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    1 , 1, 1, 3, 3, 3, 3, 3, 5, 5, 5, 5, 5, 5,10,10,10,10,10,10,
+    1 , 1, 1, 3, 3, 3, 3, 3, 5, 5,10,10,10,10,10,10,15,15,15,15,
 
-    10,10,10,10,10,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,
-    15,15,15,15,15,15,15,10,10,10,10,10,10,10,10,10, 5, 5, 5, 5,
-    5 , 5, 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+    15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,
+    15,15,10,10,10,10,10,10,10,10,10,10, 5, 5, 5, 5, 5, 5, 5, 5,
+    3 , 3, 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
 };    //基础    //注意斜率变化引起的跳变,要平滑
 /**
  * @description: 获取当前位置和中线位置的偏差，传递给PID处理
@@ -3204,16 +3156,16 @@ void calc_globalError(void)
             weightSum   += weight_circle[row];
             lineSum     += weight_circle[row] * rowInfo[row].midLine;
         }
-        else if ((imgInfo.RoadType == P_L || imgInfo.RoadType == P_R) && imgInfo.PStatus != P_OUT_1)
+        else if ((imgInfo.RoadType == P_L || imgInfo.RoadType == P_R) && imgInfo.PStatus == P_OUT_1)
         {
             weightSum   += weight_p[row];
             lineSum     += weight_p[row] * rowInfo[row].midLine;
         }
-        else if (imgInfo.RoadType == Fork_In || imgInfo.RoadType == Fork_Out)
-        {
-            weightSum   += weight_fork[row];
-            lineSum     += weight_fork[row] * rowInfo[row].midLine;
-        }
+//        else if (imgInfo.RoadType == Fork_In || imgInfo.RoadType == Fork_Out)
+//        {
+//            weightSum   += weight_fork[row];
+//            lineSum     += weight_fork[row] * rowInfo[row].midLine;
+//        }
         else
         {
             weightSum   += weight_base[row];

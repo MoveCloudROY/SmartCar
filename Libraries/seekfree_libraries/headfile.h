@@ -21,6 +21,8 @@
 #define _headfile_h
 
 #define PI 3.14159f
+//#define __DEBUG_SHELL_ON__
+
 
 #include "SEEKFREE_PRINTF.h"
 
