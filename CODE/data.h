@@ -44,6 +44,9 @@ typedef struct _SpeedSubDataTypeDef
 typedef struct _ConstDataTypeDef
 {
     int     kServoLowLimit, kServoHighLimit, kServoMid;
+
+    int     kImageOtsuStaticTh, kImageOtsuBrightLimit;
+
     float   kImageStraightLineVarianceTh, kImageStraightLineSpeedUpVarianceTh;
     int     kImageLineVarianceTh;
     float   kImageCircleInRepairLineK, kImageCircleOutRepairLineK;

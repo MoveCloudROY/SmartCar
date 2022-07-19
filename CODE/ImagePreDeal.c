@@ -9,6 +9,7 @@
 
 #include "ImagePreDeal.h"
 
+extern ConstDataTypeDef ConstData;
 extern uint8_t mt9v03x_image[120][188];
 uint8_t imageCut[HEIGHT][WIDTH];
 uint8_t imageBin[HEIGHT][WIDTH];
@@ -26,15 +27,28 @@ void img_preProcess(PreDealMethodEnum method)
     switch (method)
     {
         case OTSU:
+        {
             th_otsu = otsu();
+#if defined (DEBUG)
+            printf("@@ th_otsu: %d @@\n", th_otsu);
+#endif
+            int thre_tmp = max(th_otsu, ConstData.kImageOtsuStaticTh), thre;
             for (int i = 0; i < HEIGHT; ++i)
             {
-                for (int j = 0; j < WIDTH ; ++j)
+                for (int j = 0; j < WIDTH; ++j)
                 {
-                    imageBin[i][j] = (mt9v03x_image[i][j] > th_otsu) ? 255 : 0;
+                    if (j < 15)
+                        thre = thre_tmp - 10;
+                    else if (j >= WIDTH - 15)
+                        thre = thre_tmp - 10;
+                    else
+                        thre = thre_tmp;
+                    imageBin[i][j] = (mt9v03x_image[i][j] > thre) ? 255 : 0;
                 }
             }
+            // *(imageBin[0] + i) = *(mt9v03x_image[0] + i) > th_otsu?255:0;
             break;
+        }
         case OTSU2D:
             //二维OTSU，占个位，不知道用的到吗
             break;
@@ -112,13 +126,13 @@ uint8_t otsu(void)
 
     }
 
-    for(int i=minn; i<=maxn; ++i)//获取灰度权值和（使用16位避免爆
+    for(int i=minn; i<=min(ConstData.kImageOtsuBrightLimit, maxn); ++i)//获取灰度权值和（使用16位避免爆
     {
         i_mult_histogram[i] = i*histogram[i];
         sum_i_mult_h += i_mult_histogram[i];//求总和,方便之后处理
     }
 
-    for (int i=minn; i<maxn; ++i)//从最小开始遍历，寻找最合适的阈值
+    for (int i=minn; i<min(ConstData.kImageOtsuBrightLimit, maxn); ++i)//从最小开始遍历，寻找最合适的阈值
     {
         //计算前景、后景像素点个数
         n0 += histogram[i];
