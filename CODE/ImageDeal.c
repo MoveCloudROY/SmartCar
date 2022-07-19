@@ -1248,7 +1248,8 @@ void road_judge(void)
         imgInfo.RoadType != Circle_R    &&
         imgInfo.RoadType != P_L         &&
         imgInfo.RoadType != P_R         &&
-        imgInfo.RoadType != Slope
+        imgInfo.RoadType != Slope       &&
+        fork_in_flag != 'T'
        )
     {
         barnIn_detect();
