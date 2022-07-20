@@ -64,7 +64,9 @@ void wireless_uart_callback(void)
     else
     {
         wireless_send_buffer[wireless_rx_index++] = wireless_rx_buffer;
+#if defined (__DEBUG_SHELL_ON__)
         shell(wireless_rx_buffer);
+#endif
         if(wireless_rx_index == WIRELESS_BUFFER_SIZE)
             wireless_rx_index=0;
 

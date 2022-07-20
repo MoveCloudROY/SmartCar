@@ -35,6 +35,7 @@ extern float gyro[3];
 * @return   void
 */
 void start_integrating_angle(void){
+    IFX_ASSERT(IFX_VERBOSE_LEVEL_ERROR, angle_int_flag == 1);
     angle_int_flag = 1;
 }
 /**
@@ -68,3 +69,9 @@ void stop_interating_angle(void){
 IFX_INLINE static uint8 is_interating_angle(void){
     return angle_int_flag;
 }
+
+IFX_INLINE static float check_pitch_rad(void)
+{
+    return gyro[0];
+}
+

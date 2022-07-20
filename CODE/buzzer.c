@@ -21,7 +21,7 @@ void deal_buzzer(void)
     if(SystemData.isBuzzerOn == 'T')
     {
         gpio_set(BUZZER_PIN, 1);
-        systick_delay_ms(STM0, 2000);
+        systick_delay_ms(STM0, 600);
         gpio_set(BUZZER_PIN, 0);
         SystemData.isBuzzerOn = 'F';
     }

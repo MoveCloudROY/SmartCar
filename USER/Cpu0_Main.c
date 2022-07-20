@@ -61,9 +61,9 @@ int core0_main(void)
 	//注意 从V1.1.6版本之后  printf打印的信息从串口输出具体可以学习库例程Printf_Demo
     //注意 从V1.1.6版本之后  printf打印的信息从串口输出具体可以学习库例程Printf_Demo
     //注意 从V1.1.6版本之后  printf打印的信息从串口输出具体可以学习库例程Printf_Demo
-
+#if defined (__DEBUG_SHELL_ON__)
 	shell_init();
-
+#endif
 	while (TRUE)
 	{
 		//用户在此处编写任务代码

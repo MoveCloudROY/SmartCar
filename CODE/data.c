@@ -22,11 +22,18 @@ DebugDataTypedef DebugData;
 void data_set(void)
 {
 
-    // ================= 常数设置 ================//
+    // ================= 常数设置 ================ //
     ConstData.kServoMid = 1493  ;//1496;                    // 舵机左打角限制
     ConstData.kServoLowLimit = ConstData.kServoMid - SERVO_INTV;                        // 舵机右打角限制
     ConstData.kServoHighLimit = ConstData.kServoMid + SERVO_INTV;                       // 舵机中值(大致)
 
+
+    // ================= 图像预处理常数设置 ================ //
+
+    ConstData.kImageOtsuStaticTh = 95;
+    ConstData.kImageOtsuBrightLimit = 200;
+
+    // ================= 元素处理常数设置 ================ //
 
     ConstData.kImageStraightLineVarianceTh = 26;            // 直线检测阈值
     ConstData.kImageStraightLineSpeedUpVarianceTh = 20;     // 直线加速检测阈值
@@ -52,7 +59,7 @@ void data_set(void)
     ConstData.kImageForkIntegralDis = 0.23;
 
     ConstData.kImageBarnInFirIntegralDis = 0.6;
-    ConstData.kImageBarnInSecIntegralDis = 0.2;
+    ConstData.kImageBarnInSecIntegralDis = 0.15;
 
 //    ConstData.kArcman = 20;
 

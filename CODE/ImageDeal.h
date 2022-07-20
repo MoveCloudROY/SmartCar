@@ -27,6 +27,7 @@
 #include "yawAngle.h"
 #include "data.h"
 #include "pid.h"
+#include "buzzer.h"
 
 #define uint8_t uint8
 #define uint16_t uint16

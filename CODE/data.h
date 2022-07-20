@@ -44,6 +44,9 @@ typedef struct _SpeedSubDataTypeDef
 typedef struct _ConstDataTypeDef
 {
     int     kServoLowLimit, kServoHighLimit, kServoMid;
+
+    int     kImageOtsuStaticTh, kImageOtsuBrightLimit;
+
     float   kImageStraightLineVarianceTh, kImageStraightLineSpeedUpVarianceTh;
     int     kImageLineVarianceTh;
     float   kImageCircleInRepairLineK, kImageCircleOutRepairLineK;
@@ -66,6 +69,7 @@ typedef struct _ConstDataTypeDef
 typedef struct _SystemDataTypedef
 {
     char    isBarnOut;
+    char    isBarnIn;
     char    isStop;
     char    isBuzzerOn;
     uint8_t barnInDetectCnt;
