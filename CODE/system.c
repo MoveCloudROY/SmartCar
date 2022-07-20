@@ -30,7 +30,7 @@
 图像中心到车最前端                  40 cm
 
 */
-#define __DEBUG_IPS_ON__
+//#define __DEBUG_IPS_ON__
 
 
 extern ConstDataTypeDef ConstData;
@@ -115,7 +115,6 @@ void car_backstage(void)
 
     if(cpu0_5ms_flag)
     {
-
         car_statusbar();
         cpu0_5ms_flag = 0;
     }

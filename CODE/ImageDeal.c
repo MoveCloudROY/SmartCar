@@ -221,6 +221,10 @@ void basic_searchLine(int bottom,int top)
     }
     whiteAveMid = whiteSum / whiteCnt;
     int m = whiteAveMid;
+    if (whiteCnt == 0 || m >= WIDTH)
+    {
+        SystemData.isStop = 'T';
+    }
     for(int i = bottom; i >= top; --i)
     {
         int l, r;
@@ -3017,6 +3021,7 @@ void barnIn_detect(void)
     {
         SystemData.barnInDetectCnt = 2;
         imgInfo.RoadType = Barn_In;
+        SystemData.isBarnIn = 'T';
 #if defined (__ON_ROBOT__)
         start_integrating_angle();
         passDis.start(&passDis);
@@ -3034,11 +3039,11 @@ void barnIn_repairLine(void)
     if (SystemData.barnInDetectCnt == 2 && imgInfo.RoadType == Barn_In)
     {
 #if defined (__ON_ROBOT__)
-        if (check_yaw_angle() < -DEGREE_60 || (passDis.disL + passDis.disR) / 2.0 > ConstData.kImageBarnInSecIntegralDis)
+        if (check_yaw_angle() < -DEGREE_45 || (passDis.disL + passDis.disR) / 2.0 > ConstData.kImageBarnInSecIntegralDis)
         {
+            SystemData.isStop = 'T';
             stop_interating_angle();
             passDis.stop(&passDis);
-            SystemData.isStop = 'T';
         }
 #endif
         for (int row = HEIGHT - 1; row > imgInfo.top + 2; --row)
@@ -3088,11 +3093,11 @@ const int weight_circle[120] = {                        //0为图像最顶行
 const int weight_p[120] = {                        //0为图像最顶行
     0 , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0 , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    1 , 1, 1, 3, 3, 3, 3, 3, 5, 5, 5, 5, 5, 5,10,10,10,10,10,10,
+    1 , 1, 1, 1, 1, 3, 3, 3, 3, 3, 3, 5, 5, 5, 5, 5, 5, 5,10,10,
 
-    10,10,10,10,10,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,
-    15,15,15,15,15,15,15,10,10,10,10,10,10,10,10,10, 5, 5, 5, 5,
-    5 , 5, 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+    10,10,10,10,10,10,10,10,10,10,10,15,15,15, 15,15,15,15,15,15,
+    15,15,15,15,15,15,15,15,15,15,15,10,10,10,10,10,10,10,10, 5,
+    5 , 5, 5, 5, 5, 3, 3, 3, 3, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
 };    //基础    //注意斜率变化引起的跳变,要平滑
 const int weight_fork[120] = {                        //0为图像最顶行
     0 , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -3156,7 +3161,9 @@ void calc_globalError(void)
             weightSum   += weight_circle[row];
             lineSum     += weight_circle[row] * rowInfo[row].midLine;
         }
-        else if ((imgInfo.RoadType == P_L || imgInfo.RoadType == P_R) && imgInfo.PStatus == P_OUT_1)
+        else if ((imgInfo.RoadType == P_L || imgInfo.RoadType == P_R)
+                    &&
+                 (imgInfo.PStatus == P_OUT_1 || imgInfo.RoadType == P_OUT_READY))
         {
             weightSum   += weight_p[row];
             lineSum     += weight_p[row] * rowInfo[row].midLine;
@@ -3178,7 +3185,10 @@ void calc_globalError(void)
     midline_ff      = midline_f;
     midline_f       = tmpError;
 //    imgInfo.error   = midline_fff * 0.50f + midline_ff * 0.30f + midline_f * 0.20f;
-    imgInfo.error = tmpError;
+    if (SystemData.isBarnIn == 'T')
+        imgInfo.error = -128;
+    else
+        imgInfo.error = tmpError;
 }
 
 

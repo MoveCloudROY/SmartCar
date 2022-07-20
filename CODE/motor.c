@@ -9,8 +9,8 @@ PassDisTypedef passDis;
 
 
 PID PID_L = {
-    .targetPoint = 130,
-    .theoryTarget = 130,
+    .targetPoint = 150,
+    .theoryTarget = 150,
     .P = 24.5045390601805,
     .I = 0.005*216.937391941517,
     .D = 0,
@@ -29,8 +29,8 @@ PID PID_L = {
     .result = 0,
 };
 PID PID_R = {
-    .targetPoint = 130,
-    .theoryTarget = 130,
+    .targetPoint = 150,
+    .theoryTarget = 150,
     .P = 20.3031449809298,
     .I = 0.005*268.373269126206,
     .D = 0,

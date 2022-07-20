@@ -33,16 +33,17 @@ void img_preProcess(PreDealMethodEnum method)
             printf("@@ th_otsu: %d @@\n", th_otsu);
 #endif
             int thre_tmp = max(th_otsu, ConstData.kImageOtsuStaticTh), thre;
+            thre = thre_tmp;
             for (int i = 0; i < HEIGHT; ++i)
             {
                 for (int j = 0; j < WIDTH; ++j)
                 {
-                    if (j < 15)
-                        thre = thre_tmp - 10;
-                    else if (j >= WIDTH - 15)
-                        thre = thre_tmp - 10;
-                    else
-                        thre = thre_tmp;
+//                    if (j < 15)
+//                        thre = thre_tmp - 10;
+//                    else if (j >= WIDTH - 15)
+//                        thre = thre_tmp - 10;
+//                    else
+//                        thre = thre_tmp;
                     imageBin[i][j] = (mt9v03x_image[i][j] > thre) ? 255 : 0;
                 }
             }

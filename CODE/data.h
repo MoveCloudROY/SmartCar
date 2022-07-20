@@ -69,6 +69,7 @@ typedef struct _ConstDataTypeDef
 typedef struct _SystemDataTypedef
 {
     char    isBarnOut;
+    char    isBarnIn;
     char    isStop;
     char    isBuzzerOn;
     uint8_t barnInDetectCnt;
