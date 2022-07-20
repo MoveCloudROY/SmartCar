@@ -72,7 +72,7 @@ void car_init(void)
     seekfree_wireless_init();
     uart_init(UART_0, 2000000, UART0_TX_P14_0, UART0_RX_P14_1);//Í¼Ïñ·¢ËÍ´®¿Ú
 
-//    my_shell_init();
+    my_shell_init();
 
     key_init();
 
@@ -100,13 +100,13 @@ void car_init(void)
 //    pit_init(CCU6_1, PIT_CH0, 5000);
 
 
-    vt_clearall();
+//    vt_clearall();
 }
 
 void car_backstage(void)
 {
 //    my_shell_run();
-    vt_hide_cursor();
+//    vt_hide_cursor();
     if (SystemData.isStop == 'T')
     {
         motor_stop();
@@ -115,12 +115,12 @@ void car_backstage(void)
 
     if(cpu0_5ms_flag)
     {
-        car_statusbar();
+//        car_statusbar();
         cpu0_5ms_flag = 0;
     }
     if(cpu0_1000ms_flag)
     {
-        vt_clearall();
+//        vt_clearall();
         cpu0_1000ms_flag = 0;
     }
     deal_buzzer();
