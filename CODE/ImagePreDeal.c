@@ -4,7 +4,7 @@
  * @LastEditors: ROY1994
  * @LastEditTime: 2022-03-05 11:40:52
  * @FilePath: \myImageDeal_v0.1\ImagePreDeal.cpp
- * @Description: ´æ·ÅÔ¤´¦Àíº¯Êý
+ * @Description: ï¿½ï¿½ï¿½Ô¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
  */
 
 #include "ImagePreDeal.h"
@@ -16,8 +16,8 @@ uint8_t imageBin[HEIGHT][WIDTH];
 
 
 /**
- * @description: Ô¤´¦Àíµ÷ÓÃº¯Êý£¬Ä¿Ç°Ö§³ÖOTSU´ó½ò·¨¡¢SAUVOLA¾Ö²¿¶þÖµ»¯¡¢ÖÐÖµÂË²¨
- *                  µ÷ÓÃË³Ðò£º OTSU / ÖÐÖµÂË²¨ -> SAUVOLA
+ * @description: Ô¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ãºï¿½ï¿½ï¿½ï¿½ï¿½Ä¿Ç°Ö§ï¿½ï¿½OTSUï¿½ï¿½ò·¨¡ï¿½SAUVOLAï¿½Ö²ï¿½ï¿½ï¿½Öµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµï¿½Ë²ï¿½
+ *                  ï¿½ï¿½ï¿½ï¿½Ë³ï¿½ï¿½ OTSU / ï¿½ï¿½Öµï¿½Ë²ï¿½ -> SAUVOLA
  * @param {PreDealMethodEnum} method
  * @return {*}
  */
@@ -51,7 +51,7 @@ void img_preProcess(PreDealMethodEnum method)
             break;
         }
         case OTSU2D:
-            //¶þÎ¬OTSU£¬Õ¼¸öÎ»£¬²»ÖªµÀÓÃµÄµ½Âð
+            //ï¿½ï¿½Î¬OTSUï¿½ï¿½Õ¼ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½Öªï¿½ï¿½ï¿½ÃµÄµï¿½ï¿½ï¿½
             break;
         case SAUVOLA:
             // uint8_t th_otsu = otsu();
@@ -104,9 +104,9 @@ void compress(void)
 }
 
 /**
- * @description: ´ó½ò·¨£¨È«¾Ö¶þÖµ»¯£©£¬Ô­Í¼Ïñ -> ´¦ÀíºóÍ¼Ïñ
+ * @description: ï¿½ï¿½ò·¨£ï¿½È«ï¿½Ö¶ï¿½Öµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô­Í¼ï¿½ï¿½ -> ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¼ï¿½ï¿½
  * @param {*}
- * @return {uint8_t} th ¶þÖµ»¯ãÐÖµ
+ * @return {uint8_t} th ï¿½ï¿½Öµï¿½ï¿½ï¿½ï¿½Öµ
  */
 uint8_t otsu(void)
 {
@@ -119,7 +119,7 @@ uint8_t otsu(void)
 
     uint8_t * p_pixel = mt9v03x_image[0];
     
-    for(int i=0; i<total; ++i)//¼ÆËã»Ò¶ÈÖ±·½Í¼
+    for(int i=0; i<total; ++i)//ï¿½ï¿½ï¿½ï¿½Ò¶ï¿½Ö±ï¿½ï¿½Í¼
     {
         histogram[p_pixel[i]]++;
         if(minn>p_pixel[i]) minn = p_pixel[i];
@@ -127,26 +127,26 @@ uint8_t otsu(void)
 
     }
 
-    for(int i=minn; i<=min(ConstData.kImageOtsuBrightLimit, maxn); ++i)//»ñÈ¡»Ò¶ÈÈ¨ÖµºÍ£¨Ê¹ÓÃ16Î»±ÜÃâ±¬
+    for(int i=minn; i<=min(ConstData.kImageOtsuBrightLimit, maxn); ++i)//ï¿½ï¿½È¡ï¿½Ò¶ï¿½È¨Öµï¿½Í£ï¿½Ê¹ï¿½ï¿½16Î»ï¿½ï¿½ï¿½â±¬
     {
         i_mult_histogram[i] = i*histogram[i];
-        sum_i_mult_h += i_mult_histogram[i];//Çó×ÜºÍ,·½±ãÖ®ºó´¦Àí
+        sum_i_mult_h += i_mult_histogram[i];//ï¿½ï¿½ï¿½Üºï¿½,ï¿½ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½
     }
 
-    for (int i=minn; i<min(ConstData.kImageOtsuBrightLimit, maxn); ++i)//´Ó×îÐ¡¿ªÊ¼±éÀú£¬Ñ°ÕÒ×îºÏÊÊµÄãÐÖµ
+    for (int i=minn; i<min(ConstData.kImageOtsuBrightLimit, maxn); ++i)//ï¿½ï¿½ï¿½ï¿½Ð¡ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Êµï¿½ï¿½ï¿½Öµ
     {
-        //¼ÆËãÇ°¾°¡¢ºó¾°ÏñËØµã¸öÊý
+        //ï¿½ï¿½ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Øµï¿½ï¿½ï¿½ï¿½
         n0 += histogram[i];
         n1 = total - n0;
         
-        //¼ÆËãÇ°¾°¡¢ºó¾°»Ò¶ÈÖµºÍ
+        //ï¿½ï¿½ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½ï¿½ó¾°»Ò¶ï¿½Öµï¿½ï¿½
         u0_sum += i_mult_histogram[i];
         u1_sum = sum_i_mult_h - u0_sum;
 
         u0 = u0_sum / (float)n0;
         u1 = u1_sum / (float)n1;
         
-        n_value = (u0 - u1) * (u0 - u1) * (float)n0 * n1 ;//floatÔÚÇ°£¬±£Ö¤ÏÔÊ½×ª»¯
+        n_value = (u0 - u1) * (u0 - u1) * (float)n0 * n1 ;//floatï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½Ö¤ï¿½ï¿½Ê½×ªï¿½ï¿½
 
         if (n_value>max_value)
         {
@@ -158,7 +158,7 @@ uint8_t otsu(void)
 }
 
 /**
- * @description: sauvola¾Ö²¿¶þÖµ»¯£¨¹âÕÕ·½°¸Ò»£©£¬Ô­Í¼Ïñ -> ´¦ÀíºóÍ¼Ïñ
+ * @description: sauvolaï¿½Ö²ï¿½ï¿½ï¿½Öµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Õ·ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½Ô­Í¼ï¿½ï¿½ -> ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¼ï¿½ï¿½
  * @param {*}
  * @return {*}
  */
@@ -169,11 +169,11 @@ void sauvola(void)
     float mean, v, tmp, area;
     int *integralCols = (int *)malloc(WIDTH * sizeof(int));
     int *integralColsSqu = (int *)malloc(WIDTH * sizeof(int));
-    for (int j = 0; j < WIDTH; ++j) //¶ÔÃ¿Ò»ÁÐÔ¤´¦Àí
+    for (int j = 0; j < WIDTH; ++j) //ï¿½ï¿½Ã¿Ò»ï¿½ï¿½Ô¤ï¿½ï¿½ï¿½ï¿½
     {
         integralCols[j] = 0;
         integralColsSqu[j] = 0;
-        for (int i = 0; i < kernel_sizeby2_sauvola; ++i) // kernel center ºÍ ºó kernel_sizeby2_sauvola - 1ÐÐ Ö®ºÍ
+        for (int i = 0; i < kernel_sizeby2_sauvola; ++i) // kernel center ï¿½ï¿½ ï¿½ï¿½ kernel_sizeby2_sauvola - 1ï¿½ï¿½ Ö®ï¿½ï¿½
         {
             integralCols[j] += mt9v03x_image[i][j];
             integralColsSqu[j] += mt9v03x_image[i][j] * mt9v03x_image[i][j];
@@ -185,22 +185,22 @@ void sauvola(void)
     {
         up = i - kernel_sizeby2_sauvola;
         down = i + kernel_sizeby2_sauvola;
-        for (j = 0; j < WIDTH; ++j) //×ÝÏò¸üÐÂÃ¿Ò»ÁÐµÄ´°¿Ú,·ÖÈýÖÖÇé¿öÌÖÂÛ£¬ÆðÊ¼£¬ÖÐÍ¾£¬½áÎ²
+        for (j = 0; j < WIDTH; ++j) //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã¿Ò»ï¿½ÐµÄ´ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Û£ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½Í¾ï¿½ï¿½ï¿½ï¿½Î²
         {
 
-            if (up <= 0) //(i <= kernel_sizeby2_sauvola)//ÆðÊ¼²¿·Ö¼ÓÈëÏÂ¶Ë
+            if (up <= 0) //(i <= kernel_sizeby2_sauvola)//ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½Ö¼ï¿½ï¿½ï¿½ï¿½Â¶ï¿½
             {
                 // downi = down * WIDTH + j;
                 integralCols[j] += mt9v03x_image[down][j];
                 integralColsSqu[j] += mt9v03x_image[down][j] * mt9v03x_image[down][j];
             }
-            else if (down >= HEIGHT) //(h - 1 - i < kernel_sizeby2_sauvola) //½áÎ²²¿·Ö¼õÈ¥ÉÏ¶Ë
+            else if (down >= HEIGHT) //(h - 1 - i < kernel_sizeby2_sauvola) //ï¿½ï¿½Î²ï¿½ï¿½ï¿½Ö¼ï¿½È¥ï¿½Ï¶ï¿½
             {
                 // upi = (up - 1) * WIDTH + j;
                 integralCols[j] -= mt9v03x_image[up - 1][j];
                 integralColsSqu[j] -= mt9v03x_image[up - 1][j] * mt9v03x_image[up - 1][j];
             }
-            else //ÖÐ¼ä²¿·Ö¼õÈ¥ÉÏ¶Ë¼ÓÈëÏÂ¶Ë
+            else //ï¿½Ð¼ä²¿ï¿½Ö¼ï¿½È¥ï¿½Ï¶Ë¼ï¿½ï¿½ï¿½ï¿½Â¶ï¿½
             {
                 // upi = (up - 1) * WIDTH + j;
                 // downi = down * WIDTH + j;
@@ -213,38 +213,38 @@ void sauvola(void)
         }
         sum = 0;
         sqsum = 0;
-        for (j = 0; j < kernel_sizeby2_sauvola; ++j) //ºáÏòÔ¤´¦Àí
+        for (j = 0; j < kernel_sizeby2_sauvola; ++j) //ï¿½ï¿½ï¿½ï¿½Ô¤ï¿½ï¿½ï¿½ï¿½
         {
             sum += integralCols[j];
             sqsum += integralColsSqu[j];
         }
-        for (j = 0; j < WIDTH; ++j) //ºáÏò»¬´°
+        for (j = 0; j < WIDTH; ++j) //ï¿½ï¿½ï¿½ò»¬´ï¿½
         {
             left = j - kernel_sizeby2_sauvola;
             right = j + kernel_sizeby2_sauvola;
-            area = (min(HEIGHT - 1, down) - max(0, up) + 1) * (min(WIDTH - 1, right) - max(0, left) + 1); //Ãæ»ý
-            if (left <= 0)                                                                       //ºáÏò¸üÐÂ×î×ó²à
+            area = (min(HEIGHT - 1, down) - max(0, up) + 1) * (min(WIDTH - 1, right) - max(0, left) + 1); //ï¿½ï¿½ï¿½
+            if (left <= 0)                                                                       //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
             {
                 sum += integralCols[right];
                 sqsum += integralColsSqu[right];
             }
-            else if (right >= WIDTH) //ºáÏò¸üÐÂ×îÓÒ²à
+            else if (right >= WIDTH) //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò²ï¿½
             {
                 sum -= integralCols[left - 1];
                 sqsum -= integralColsSqu[left - 1];
             }
-            else //ÖÐ¼ä²¿·Ö
+            else //ï¿½Ð¼ä²¿ï¿½ï¿½
             {
                 sum = sum + integralCols[right] - integralCols[left - 1];
                 sqsum = sqsum + integralColsSqu[right] - integralColsSqu[left - 1];
             }
-            //Ëã²ÎÊý£¬ÔõÃ´À´µÄ¿ÉÒÔ¿´ÂÛÎÄÀïÎÒµÄ±ê×¢
+            //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã´ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½Ô¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÒµÄ±ï¿½×¢
             mean = sum / area;
             v = sqsum / area - mean * mean;
 
             tmp = mt9v03x_image[i][j] + mean * (k_sauvola - 1.0);
             if (tmp <= 0 || tmp * tmp <= k2_sauvola * mean * mean * v / r2_sauvola)
-                imageBin[i][j] = 0; //Êµ¼ÊÓÃµÄÊ±ºòÖ±½ÓÓÃ01ºÃÁË
+                imageBin[i][j] = 0; //Êµï¿½ï¿½ï¿½Ãµï¿½Ê±ï¿½ï¿½Ö±ï¿½ï¿½ï¿½ï¿½01ï¿½ï¿½ï¿½ï¿½
             else
                 imageBin[i][j] = 255;
         }
@@ -256,7 +256,7 @@ void sauvola(void)
 
 
 /**
- * @description: sobel±ßÔµÌáÈ¡£¨¹âÕÕ·½°¸Èý£©£¬Ô­Í¼Ïñ -> ´¦ÀíºóÍ¼Ïñ
+ * @description: sobelï¿½ï¿½Ôµï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½Õ·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô­Í¼ï¿½ï¿½ -> ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¼ï¿½ï¿½
  * @param {*}
  * @return {*}
  */
@@ -284,7 +284,7 @@ void sobel(void)
 }
 
 /**
- * @description: ÖÐÖµÂË²¨£¬Ô­Í¼Ïñ -> Ô­Í¼Ïñ
+ * @description: ï¿½ï¿½Öµï¿½Ë²ï¿½ï¿½ï¿½Ô­Í¼ï¿½ï¿½ -> Ô­Í¼ï¿½ï¿½
  * @param {*}
  * @return {*}
  */
@@ -306,7 +306,7 @@ void median_filter(void)
             }
         }
     }
-    tmp = 1;//¼ÓÉÏ0µÄÊýÁ¿
+    tmp = 1;//ï¿½ï¿½ï¿½ï¿½0ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     addtmp = kernel_2_size_medianfilter - kernel_sizeby2_medianfilter*(kernel_sizeby2_medianfilter + 1);
     while(tmp <= N)
     {
@@ -315,10 +315,10 @@ void median_filter(void)
     }
     while(cnt!=total)
     {
-        ++cnt;//¼ÆÊý
+        ++cnt;//ï¿½ï¿½ï¿½ï¿½
 
-        //¸üÐÂ»¬¶¯´°¿Ú
-        if(cnt % WIDTH == 1)//×óÓÒ»¬¶¯Óöµ½±ßºóÏòÏÂ»¬¶¯
+        //ï¿½ï¿½ï¿½Â»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+        if(cnt % WIDTH == 1)//ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ßºï¿½ï¿½ï¿½ï¿½Â»ï¿½ï¿½ï¿½
         {
             ++i;
             f = -f;
@@ -327,7 +327,7 @@ void median_filter(void)
             down = i + kernel_sizeby2_medianfilter;
             left = max(j - kernel_sizeby2_medianfilter, 0);
             right = min(j + kernel_sizeby2_medianfilter, WIDTH - 1);
-            if(up <= 0)//ÉÏ²à¶¥µ½±ßÔò¼ÓÈëÏÂ²á£¬ÉÏ²à¼õ0µÄ¸öÊý
+            if(up <= 0)//ï¿½Ï²à¶¥ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â²á£¬ï¿½Ï²ï¿½ï¿½0ï¿½Ä¸ï¿½ï¿½ï¿½
             {
                 for(k = left; k <= right; ++k)
                 {
@@ -338,7 +338,7 @@ void median_filter(void)
                         tmp += lowbit(tmp);
                     }
                 }
-                tmp = 1;//¼õÈ¥0µÄÊýÁ¿
+                tmp = 1;//ï¿½ï¿½È¥0ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                 addtmp = right - left + 1;
                 while(tmp <= N)
                 {
@@ -357,7 +357,7 @@ void median_filter(void)
                         tmp += lowbit(tmp);
                     }
                 }
-                tmp = 1;//¼ÓÉÏ0µÄÊýÁ¿
+                tmp = 1;//ï¿½ï¿½ï¿½ï¿½0ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                 addtmp = right - left + 1;
                 while(tmp <= N)
                 {
@@ -383,20 +383,20 @@ void median_filter(void)
                         tmp += lowbit(tmp);
                     }
                 }
-                //ÖÐ¼ä»¬¶¯²»Ó°Ïì0µÄ¸öÊý
+                //ï¿½Ð¼ä»¬ï¿½ï¿½ï¿½ï¿½Ó°ï¿½ï¿½0ï¿½Ä¸ï¿½ï¿½ï¿½
             }
         }
-        else//ÆäÓàÇé¿ö°´fÖµ×óÓÒ»¬¶¯£¬f=-1×ó»¬£¬f=1ÓÒ»¬
+        else//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½fÖµï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½f=-1ï¿½ó»¬£ï¿½f=1ï¿½Ò»ï¿½
         {
 
-            if(f == 1)//ÏòÓÒ»¬¶¯
+            if(f == 1)//ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½
             {
                 ++j;
                 up = max(i - kernel_sizeby2_medianfilter, 0);
                 down = min(i + kernel_sizeby2_medianfilter, HEIGHT - 1);
                 left = j - kernel_sizeby2_medianfilter;
                 right = j + kernel_sizeby2_medianfilter;
-                if(left <= 0)//×ó²à¶¥µ½±ßÔò¼ÓÈëÓÒ²à£¬×ó²à¼õ0µÄ¸öÊý
+                if(left <= 0)//ï¿½ï¿½à¶¥ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò²à£¬ï¿½ï¿½ï¿½ï¿½0ï¿½Ä¸ï¿½ï¿½ï¿½
                 {
                     for(k = up; k <= down; ++k)
                     {
@@ -407,7 +407,7 @@ void median_filter(void)
                             tmp += lowbit(tmp);
                         }
                     }
-                    tmp = 1;//¼õÈ¥0µÄÊýÁ¿
+                    tmp = 1;//ï¿½ï¿½È¥0ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                     addtmp = down - up + 1;
                     while(tmp <= N)
                     {
@@ -426,7 +426,7 @@ void median_filter(void)
                             tmp += lowbit(tmp);
                         }
                     }
-                    tmp = 1;//¼ÓÉÏ0µÄÊýÁ¿
+                    tmp = 1;//ï¿½ï¿½ï¿½ï¿½0ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                     addtmp = down - up + 1;
                     while(tmp <= N)
                     {
@@ -434,7 +434,7 @@ void median_filter(void)
                         tmp += lowbit(tmp);
                     }
                 }
-                else//ÖÐ¼ä»¬¶¯²»Ó°Ïì0µÄ¸öÊý
+                else//ï¿½Ð¼ä»¬ï¿½ï¿½ï¿½ï¿½Ó°ï¿½ï¿½0ï¿½Ä¸ï¿½ï¿½ï¿½
                 {
                     for(k = up; k <= down; ++k)
                     {
@@ -461,7 +461,7 @@ void median_filter(void)
                 down = min(i + kernel_sizeby2_medianfilter, HEIGHT - 1);
                 left = j - kernel_sizeby2_medianfilter;
                 right = j + kernel_sizeby2_medianfilter;
-                if(left < 0)//×ó²à¶¥µ½±ßÔò¼õÈ¥ÓÒ²à£¬×ó²à¼Ó0µÄ¸öÊý
+                if(left < 0)//ï¿½ï¿½à¶¥ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¥ï¿½Ò²à£¬ï¿½ï¿½ï¿½ï¿½0ï¿½Ä¸ï¿½ï¿½ï¿½
                 {
                     for(k = up; k <= down; ++k)
                     {
@@ -472,7 +472,7 @@ void median_filter(void)
                             tmp += lowbit(tmp);
                         }
                     }
-                    tmp = 1;//¼ÓÉÏ0µÄÊýÁ¿
+                    tmp = 1;//ï¿½ï¿½ï¿½ï¿½0ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                     addtmp = down - up + 1;
                     while(tmp <= N)
                     {
@@ -480,7 +480,7 @@ void median_filter(void)
                         tmp += lowbit(tmp);
                     }
                 }
-                else if(right >= WIDTH - 1)//ÓÒ²à¶¥µ½¼ÓÈë×ó²à£¬¼õÈ¥ÓÒ²à0µÄ¸öÊý
+                else if(right >= WIDTH - 1)//ï¿½Ò²à¶¥ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½à£¬ï¿½ï¿½È¥ï¿½Ò²ï¿½0ï¿½Ä¸ï¿½ï¿½ï¿½
                 {
                     for(k = up; k <= down; ++k)
                     {
@@ -491,7 +491,7 @@ void median_filter(void)
                             tmp += lowbit(tmp);
                         }
                     }
-                    tmp = 1;//¼ÓÉÏ0µÄÊýÁ¿
+                    tmp = 1;//ï¿½ï¿½ï¿½ï¿½0ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                     addtmp = down - up + 1;
                     while(tmp <= N)
                     {
@@ -499,7 +499,7 @@ void median_filter(void)
                         tmp += lowbit(tmp);
                     }
                 }
-                else//ÖÐ¼ä»¬¶¯²»Ó°Ïì0µÄ¸öÊý
+                else//ï¿½Ð¼ä»¬ï¿½ï¿½ï¿½ï¿½Ó°ï¿½ï¿½0ï¿½Ä¸ï¿½ï¿½ï¿½
                 {
                     for(k = up; k <= down; ++k)
                     {
@@ -521,17 +521,17 @@ void median_filter(void)
                 }
             }
         }
-        //¸üÐÂ½áÊø
-        //»ñÈ¡ÖÐÎ»Êý¸³Öµ
+        //ï¿½ï¿½ï¿½Â½ï¿½ï¿½ï¿½
+        //ï¿½ï¿½È¡ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½Öµ
 
         sum = 0; ret = 0;
         for(int t = 8; ~t; --t)
         {
-            ret += 1 << t;                      // ³¢ÊÔÀ©Õ¹
-            if (ret >= N || sum + tr[ret] >= kernel_mid_medianfilter)  // Èç¹ûÀ©Õ¹Ê§°Ü
+            ret += 1 << t;                      // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Õ¹
+            if (ret >= N || sum + tr[ret] >= kernel_mid_medianfilter)  // ï¿½ï¿½ï¿½ï¿½ï¿½Õ¹Ê§ï¿½ï¿½
                 ret -= 1 << t;
             else
-                sum += tr[ret];  // À©Õ¹³É¹¦ºó Òª¸üÐÂÖ®Ç°ÇóºÍµÄÖµ
+                sum += tr[ret];  // ï¿½ï¿½Õ¹ï¿½É¹ï¿½ï¿½ï¿½ Òªï¿½ï¿½ï¿½ï¿½Ö®Ç°ï¿½ï¿½Íµï¿½Öµ
         }
         temp[i][j] = ret;
         //printf("%d %d %d %u\n", i, j, ret, tr[1]);
@@ -541,10 +541,10 @@ void median_filter(void)
 
 
 /**
- * @description: ¸¯Ê´
+ * @description: ï¿½ï¿½Ê´
  * @param {*}
  * @return {*}
- * Ì«ÂýÁË, ¿¼ÂÇ¾ßÌåÎÊÌâ,ÎÒÃÇÖ»ÐèÒªÂË³ýÈüµÀÉÏµÄºÚµã,¹ÊÖÜÎ§Ö»Òª°×µãÊýÁ¿¶àÓÚãÐÖµ¼´¿É
+ * Ì«ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½Ç¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½Ö»ï¿½ï¿½Òªï¿½Ë³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÏµÄºÚµï¿½,ï¿½ï¿½ï¿½ï¿½Î§Ö»Òªï¿½×µï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½ï¿½ï¿½
  */
 void morph_erosion(void)
 {
@@ -561,7 +561,7 @@ void morph_erosion(void)
 }
 
 /**
- * @description: ÅòÕÍ
+ * @description: ï¿½ï¿½ï¿½ï¿½
  * @param {*}
  * @return {*}
  */
@@ -611,7 +611,7 @@ void morph_dilition(void)
 }
 
 /**
- * @description: ¿ªÔËËã£¬ÏÈ¸¯Ê´ºóÅòÕÍ
+ * @description: ï¿½ï¿½ï¿½ï¿½ï¿½ã£¬ï¿½È¸ï¿½Ê´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
  * @param {*}
  * @return {*}
  */
@@ -622,7 +622,7 @@ void morph_open(void)
 }
 
 /**
- * @description: ±ÕÔËËã£¬ÏÈÅòÕÍºó¸¯Ê´
+ * @description: ï¿½ï¿½ï¿½ï¿½ï¿½ã£¬ï¿½ï¿½ï¿½ï¿½ï¿½Íºï¿½Ê´
  * @param {*}
  * @return {*}
  */

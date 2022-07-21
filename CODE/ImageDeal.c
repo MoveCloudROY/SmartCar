@@ -219,12 +219,15 @@ void basic_searchLine(int bottom,int top)
             ++whiteCnt;
         }
     }
-    whiteAveMid = whiteSum / whiteCnt;
-    int m = whiteAveMid;
-    if (whiteCnt == 0 || m >= WIDTH)
+    int m = WIDTH / 2;
+    if (whiteCnt == 0)
+        m = WIDTH / 2;
+    else
     {
-        SystemData.isStop = 'T';
+        whiteAveMid = whiteSum / whiteCnt;
+        m = whiteAveMid;
     }
+
     for(int i = bottom; i >= top; --i)
     {
         int l, r;
@@ -1240,6 +1243,7 @@ void road_judge(void)
         imgInfo.RoadType != Circle_R    &&
         imgInfo.RoadType != P_L         &&
         imgInfo.RoadType != P_R         &&
+        imgInfo.RoadType != Fork_In     &&
         imgInfo.RoadType != Slope       &&
         imgInfo.RoadType != Barn_In
       )
@@ -1277,18 +1281,6 @@ void road_judge(void)
 
     straight_speedUpDetect();
 
-    if(
-        imgInfo.RoadType != Cross       &&
-        imgInfo.RoadType != P_L         &&
-        imgInfo.RoadType != P_R         &&
-        imgInfo.RoadType != Circle_L    &&
-        imgInfo.RoadType != Circle_R    &&
-        imgInfo.RoadType != Barn_In
-      )
-    {
-        fork_detect();
-    }
-
 
     if (
         imgInfo.RoadType != Cross       &&
@@ -1314,6 +1306,7 @@ void road_judge(void)
         }
     }
 
+
     if (
             imgInfo.RoadType != Circle_L    &&
             imgInfo.RoadType != Circle_R    &&
@@ -1328,6 +1321,20 @@ void road_judge(void)
     {
         cross_detect();
     }
+
+
+    if(
+        imgInfo.RoadType != Cross       &&
+        imgInfo.RoadType != P_L         &&
+        imgInfo.RoadType != P_R         &&
+        imgInfo.RoadType != Circle_L    &&
+        imgInfo.RoadType != Circle_R    &&
+        imgInfo.RoadType != Barn_In
+      )
+    {
+        fork_detect();
+    }
+
     // TODO
     barnIn_repairLine();
     p_repairLine();
@@ -1574,6 +1581,7 @@ void fork_detect()
             }
             else
             {
+                imgInfo.RoadType = Road_None;
                 passDis.stop(&passDis);
                 fork_in_flag = 'T';
                 isForkIn = 'F';

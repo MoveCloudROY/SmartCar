@@ -93,7 +93,7 @@ void servo_control_PIDPos(void)
 #if 1
     Outpid = OUTPUT_LIMIE_LOW(Outpid);
     Outpid = OUTPUT_LIMIE_HIGH(Outpid);
-    if (Outpid / 20 != 0) {
+    if (Outpid / 20 != 0 && (PID_L.theoryTarget && PID_R.theoryTarget)) {
          differential_speed(Outpid);
     }
     else {

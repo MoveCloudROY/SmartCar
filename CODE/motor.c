@@ -1,6 +1,6 @@
 #include "motor.h"
 #include "vofa.h"
-//#define DEBUG_MOTOR_PID
+#define DEBUG_MOTOR_PID
 //#define OLTEST
 
 extern ConstDataTypeDef ConstData;
@@ -185,14 +185,14 @@ void motor_control(void)
 #ifdef DEBUG_MOTOR_PID
 //    general_sendFloat((float)encoderL);
 //    general_sendFloat((float)encoderR);
-    general_sendFloat((float)encoderLFilter);
-    general_sendFloat((float)encoderRFilter);
-    general_sendFloat((float)pwmL);
-    general_sendFloat((float)pwmR);
-    general_sendFloat((float)PID_L.targetPoint);
-    general_sendFloat((float)PID_R.targetPoint);
-    general_sendFloat(speedR);
-    vofa_sendTail();
+//    general_sendFloat((float)encoderLFilter);
+//    general_sendFloat((float)encoderRFilter);
+//    general_sendFloat((float)pwmL);
+//    general_sendFloat((float)pwmR);
+//    general_sendFloat((float)PID_L.targetPoint);
+//    general_sendFloat((float)PID_R.targetPoint);
+//    general_sendFloat(speedR);
+//    vofa_sendTail();
 #endif
 }
 

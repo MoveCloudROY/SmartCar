@@ -92,7 +92,7 @@ void car_init(void)
 
     servo_set(ConstData.kServoMid);
 
-    systick_delay_ms(STM0, 1000);
+//    systick_delay_ms(STM0, 1000);
     while(startKey_read());
     systick_delay_ms(STM0, 2000);
     pit_init(CCU6_0, PIT_CH0, 5000);
