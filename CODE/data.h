@@ -40,6 +40,7 @@ typedef struct _SpeedSubDataTypeDef
     int     kForkSpeed;
     int     kBarnInSpeed;
     int     kTurnSpeed;
+    int     kSlopeSpeed;
     float   kDiffAnglePerPWM;
 }SpeedSubDataTypeDef;
 
@@ -63,6 +64,8 @@ typedef struct _ConstDataTypeDef
     int     kImagePassingOffset;
     float   kImageForkIntegralDis;
     float   kImageBarnInFirIntegralDis, kImageBarnInSecIntegralDis;
+
+    float   kSlopeUpAngRate, kSlopeDownAngRate, kSlopeIntegralDis;
 //    int     kArcman;
     SpeedSubDataTypeDef speed;
 

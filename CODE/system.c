@@ -184,7 +184,7 @@ void img_backstage(void)
     }
 }
 
-float rad = 100.0;
+float rad = -100.0;
 void car_statusbar(void)
 {
     char ss[100] = "";
@@ -352,6 +352,6 @@ void car_statusbar(void)
 
     // Êä³ö ¸©Ñö½ÇËÙ¶È
 
-    rad = min(rad, check_pitch_rad());
+    rad = check_pitch_rad();
     VT_OUT("%.2f", rad, 13, 35);
 }

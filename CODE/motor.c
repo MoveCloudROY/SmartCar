@@ -121,13 +121,10 @@ void motor_control(void)
     gpt12_clear(GPT12_T2);
     gpt12_clear(GPT12_T4);
 
-//    general_sendFloat((float)encoderL);
-//    general_sendFloat((float)encoderR);
-//    vofa_sendTail();
-//  encoderLFilter = encoderL;
-//  encoderRFilter = encoderR;
-    encoderLFilter = recurrence_filter_left(encoderL);
-    encoderRFilter = recurrence_filter_right(encoderR);
+    encoderLFilter = encoderL;
+    encoderRFilter = encoderR;
+//    encoderLFilter = recurrence_filter_left(encoderL);
+//    encoderRFilter = recurrence_filter_right(encoderR);
 
     speedL = CALC_SPD((abs(encoderLFilter)));
     speedR = CALC_SPD((abs(encoderRFilter)));
@@ -203,9 +200,9 @@ void motor_stop(void)
     PID_L.theoryTarget = 0;
     PID_R.theoryTarget = 0;
     pwm_duty(MOTOR_LA, 0);
-    pwm_duty(MOTOR_LB, 0);
+//    pwm_duty(MOTOR_LB, 0);
     pwm_duty(MOTOR_RA, 0);
-    pwm_duty(MOTOR_RB, 0);
+//    pwm_duty(MOTOR_RB, 0);
 }
 
 

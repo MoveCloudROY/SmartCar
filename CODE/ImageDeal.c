@@ -1335,6 +1335,17 @@ void road_judge(void)
         fork_detect();
     }
 
+    if(
+        imgInfo.RoadType != P_L         &&
+        imgInfo.RoadType != P_R         &&
+        imgInfo.RoadType != Circle_L    &&
+        imgInfo.RoadType != Circle_R    &&
+        imgInfo.RoadType != Barn_In
+      )
+    {
+        slope_detect();
+    }
+
     // TODO
     barnIn_repairLine();
     p_repairLine();
@@ -3065,6 +3076,27 @@ void barnIn_repairLine(void)
     }
 }
 
+void slope_detect(void)
+{
+    float pitch = check_pitch_rad();
+    if (pitch >= ConstData.kSlopeUpAngRate)
+    {
+        imgInfo.RoadType = Slope;
+        call_buzzer();
+        passDis.start(&passDis);
+    }
+    if (imgInfo.RoadType == Slope
+            &&
+       (passDis.disL + passDis.disR) / 2.0f <= ConstData.kSlopeIntegralDis)
+    {
+        imgInfo.RoadType = Slope;
+    }
+    else
+    {
+        imgInfo.RoadType = Road_None;
+        passDis.stop(&passDis);
+    }
+}
 
 uint8_t stop_detect(void)
 {

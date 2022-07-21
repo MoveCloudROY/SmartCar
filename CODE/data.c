@@ -61,7 +61,11 @@ void data_set(void)
     ConstData.kImageBarnInFirIntegralDis = 0.6;
     ConstData.kImageBarnInSecIntegralDis = 0.15;
 
-//    ConstData.kArcman = 20;
+    ConstData.kSlopeUpAngRate = 1.0;
+    ConstData.kSlopeDownAngRate = -1.0;
+    ConstData.kSlopeIntegralDis = 0.15;
+
+    //    ConstData.kArcman = 20;
 
     // ================= 速度初始化设置 ================= //
 
@@ -72,6 +76,7 @@ void data_set(void)
     ConstData.speed.kForkSpeed = 130;
     ConstData.speed.kBarnInSpeed = 100;
     ConstData.speed.kTurnSpeed = 140;
+    ConstData.speed.kSlopeSpeed = 130;
     ConstData.speed.kDiffAnglePerPWM = 0.2;
 
 

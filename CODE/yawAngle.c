@@ -72,6 +72,7 @@ IFX_INLINE static uint8 is_interating_angle(void){
 
 IFX_INLINE static float check_pitch_rad(void)
 {
+    get_icm20602_gyro();
     return gyro[0];
 }
 

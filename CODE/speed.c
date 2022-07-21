@@ -13,7 +13,14 @@ extern SystemDataTypedef SystemData;
 
 void speed_control(void)
 {
-    if (imgInfo.straight_needSpeedUP == 'T')
+    if (SystemData.isStop == 'T')
+    {
+        PID_L.targetPoint = 0;
+        PID_R.targetPoint = 0;
+        PID_L.theoryTarget = 0;
+        PID_R.theoryTarget = 0;
+    }
+    else if (imgInfo.straight_needSpeedUP == 'T')
     {
         PID_L.targetPoint = ConstData.speed.kMaxSpeed;
         PID_R.targetPoint = ConstData.speed.kMaxSpeed;
@@ -48,19 +55,19 @@ void speed_control(void)
         PID_L.theoryTarget = ConstData.speed.kBarnInSpeed;
         PID_R.theoryTarget = ConstData.speed.kBarnInSpeed;
     }
+    else if (imgInfo.RoadType == Slope)
+    {
+        PID_L.targetPoint = ConstData.speed.kSlopeSpeed;
+        PID_R.targetPoint = ConstData.speed.kSlopeSpeed;
+        PID_L.theoryTarget = ConstData.speed.kSlopeSpeed;
+        PID_R.theoryTarget = ConstData.speed.kSlopeSpeed;
+    }
     else if (imgInfo.error >= 15)
     {
         PID_L.targetPoint = ConstData.speed.kTurnSpeed;
         PID_R.targetPoint = ConstData.speed.kTurnSpeed;
         PID_L.theoryTarget = ConstData.speed.kTurnSpeed;
         PID_R.theoryTarget = ConstData.speed.kTurnSpeed;
-    }
-    else if (SystemData.isStop == 'T')
-    {
-        PID_L.targetPoint = 0;
-        PID_R.targetPoint = 0;
-        PID_L.theoryTarget = 0;
-        PID_R.theoryTarget = 0;
     }
     else
     {
