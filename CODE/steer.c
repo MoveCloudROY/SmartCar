@@ -21,6 +21,28 @@ extern DebugDataTypedef DebugData;
 #define OUTPUT_LIMIE_LOW(pwm) ((pwm) < -SERVO_INTV?(-SERVO_INTV):(pwm))
 #define OUTPUT_LIMIE_HIGH(pwm) ((pwm)> SERVO_INTV?(SERVO_INTV):(pwm))
 
+// ======= SpeedPWM: 130 ======== //
+//PID PID_Servo = {
+//    .targetPoint = 0,
+//    .P = 3.2,
+//    .I = 0,
+//    .D = 1.0,
+//    .alphaDev = 0.0,
+//    .alphaOut = 0.0,
+//
+//    .feedForwardK = 0.0,
+//
+//    .para = 0,
+//    .lastError = 0,
+//    .prevError = 0,
+//    .integralError = 0,
+//
+//    .lastResult = 0,
+//    .result = 0,
+//};
+// ============================= //
+
+
 PID PID_Servo = {
     .targetPoint = 0,
     .P = 3.2,
