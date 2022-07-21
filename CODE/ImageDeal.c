@@ -1537,9 +1537,9 @@ void fork_detect()
         if ((rowInfo[row].fork_blackWidth - rowInfo[row + 3].fork_blackWidth) >= 2 &&
             //如果这个左黑和右黑之间黑点数比较多 并且满足三角形的形状
             //再和斜十字区分
-            rowInfo[row].fork_blackWidth > 40 &&
-            rowInfo[row + 1].fork_blackWidth > 30 &&
-            rowInfo[row - 1].fork_blackWidth > 30 &&
+            rowInfo[row].fork_blackWidth > 30 &&
+            rowInfo[row + 1].fork_blackWidth > 20 &&
+//            rowInfo[row - 1].fork_blackWidth > 30 &&
             rowInfo[row].fork_L < WIDTH / 2 && //滤除斜十字
             rowInfo[row].fork_R > WIDTH / 2)
         {
