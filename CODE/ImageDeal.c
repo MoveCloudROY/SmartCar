@@ -86,7 +86,7 @@ ImgInfoTypedef imgInfo;//Í¼Ïñ»ù´¡²ÎÊý½á¹¹Ìå£¨Èç¹ûÖØ¹¹°ÑÉÏÃæÒÔHEIGHT´óÐ¡µÄ¿ª³É½á¹
 
 uint8_t ForkLinePointx_l, ForkLinePointx_r, ForkLinePointy;//Èý²íµã²¹Ïß×ø±ê
 int forkDetectStartLine = 0, forkDetectSpecLine = 0;
-char fork_flag_1 = 'F', fork_flag_2 = 'F', fork_flag_tot = 'F';
+char fork_flag_1 = 'F', fork_flag_2 = 'F', fork_flag_3 = 'F', fork_flag_tot = 'F';
 char fork_in_flag = 'F'; //ÒÑ¾­Èë¹ýÈý²æ±êÖ¾
 
 EdgeJumpPointTypedef color_TogglePos_left[10], color_TogglePos_right[10];
@@ -182,6 +182,7 @@ void params_init(void)
     blackBlock.posY = MISS;
     fork_flag_1 = 'F';
     fork_flag_2 = 'F';
+    fork_flag_3 = 'F';
     imgInfo.top = 8;//UP_LIMIT;
     imgInfo.bottom = HEIGHT - 1;//DOWN_LIMIT;
     for(int i = 0; i  < HEIGHT; ++i)
@@ -1307,20 +1308,20 @@ void road_judge(void)
     }
 
 
-    if (
-            imgInfo.RoadType != Circle_L    &&
-            imgInfo.RoadType != Circle_R    &&
-            imgInfo.RoadType != P_L         &&
-            imgInfo.RoadType != P_R         &&
-            imgInfo.RoadType != Slope       &&
-            imgInfo.RoadType != Fork_In     &&
-            imgInfo.RoadType != Fork_Out    &&
-            imgInfo.RoadType != Barn_In     &&
-            fork_in_flag != 'T'
-           )
-    {
-        cross_detect();
-    }
+//    if (
+//            imgInfo.RoadType != Circle_L    &&
+//            imgInfo.RoadType != Circle_R    &&
+//            imgInfo.RoadType != P_L         &&
+//            imgInfo.RoadType != P_R         &&
+//            imgInfo.RoadType != Slope       &&
+//            imgInfo.RoadType != Fork_In     &&
+//            imgInfo.RoadType != Fork_Out    &&
+//            imgInfo.RoadType != Barn_In     &&
+//            fork_in_flag != 'T'
+//           )
+//    {
+//        cross_detect();
+//    }
 
 
     if(
@@ -1534,14 +1535,15 @@ void fork_detect()
     //ÅÐ¶ÏÊÇ·ñÎªÈý²æµÄºÚÉ«Èý½Ç¿é
     for (int row = forkDetectStartLine; row >= (imgInfo.top + 5); row--)
     {
-        if ((rowInfo[row].fork_blackWidth - rowInfo[row + 3].fork_blackWidth) >= 2 &&
+        if ((rowInfo[row].fork_blackWidth - rowInfo[row + 3].fork_blackWidth) >= 2
             //Èç¹ûÕâ¸ö×óºÚºÍÓÒºÚÖ®¼äºÚµãÊý±È½Ï¶à ²¢ÇÒÂú×ãÈý½ÇÐÎµÄÐÎ×´
             //ÔÙºÍÐ±Ê®×ÖÇø·Ö
-            rowInfo[row].fork_blackWidth > 30 &&
-            rowInfo[row + 1].fork_blackWidth > 20 &&
-//            rowInfo[row - 1].fork_blackWidth > 30 &&
-            rowInfo[row].fork_L < WIDTH / 2 && //ÂË³ýÐ±Ê®×Ö
-            rowInfo[row].fork_R > WIDTH / 2)
+            && rowInfo[row].fork_blackWidth > 40
+            && rowInfo[row + 1].fork_blackWidth > 30
+//            && rowInfo[row - 1].fork_blackWidth > 30
+            && rowInfo[row].fork_L < WIDTH / 2 //ÂË³ýÐ±Ê®×Ö
+            && rowInfo[row].fork_R > WIDTH / 2
+            )
         {
 
             ForkLinePointx_r = rowInfo[row].fork_R; //ÓÃÓÚ²¹ÏßµÄµã
@@ -1559,11 +1561,94 @@ void fork_detect()
             fork_flag_2 = 'F';
     }
 
+    // ²àÈëµ¥±ß²âÊÔ
+
+    uint8 isLostL = 'F', isLostR = 'T';
+    int lostLStart = MISS, lostRStart = MISS;
+
+    for (int row = HEIGHT; row > imgInfo.top + 5; --row)
+    {
+        if(rowInfo[row].rightStatus == LOST)
+        {
+            isLostR = 'T';
+            lostRStart = row;
+        }
+        else if (rowInfo[row].leftStatus == LOST)
+        {
+            isLostL = 'T';
+            lostLStart = row;
+        }
+    }
+
+    if (isLostR == 'T')
+    {
+        float k_l = (rowInfo[HEIGHT].leftLine - rowInfo[HEIGHT - 6].leftLine) / (7);
+        float b_l = rowInfo[HEIGHT - 3].leftLine - k_l * (HEIGHT - 3);
+        PixelTypedef lBlack = {MISS, MISS};
+        int col;
+        for (int row = lostLStart; row > imgInfo.top + 5; --row)
+        {
+            col = k_l * row + b_l;
+            if (imageBin[row][col] == 0)
+            {
+                lBlack.x = col;
+                lBlack.y = row;
+            }
+        }
+        if (lBlack.x != MISS && lBlack.y != MISS)
+        {
+            for (int col = lBlack.x; col < WIDTH; ++col)
+            {
+                if(imageBin[lBlack.y][col] != 0)
+                {
+                    fork_flag_3 = 'T';
+                    break;
+                }
+            }
+        }
+    }
+    else if (isLostR == 'T')
+    {
+        float k_r = (rowInfo[HEIGHT].rightLine - rowInfo[HEIGHT - 6].rightLine) / (7);
+        float b_r = rowInfo[HEIGHT - 3].rightLine - k_r * (HEIGHT - 3);
+        PixelTypedef rBlack = {MISS, MISS};
+        int col;
+        for (int row = lostRStart; row > imgInfo.top + 5; --row)
+        {
+            col = k_r * row + b_r;
+            if (imageBin[row][col] == 0)
+            {
+                rBlack.x = col;
+                rBlack.y = row;
+            }
+        }
+        if (rBlack.x != MISS && rBlack.y != MISS)
+        {
+            for (int col = rBlack.x; col >= 0; --col)
+            {
+                if(imageBin[rBlack.y][col] != 0)
+                {
+                    fork_flag_3 = 'T';
+                    break;
+                }
+            }
+        }
+    }
+
+
     // ×ÛºÏÉÏÊöÐÅÏ¢ÅÐ¶Ï
-    if ((fork_flag_1 == 'T' && fork_flag_2 == 'T') || (fork_flag_tot == 'T' && fork_flag_2 == 'T'))
+    if (
+            (fork_flag_1 == 'T' && fork_flag_2 == 'T')
+            ||(fork_flag_1 != 'T' && fork_flag_3 == 'T')
+            || (fork_flag_tot == 'T' && fork_flag_2 == 'T')
+       )
+    {
         fork_flag_tot = 'T';
+    }
     else
+    {
         fork_flag_tot = 'F';
+    }
 
     // Ï£Íû×öµ½¼ì²âµ½Fork_InµÄÊ±ºò
 
@@ -3085,39 +3170,44 @@ void slope_detect(void)
         call_buzzer();
         passDis.start(&passDis);
     }
-    if (imgInfo.RoadType == Slope
-            &&
-       (passDis.disL + passDis.disR) / 2.0f <= ConstData.kSlopeIntegralDis)
+    if (imgInfo.RoadType == Slope)
     {
-        imgInfo.RoadType = Slope;
+        if ((passDis.disL + passDis.disR) / 2.0f <= ConstData.kSlopeIntegralDis)
+        {
+            imgInfo.RoadType = Slope;
+        }
+        else
+        {
+            imgInfo.RoadType = Road_None;
+            passDis.stop(&passDis);
+        }
     }
-    else
-    {
-        imgInfo.RoadType = Road_None;
-        passDis.stop(&passDis);
-    }
+
 }
 
 uint8_t stop_detect(void)
 {
     int blackCount = 0;
 
-    for (int i = 0; i <= WIDTH - 1; ++i)
+    for (int j = HEIGHT; j > HEIGHT - 5; --j)
     {
-        if (!imageBin[HEIGHT - 1][i])
-            ++blackCount;
+        for (int i = 0; i <= WIDTH - 1; ++i)
+        {
+            if (!imageBin[HEIGHT - 1][i])
+                ++blackCount;
+        }
     }
-    return blackCount > WIDTH * 0.8;
+    return blackCount > WIDTH * 4.5;
 }
 
-
+// ======================= 170 base ======================== //
 const int weight_base[120] = {                        //0ÎªÍ¼Ïñ×î¶¥ÐÐ
     0 , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0 , 0, 0, 0, 0, 0, 0,0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,
-    3 , 3, 3, 3, 5, 5, 10, 10,10,10,10,10,10,15,15,15,15,15,15,15,
+    0 , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,
+    3 , 3, 3, 3, 5, 5,10,10,10,10,10,10,10,15,15,15,15,15,15,15,
 
     15,15,15,15,15,15,15,15,15,15,15,15,10,10,10,10,10,10,10,10,
-    10,10,10,10,10,10, 5, 5, 5,5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+    10,10,10,10,10,10, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
     3 , 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
 };    //»ù´¡    //×¢ÒâÐ±ÂÊ±ä»¯ÒýÆðµÄÌø±ä,ÒªÆ½»¬
 
@@ -3125,20 +3215,20 @@ const int weight_circle[120] = {                        //0ÎªÍ¼Ïñ×î¶¥ÐÐ
     0 , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0 , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     1 , 1, 1, 1, 1, 3, 3, 3, 3, 3, 3, 5, 5, 5, 5, 5, 5, 5,10,10,
-
     10,10,10,10,10,10,10,10,10,10,10,15,15,15, 15,15,15,15,15,15,
     15,15,15,15,15,15,15,15,15,15,15,10,10,10,10,10,10,10,10, 5,
     5 , 5, 5, 5, 5, 3, 3, 3, 3, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
 };    //»ù´¡    //×¢ÒâÐ±ÂÊ±ä»¯ÒýÆðµÄÌø±ä,ÒªÆ½»¬
+
 const int weight_p[120] = {                        //0ÎªÍ¼Ïñ×î¶¥ÐÐ
     0 , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0 , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     1 , 1, 1, 1, 1, 3, 3, 3, 3, 3, 3, 5, 5, 5, 5, 5, 5, 5,10,10,
-
     10,10,10,10,10,10,10,10,10,10,10,15,15,15, 15,15,15,15,15,15,
     15,15,15,15,15,15,15,15,15,15,15,10,10,10,10,10,10,10,10, 5,
     5 , 5, 5, 5, 5, 3, 3, 3, 3, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
 };    //»ù´¡    //×¢ÒâÐ±ÂÊ±ä»¯ÒýÆðµÄÌø±ä,ÒªÆ½»¬
+
 const int weight_fork[120] = {                        //0ÎªÍ¼Ïñ×î¶¥ÐÐ
     0 , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0 , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -3148,6 +3238,9 @@ const int weight_fork[120] = {                        //0ÎªÍ¼Ïñ×î¶¥ÐÐ
     15,15,10,10,10,10,10,10,10,10,10,10, 5, 5, 5, 5, 5, 5, 5, 5,
     3 , 3, 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
 };    //»ù´¡    //×¢ÒâÐ±ÂÊ±ä»¯ÒýÆðµÄÌø±ä,ÒªÆ½»¬
+
+
+
 /**
  * @description: »ñÈ¡µ±Ç°Î»ÖÃºÍÖÐÏßÎ»ÖÃµÄÆ«²î£¬´«µÝ¸øPID´¦Àí
  * @param {*}

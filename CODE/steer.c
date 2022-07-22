@@ -77,8 +77,13 @@ void servo_control_PIDPos(void)
 {
     PID_Servo.iError = imgInfo.error;
 
-    int Outpid =    PID_Servo.P * PID_Servo.iError
+    double p;
+    p=(abs((pow(2.71828,-1.0*abs(PID_Servo.iError))-1.0)/(pow(2.71828,-1.0*abs(PID_Servo.iError))+1.0) ) / 2.0 +0.5)* PID_Servo.P;
+    int Outpid =p* PID_Servo.iError
                     +  PID_Servo.D * (PID_Servo.iError - PID_Servo.lastError);
+
+//    int Outpid =    PID_Servo.P * PID_Servo.iError
+//                    +  PID_Servo.D * (PID_Servo.iError - PID_Servo.lastError);
 
     PID_Servo.lastError = PID_Servo.iError;
 
