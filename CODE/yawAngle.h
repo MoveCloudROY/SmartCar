@@ -30,6 +30,7 @@
 #define DEGREE_90   (PI/2.0f)
 #define DEGREE_160
 #define DEGREE_180  (PI)
+#define DEBGEE_230  (1.28f * PI)
 #define DEGREE_250  (1.39f * PI)
 #define DEGREE_270  (1.5f * PI)
 #define DEGREE_360  (2.0f * PI)

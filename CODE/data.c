@@ -23,7 +23,7 @@ void data_set(void)
 {
 
     // ================= 常数设置 ================ //
-    ConstData.kServoMid = 1493  ;//1496;                    // 舵机左打角限制
+    ConstData.kServoMid = 1475  ;//1496;                    // 舵机左打角限制
     ConstData.kServoLowLimit = ConstData.kServoMid - SERVO_INTV;                        // 舵机右打角限制
     ConstData.kServoHighLimit = ConstData.kServoMid + SERVO_INTV;                       // 舵机中值(大致)
 
@@ -38,11 +38,12 @@ void data_set(void)
     ConstData.kImageStraightLineVarianceTh = 26;            // 直线检测阈值
     ConstData.kImageStraightLineSpeedUpVarianceTh = 20;     // 直线加速检测阈值
     ConstData.kImageLineVarianceTh = 200;              // 环岛出环线性方差阈值
+    ConstData.kImageLineMeanVarianceTh = 30;
 
     ConstData.kImageCircleInRepairLineK = 1.02;             // 环岛入环补线斜率
     ConstData.kImageCircleOutRepairLineK = 1.02;            // 环岛出环补线斜率
-    ConstData.kImageCircleInIntegralDis = 0.25;             // 环岛发现到入环路程积分
-    ConstData.kImageCircleOffIntegralDis = 0.28;            // 环岛OFF到清空路程积分
+    ConstData.kImageCircleInIntegralDis = 0.4;             // 环岛发现到入环路程积分
+    ConstData.kImageCircleOffIntegralDis = 0.4;            // 环岛OFF到清空路程积分
 
     ConstData.kImageBarnOutRepairLineK = 0.9;
     ConstData.kImageBarnInRepairLineK = 2.0;
@@ -56,7 +57,7 @@ void data_set(void)
     ConstData.kImagePassingOffset = 10;
 
 //    ConstData.kImageForkInPicCnt = 25;
-    ConstData.kImageForkIntegralDis = 0.7;
+    ConstData.kImageForkIntegralDis = 1.0;
 
     ConstData.kImageBarnInFirIntegralDis = 0.6;
     ConstData.kImageBarnInSecIntegralDis = 0.15;
@@ -72,10 +73,10 @@ void data_set(void)
     ConstData.speed.kMaxSpeed = 170;
     ConstData.speed.kNormalSpeed = 150;
     ConstData.speed.kCircleSpeed = 150;
-    ConstData.speed.kPSpeed = 150;
-    ConstData.speed.kForkSpeed = 120;
+    ConstData.speed.kPSpeed = 130;
+    ConstData.speed.kForkSpeed = 150;
     ConstData.speed.kBarnInSpeed = 120;
-    ConstData.speed.kTurnSpeed = 140;
+    ConstData.speed.kTurnSpeed = 120;
     ConstData.speed.kSlopeSpeed = 80;
     ConstData.speed.kDiffAnglePerPWM = 0.217;
 

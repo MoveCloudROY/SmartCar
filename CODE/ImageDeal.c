@@ -1563,85 +1563,158 @@ void fork_detect()
 
     // 侧入单边测试
 
-    uint8 isLostL = 'F', isLostR = 'T';
+    // 丢失边界标志位
+    uint8_t isLostL = 'F', isLostR = 'F';
+    // 获取丢失的起始行
     int lostLStart = MISS, lostRStart = MISS;
-
-    for (int row = HEIGHT; row > imgInfo.top + 5; --row)
+    // 左侧与右侧角点
+    PixelTypedef lCorner = {MISS, MISS}, rCorner = {MISS, MISS};
+    int col, y;
+    // 判断哪侧丢失
+    for (int row = HEIGHT - 6; row > HEIGHT / 3; --row)
     {
         if(rowInfo[row].rightStatus == LOST)
         {
             isLostR = 'T';
-            lostRStart = row;
+            break;
         }
         else if (rowInfo[row].leftStatus == LOST)
         {
             isLostL = 'T';
-            lostLStart = row;
+            break;
         }
     }
-
+//    printf("isLostL = %c, isLostR = %c\n", isLostL, isLostR);
+    // 如果右侧丢失
     if (isLostR == 'T')
     {
-        float k_l = (rowInfo[HEIGHT - 1].leftLine - rowInfo[HEIGHT - 6].leftLine) / (5);
-        float b_l = rowInfo[HEIGHT - 3].leftLine - k_l * (HEIGHT - 3);
+        // 获取信息较多的左侧的信息
+        float k_l = (float)(rowInfo[HEIGHT - 1].leftLine - rowInfo[HEIGHT - 6].leftLine) / (5.0f);
+        float b_l = (float)rowInfo[HEIGHT - 3].leftLine - k_l * (HEIGHT - 3);
+        // 三角块与左线延长线交点
         PixelTypedef lBlack = {MISS, MISS};
-        int col;
-        for (int row = lostLStart; row > imgInfo.top + 5; --row)
+
+        // 获取左侧丢失边界的起始行, 获取左右角点
+        for (int row = HEIGHT - 6; row > HEIGHT / 3; --row)
         {
             col = k_l * row + b_l;
-            if (imageBin[row][col] == 0)
+            if (imageBin[row][col] != 0 && imageBin[row][col - 7] != 0 && imageBin[row+5][col-7] == 0 && lostLStart == MISS)
             {
-                lBlack.x = col;
-                lBlack.y = row;
+                lostLStart = row;
+                lCorner.x = col;
+                lCorner.y = row;
+            }
+            if (rowInfo[row].rightStatus == LOST && lostRStart == MISS)
+            {
+                lostRStart = row;
+                rCorner.x = rowInfo[row].rightLine;
+                rCorner.y = row;
             }
         }
-        if (lBlack.x != MISS && lBlack.y != MISS)
+        // 如果没找到,直接跳过
+        if (lostLStart != MISS)
         {
-            for (int col = lBlack.x; col < WIDTH; ++col)
+
+            // 寻找上侧交点
+            for (int row = lostLStart; row > HEIGHT / 3; --row)
             {
-                if(imageBin[lBlack.y][col] != 0)
+                col = k_l * row + b_l;
+                if (imageBin[row][col] == 0)
                 {
-                    fork_flag_3 = 'T';
+                    lBlack.x = col;
+                    lBlack.y = row;
                     break;
+                }
+            }
+//            printf("lBlack.x = %d, lBlack.y = %d\n", lBlack.x, lBlack.y);
+
+            // 获取平移轨迹直线
+            float kBlack = (float)(rCorner.y - lCorner.y) / (float)(rCorner.x - lCorner.x);
+            float bBlack = (float)rCorner.y - kBlack * rCorner.x;
+
+            // 寻找上侧交点平移后是否能遇到白点
+            if (lBlack.x != MISS && lBlack.y != MISS && lCorner.y - lBlack.y > 10)
+            {
+                for (int col = lBlack.x; col < WIDTH; ++col)
+                {
+                    y = kBlack * col + bBlack;
+                    if (imageBin[y][col] != 0)
+                    {
+                        fork_flag_3 = 'T';
+                        break;
+                    }
                 }
             }
         }
     }
     else if (isLostL == 'T')
     {
-        float k_r = (rowInfo[HEIGHT -1].rightLine - rowInfo[HEIGHT - 6].rightLine) / (5);
-        float b_r = rowInfo[HEIGHT - 3].rightLine - k_r * (HEIGHT - 3);
+        float k_r = (float)(rowInfo[HEIGHT -1].rightLine - rowInfo[HEIGHT - 6].rightLine) / (5.0);
+        float b_r = (float)rowInfo[HEIGHT - 3].rightLine - k_r * (HEIGHT - 3);
         PixelTypedef rBlack = {MISS, MISS};
-        int col;
-        for (int row = lostRStart; row > imgInfo.top + 5; --row)
+
+        for (int row = HEIGHT; row > HEIGHT / 3; --row)
         {
             col = k_r * row + b_r;
-            if (imageBin[row][col] == 0)
+            if (imageBin[row][col] != 0 && imageBin[row][col + 7] != 0 && imageBin[row+5][col+7] == 0 && lostRStart == MISS)
             {
-                rBlack.x = col;
-                rBlack.y = row;
+                lostRStart = row;
+                rCorner.x = col;
+                rCorner.y = row;
+            }
+            if (rowInfo[row].leftStatus == LOST && lostLStart == MISS)
+            {
+                lostLStart = row;
+                lCorner.x = rowInfo[row].leftLine;
+                lCorner.y = row;
             }
         }
-        if (rBlack.x != MISS && rBlack.y != MISS)
+        if (lostRStart != MISS)
         {
-            for (int col = rBlack.x; col >= 0; --col)
+            for (int row = lostRStart; row > imgInfo.top + 5; --row)
             {
-                if(imageBin[rBlack.y][col] != 0)
+                col = k_r * row + b_r;
+                if (imageBin[row][col] == 0)
                 {
-                    fork_flag_3 = 'T';
+                    rBlack.x = col;
+                    rBlack.y = row;
                     break;
+                }
+            }
+//            printf("rBlack.x = %d, rBlack.y = %d\n", rBlack.x, rBlack.y);
+
+            float kBlack = (float)(lCorner.y - rCorner.y) / (float)(lCorner.x - rCorner.x);
+            float bBlack = (float)lCorner.y - kBlack * lCorner.x;
+
+            if (rBlack.x != MISS && rBlack.y != MISS && rCorner.y - rBlack.y > 10)
+            {
+                for (int col = rBlack.x; col > 0; --col)
+                {
+                    y = kBlack * col + bBlack;
+                    if (imageBin[y][col] != 0)
+                    {
+                        fork_flag_3 = 'T';
+                        break;
+                    }
                 }
             }
         }
     }
+//    printf("lostLStart = %d, lostRStart = %d\n", lostLStart, lostRStart);
+//    printf("lCorner.x = %d, lCorner.y = %d\n", lCorner.x, lCorner.y);
+//    printf("rCorner.x = %d, rCorner.y = %d\n", rCorner.x, rCorner.y);
 
-    int variance_l = get_variance(imgInfo.top, HEIGHT - 4, LEFT);
-    int variance_r = get_variance(imgInfo.top, HEIGHT - 4, RIGHT);
+
+
+    float mean_variance_l = (float)get_variance(imgInfo.top+6, HEIGHT - 4, LEFT) / (HEIGHT - imgInfo.top - 9);
+    float mean_variance_r = (float)get_variance(imgInfo.top+6, HEIGHT - 4, RIGHT )/ (HEIGHT - imgInfo.top - 9);
+
+//    printf("mean_variance_l = %f, mean_variance_r = %f\n", mean_variance_l, mean_variance_r);
 
     // 综合上述信息判断
     if (
             (
-                (variance_l > ConstData.kImageLineVarianceTh && variance_r > ConstData.kImageLineVarianceTh)
+                (mean_variance_l > ConstData.kImageLineMeanVarianceTh && mean_variance_r > ConstData.kImageLineMeanVarianceTh)
                 && (  (fork_flag_1 == 'T' && fork_flag_2 == 'T') ||(fork_flag_1 == 'T' && fork_flag_3 == 'T')   )
             )
             || (fork_flag_tot == 'T' && fork_flag_2 == 'T')
@@ -2184,7 +2257,7 @@ void p_detect(void)
 #ifdef DEBUG
             printf("curv: %f\n", curv);
 #endif
-            if(abs(curv) < ConstData.kImageStraightCurvTh && check_yaw_angle() > DEGREE_250)
+            if(abs(curv) < ConstData.kImageStraightCurvTh && check_yaw_angle() > DEBGEE_230)
             {
 #if defined (__ON_ROBOT__)
                 stop_interating_angle();
@@ -2200,7 +2273,7 @@ void p_detect(void)
 #ifdef DEBUG
             printf("curv: %f\n", curv);
 #endif
-            if(abs(curv) < ConstData.kImageStraightCurvTh && check_yaw_angle() <= -DEGREE_250)
+            if(abs(curv) < ConstData.kImageStraightCurvTh && check_yaw_angle() <= -DEBGEE_230)
             {
 #if defined (__ON_ROBOT__)
                 stop_interating_angle();

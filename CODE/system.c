@@ -237,12 +237,13 @@ void car_statusbar(void)
     vt_set_font_color(VT_F_WHITE);
     switch (imgInfo.PStatus)
     {
-        case P_NOT_FIND:            vt_draw_str_at(4, 14, "P_NOT_FIND");        break;
-        case P_OUT_1:               vt_draw_str_at(4, 14, "P_OUT_1   ");        break;
-        case P_OUT_2:               vt_draw_str_at(4, 14, "P_OUT_2   ");        break;
-        case P_PASSING:             vt_draw_str_at(4, 14, "P_PASSING ");        break;
-        case P_OFF:                 vt_draw_str_at(4, 14, "P_OFF     ");        break;
-        default:                                                                break;
+        case P_NOT_FIND:            vt_draw_str_at(4, 14, "P_NOT_FIND ");        break;
+        case P_OUT_1:               vt_draw_str_at(4, 14, "P_OUT_1    ");        break;
+        case P_OUT_2:               vt_draw_str_at(4, 14, "P_OUT_2    ");        break;
+        case P_PASSING:             vt_draw_str_at(4, 14, "P_PASSING  ");        break;
+        case P_OFF:                 vt_draw_str_at(4, 14, "P_OFF      ");        break;
+        case P_OUT_READY:           vt_draw_str_at(4, 14, "P_OUT_READY");        break;
+        default:                                                                 break;
     }
     // Êä³öÈý²í×´Ì¬
     vt_set_font_color(VT_F_RED);

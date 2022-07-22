@@ -51,7 +51,7 @@ typedef struct _ConstDataTypeDef
     int     kImageOtsuStaticTh, kImageOtsuBrightLimit;
 
     float   kImageStraightLineVarianceTh, kImageStraightLineSpeedUpVarianceTh;
-    int     kImageLineVarianceTh;
+    int     kImageLineVarianceTh, kImageLineMeanVarianceTh;
     float   kImageCircleInRepairLineK, kImageCircleOutRepairLineK;
     float   kImageCircleInIntegralDis, kImageCircleOffIntegralDis;
     float   kImageBarnOutRepairLineK;
