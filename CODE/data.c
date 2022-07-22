@@ -42,8 +42,8 @@ void data_set(void)
 
     ConstData.kImageCircleInRepairLineK = 1.02;             // 环岛入环补线斜率
     ConstData.kImageCircleOutRepairLineK = 1.02;            // 环岛出环补线斜率
-    ConstData.kImageCircleInIntegralDis = 0.4;             // 环岛发现到入环路程积分
-    ConstData.kImageCircleOffIntegralDis = 0.4;            // 环岛OFF到清空路程积分
+    ConstData.kImageCircleInIntegralDis = 0.5;             // 环岛发现到入环路程积分
+    ConstData.kImageCircleOffIntegralDis = 0.5;            // 环岛OFF到清空路程积分
 
     ConstData.kImageBarnOutRepairLineK = 0.9;
     ConstData.kImageBarnInRepairLineK = 2.0;
@@ -70,13 +70,22 @@ void data_set(void)
 
     // ================= 速度初始化设置 ================= //
 
-    ConstData.speed.kMaxSpeed = 170;
-    ConstData.speed.kNormalSpeed = 150;
-    ConstData.speed.kCircleSpeed = 150;
+    ConstData.speed.kMaxSpeed = 200;
+    ConstData.speed.kNormalSpeed = 140;
+    ConstData.speed.kCircleSpeed = 130;
     ConstData.speed.kPSpeed = 130;
-    ConstData.speed.kForkSpeed = 150;
-    ConstData.speed.kBarnInSpeed = 120;
-    ConstData.speed.kTurnSpeed = 120;
+    ConstData.speed.kForkSpeed = 140;
+    ConstData.speed.kBarnSpeed = 130;
+    ConstData.speed.kTurnSpeed = 130;
+
+//    ConstData.speed.kMaxSpeed = 200;
+//    ConstData.speed.kNormalSpeed = 150;
+//    ConstData.speed.kCircleSpeed = 150;
+//    ConstData.speed.kPSpeed = 150;
+//    ConstData.speed.kForkSpeed = 150;
+//    ConstData.speed.kBarnSpeed = 150;
+//    ConstData.speed.kTurnSpeed = 150;
+
     ConstData.speed.kSlopeSpeed = 80;
     ConstData.speed.kDiffAnglePerPWM = 0.217;
 

@@ -38,7 +38,7 @@ typedef struct _SpeedSubDataTypeDef
     int     kCircleSpeed;
     int     kPSpeed;
     int     kForkSpeed;
-    int     kBarnInSpeed;
+    int     kBarnSpeed;
     int     kTurnSpeed;
     int     kSlopeSpeed;
     float   kDiffAnglePerPWM;

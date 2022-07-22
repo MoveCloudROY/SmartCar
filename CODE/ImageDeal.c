@@ -23,6 +23,8 @@
 #include "DEBUGDEFINE.h"
 #endif
 
+
+
 #define PIXEL(ROW_NUM, LINE) imageBin[ROW_NUM][rowInfo[ROW_NUM].LINE##Line]
 
 
@@ -114,9 +116,13 @@ void img_process(void)
 
 #if defined(__ON_ROBOT__)
 
-    if(stop_detect())
+    if( stop_detect()
+        && imgInfo.RoadType != Circle_L && imgInfo.RoadType != Circle_R)
+    {
+//        call_buzzer();
         SystemData.isStop = 'T';
-//#define __BARN_OUT_ON__
+    }
+
 
 #if defined(__BARN_OUT_ON__)
 
@@ -131,7 +137,11 @@ void img_process(void)
             firstFlag = 'F';
         }
         barnOut_repairLine();
+#if defined (__BARN_LEFT_OUT__)
         if (check_yaw_angle() > DEGREE_67)
+#else
+        if (check_yaw_angle() < -DEGREE_67)
+#endif
         {
             SystemData.isBarnOut = 'T';
             stop_interating_angle();
@@ -2257,12 +2267,12 @@ void p_detect(void)
 #ifdef DEBUG
             printf("curv: %f\n", curv);
 #endif
-            if(abs(curv) < ConstData.kImageStraightCurvTh && check_yaw_angle() > DEBGEE_230)
+            if(abs(curv) < ConstData.kImageStraightCurvTh || check_yaw_angle() > DEGREE_250)
             {
 #if defined (__ON_ROBOT__)
                 stop_interating_angle();
 //                SystemData.isStop = 'T';
-//                start_integrating_angle();
+                start_integrating_angle();
 #endif
                 imgInfo.PStatus = P_OUT_1;
             }
@@ -2273,43 +2283,43 @@ void p_detect(void)
 #ifdef DEBUG
             printf("curv: %f\n", curv);
 #endif
-            if(abs(curv) < ConstData.kImageStraightCurvTh && check_yaw_angle() <= -DEBGEE_230)
+            if(abs(curv) < ConstData.kImageStraightCurvTh || check_yaw_angle() <= -DEGREE_250)
             {
 #if defined (__ON_ROBOT__)
                 stop_interating_angle();
 //                SystemData.isStop = 'T';
-//                start_integrating_angle();
+                start_integrating_angle();
 #endif
                 imgInfo.PStatus = P_OUT_1;
             }
         }
     }
 
-    if (imgInfo.PStatus == P_OUT_1)
-    {
-        if(imgInfo.RoadType  == P_L)
-        {
-            float curv = get_curvature(imgInfo.top + 5, HEIGHT - 3, RIGHT);
-#ifdef DEBUG
-            printf("curv: %f\n", curv);
-#endif
-            if(abs(curv) < ConstData.kImageStraightCurvTh)
-            {
-                imgInfo.PStatus = P_OUT_1;
-            }
-        }
-        else if (imgInfo.RoadType == P_R)
-        {
-            float curv = get_curvature(imgInfo.top + 5, HEIGHT - 3, LEFT);
-#ifdef DEBUG
-            printf("curv: %f\n", curv);
-#endif
-            if(abs(curv) < ConstData.kImageStraightCurvTh)
-            {
-                imgInfo.PStatus = P_OUT_1;
-            }
-        }
-    }
+//    if (imgInfo.PStatus == P_OUT_1)
+//    {
+//        if(imgInfo.RoadType  == P_L)
+//        {
+//            float curv = get_curvature(imgInfo.top + 5, HEIGHT - 3, RIGHT);
+//#ifdef DEBUG
+//            printf("curv: %f\n", curv);
+//#endif
+//            if(abs(curv) < ConstData.kImageStraightCurvTh)
+//            {
+//                imgInfo.PStatus = P_OUT_1;
+//            }
+//        }
+//        else if (imgInfo.RoadType == P_R)
+//        {
+//            float curv = get_curvature(imgInfo.top + 5, HEIGHT - 3, LEFT);
+//#ifdef DEBUG
+//            printf("curv: %f\n", curv);
+//#endif
+//            if(abs(curv) < ConstData.kImageStraightCurvTh)
+//            {
+//                imgInfo.PStatus = P_OUT_1;
+//            }
+//        }
+//    }
 
     // 到达 P_OUT_1 后
     // 判断是否到达 P_OFF (出p环横向引导)时刻
@@ -2334,7 +2344,7 @@ void p_detect(void)
                 && variance_m <= ConstData.kImagePOutVarianceTh
                 && downside_check_flag_l)
 #if defined (__ON_ROBOT__)
-//                    || check_yaw_angle() <= -DEGREE_67
+                    || check_yaw_angle() <= -DEGREE_67
 //                    || (passDis.disL + passDis.disR) / 2.0f >= ConstData.kImagePOutIntegralDis
 #endif
                 )
@@ -2342,7 +2352,7 @@ void p_detect(void)
                 imgInfo.PStatus = P_OFF;
 //                SystemData.isStop = 'T';
 #if defined (__ON_ROBOT__)
-//                stop_interating_angle();
+                stop_interating_angle();
 #endif
                 downside_flag_last_l = 0;
                 downside_check_flag_l = 0;
@@ -2375,7 +2385,7 @@ void p_detect(void)
                 && variance_m <= ConstData.kImagePOutVarianceTh
                 && downside_check_flag_r)
 #if defined (__ON_ROBOT__)
-//                    || check_yaw_angle() >= DEGREE_67
+                    || check_yaw_angle() >= DEGREE_67
 //                    || (passDis.disL + passDis.disR) / 2.0f >= ConstData.kImagePOutIntegralDis
 #endif
                )
@@ -2384,7 +2394,7 @@ void p_detect(void)
                 imgInfo.PStatus = P_OFF;
 //                SystemData.isStop = 'T';
 #if defined (__ON_ROBOT__)
-//                stop_interating_angle();
+                stop_interating_angle();
 #endif
                 downside_flag_last_r = 0;
                 downside_check_flag_r = 0;
@@ -2796,17 +2806,21 @@ void circle_detect(void)
     if (imgInfo.CircleStatus == CIRCLE_IN) // 如果入环岛状态, 则进入 [经过环岛] 检测状态
     {
         if  (
-                color_toggleCnt_left <= 1 && color_toggleCnt_right <= 1 // 如果左右两侧交错数都小于等于1, 则说明正在经过环岛
+                (color_toggleCnt_left <= 1 && color_toggleCnt_right <= 1 // 如果左右两侧交错数都小于等于1, 则说明正在经过环岛
                 &&
-#if defined (__ON_ROBOT__)
-                ((imgInfo.RoadType == Circle_L && check_yaw_angle() >= DEGREE_45)
-                 ||
-                 (imgInfo.RoadType == Circle_R && check_yaw_angle() <= -DEGREE_45))
-                &&
+                (
+                        (! imageBin[HEIGHT - 1][WIDTH - 1] && ! imageBin[HEIGHT - 1][WIDTH - 2] && ! imageBin[HEIGHT - 1][WIDTH - 3])
+                        ||
+                        (! imageBin[HEIGHT - 1][0] && ! imageBin[HEIGHT - 1][1] && !imageBin[HEIGHT - 1][2])
+                ))
+
+ #if defined (__ON_ROBOT__)
+                ||(
+                        (imgInfo.RoadType == Circle_L && check_yaw_angle() >= DEGREE_45)
+                        ||
+                        (imgInfo.RoadType == Circle_R && check_yaw_angle() <= -DEGREE_45)
+                  )
 #endif
-                ((! imageBin[HEIGHT - 1][WIDTH - 1] && ! imageBin[HEIGHT - 1][WIDTH - 2] && ! imageBin[HEIGHT - 1][WIDTH - 3])
-                 ||
-                (! imageBin[HEIGHT - 1][0] && ! imageBin[HEIGHT - 1][1] && !imageBin[HEIGHT - 1][2]))
                 // 如果左右两侧交错数都小于等于1, 则说明正在经过环岛
             )
         {
@@ -3149,6 +3163,7 @@ void circle_repairLine(void)
  */
 void barnOut_repairLine(void)
 {
+#if defined (__BARN_LEFT_OUT__)
     for (int row = HEIGHT - 1; row > imgInfo.top + 2; --row)
     {
         float k, b;
@@ -3157,6 +3172,16 @@ void barnOut_repairLine(void)
         add_line(k, b, imgInfo.top, HEIGHT - 1, RIGHT);
         recalc_line(imgInfo.top, HEIGHT - 1, RIGHT);
     }
+#else
+    for (int row = HEIGHT - 1; row > imgInfo.top + 2; --row)
+    {
+        float k, b;
+        k = (ConstData.kImageBarnOutRepairLineK * WIDTH) / (imgInfo.top - (HEIGHT - 1));
+        b = - k * (HEIGHT - 1);
+        add_line(k, b, imgInfo.top, HEIGHT - 1, LEFT);
+        recalc_line(imgInfo.top, HEIGHT - 1, LEFT);
+    }
+#endif
 }
 
 /**
@@ -3268,7 +3293,7 @@ uint8_t stop_detect(void)
 {
     int blackCount = 0;
 
-    for (int j = HEIGHT - 1; j > HEIGHT - 5; --j)
+    for (int j = HEIGHT - 1; j >= HEIGHT - 20; --j)
     {
         for (int i = 0; i <= WIDTH - 1; ++i)
         {
@@ -3276,7 +3301,7 @@ uint8_t stop_detect(void)
                 ++blackCount;
         }
     }
-    return blackCount > WIDTH * 3.6f;
+    return blackCount > WIDTH * 20 * 0.8;
 }
 
 // ======================= 170 base ======================== //

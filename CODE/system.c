@@ -124,7 +124,7 @@ void car_backstage(void)
         vt_clearall();
         cpu0_1000ms_flag = 0;
     }
-    deal_buzzer();
+//    deal_buzzer();
     /*
     //²âÊÔ¶æ»ú´ò½Ç
     static int servoPWM = 1510;

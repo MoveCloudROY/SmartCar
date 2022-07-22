@@ -48,12 +48,12 @@ void speed_control(void)
         PID_L.theoryTarget = ConstData.speed.kForkSpeed;
         PID_R.theoryTarget = ConstData.speed.kForkSpeed;
     }
-    else if (imgInfo.RoadType == Barn_In)
+    else if (imgInfo.RoadType == Barn_In || imgInfo.RoadType == Barn_Out)
     {
-        PID_L.targetPoint = ConstData.speed.kBarnInSpeed;
-        PID_R.targetPoint = ConstData.speed.kBarnInSpeed;
-        PID_L.theoryTarget = ConstData.speed.kBarnInSpeed;
-        PID_R.theoryTarget = ConstData.speed.kBarnInSpeed;
+        PID_L.targetPoint = ConstData.speed.kBarnSpeed;
+        PID_R.targetPoint = ConstData.speed.kBarnSpeed;
+        PID_L.theoryTarget = ConstData.speed.kBarnSpeed;
+        PID_R.theoryTarget = ConstData.speed.kBarnSpeed;
     }
     else if (imgInfo.RoadType == Slope)
     {

@@ -55,7 +55,7 @@ PID PID_Servo = {
     .targetPoint = 0,
     .P = 4,
     .I = 0.0,
-    .D = 6,
+    .D = 2,
     .alphaDev = 0.0,
     .alphaOut = 0.0,
 
@@ -106,13 +106,15 @@ void servo_control_PIDPos(void)
 #if 1
     Outpid = OUTPUT_LIMIE_LOW(Outpid);
     Outpid = OUTPUT_LIMIE_HIGH(Outpid);
-    if (Outpid / 20 != 0 && (PID_L.theoryTarget && PID_R.theoryTarget)) {
+    if (Outpid / 15 != 0 && (PID_L.theoryTarget && PID_R.theoryTarget)) {
          differential_speed(Outpid);
     }
     else {
         PID_L.targetPoint = PID_L.theoryTarget;
         PID_R.targetPoint = PID_R.theoryTarget;
     }
+
+
 #endif
 //    servo_set(ConstData.kServoMid);
 //    vofa_sendFloat((float)steer_pwm);
@@ -120,7 +122,25 @@ void servo_control_PIDPos(void)
 }
 
 void differential_speed(int pwm_diff){
-    float angle = abs(pwm_diff)*ConstData.speed.kDiffAnglePerPWM;            //认为每10pwm变化为2°
+    float apm = ConstData.speed.kDiffAnglePerPWM;
+
+    if (pwm_diff >= 15 && pwm_diff <= 25)
+        apm = ConstData.speed.kDiffAnglePerPWM * 1.0;
+    else if (pwm_diff > 25 && pwm_diff <= 35)
+        apm = ConstData.speed.kDiffAnglePerPWM * 1.05;
+    else if (pwm_diff > 35 && pwm_diff <= 50)
+        apm = ConstData.speed.kDiffAnglePerPWM * 1.1;
+    else if (pwm_diff > 50 && pwm_diff <= 70)
+        apm = ConstData.speed.kDiffAnglePerPWM * 1.2;
+    else if (pwm_diff > 70 && pwm_diff <= 90)
+        apm = ConstData.speed.kDiffAnglePerPWM * 1.3;
+    else
+        apm = ConstData.speed.kDiffAnglePerPWM * 1.4;
+
+
+
+
+    float angle = abs(pwm_diff)*apm;            //认为每10pwm变化为2°
     float tanval = tan(angle*PI/180);
     float R;
     if(abs(tanval) < 1e-7){
@@ -141,6 +161,7 @@ void differential_speed(int pwm_diff){
 //        PID_L.targetPoint = (int)(PID_R.theoryTarget*(R-0.0775)/(R+0.0775));
 //        PID_R.targetPoint = PID_R.theoryTarget;
 //    }
+
     if (pwm_diff>=0) {                            //大于0右转
         PID_R.targetPoint = (int)(PID_R.theoryTarget*(R-0.0775)/R);
         PID_L.targetPoint = (int)(PID_L.theoryTarget*R/(R+0.0775));
