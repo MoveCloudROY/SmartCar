@@ -39,7 +39,7 @@ extern PID PID_L, PID_R;
 
 // ========== Control ========= //
 #define __ROBOT_DEBUG__
-#define __BARN_OUT_ON__
+//#define __BARN_OUT_ON__
 
 
 // ============================ //

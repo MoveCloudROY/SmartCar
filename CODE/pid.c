@@ -75,7 +75,7 @@ int PID_calcInc(PID *pid, int nowPoint)
     pid->result += pid->para;
 
 //    if(pid->iError > 25){
-//        return 9500;
+//        return 4500;
 //    }else if(pid->iError < -25){
 //        return -3500;
 //    }
