@@ -124,18 +124,12 @@ void servo_control_PIDPos(void)
 void differential_speed(int pwm_diff){
     float apm = ConstData.speed.kDiffAnglePerPWM;
 
-    if (pwm_diff >= 15 && pwm_diff <= 25)
-        apm = ConstData.speed.kDiffAnglePerPWM * 1.0;
-    else if (pwm_diff > 25 && pwm_diff <= 35)
-        apm = ConstData.speed.kDiffAnglePerPWM * 1.05;
-    else if (pwm_diff > 35 && pwm_diff <= 50)
-        apm = ConstData.speed.kDiffAnglePerPWM * 1.1;
-    else if (pwm_diff > 50 && pwm_diff <= 70)
-        apm = ConstData.speed.kDiffAnglePerPWM * 1.2;
-    else if (pwm_diff > 70 && pwm_diff <= 90)
-        apm = ConstData.speed.kDiffAnglePerPWM * 1.3;
-    else
-        apm = ConstData.speed.kDiffAnglePerPWM * 1.4;
+//    if (pwm_diff >= 15 && pwm_diff <= 35)
+//        apm = ConstData.speed.kDiffAnglePerPWM * 1.0;
+//    else if (pwm_diff > 35 && pwm_diff <= 70)
+//        apm = ConstData.speed.kDiffAnglePerPWM * 1.2;
+//    else if (pwm_diff > 70)
+//        apm = ConstData.speed.kDiffAnglePerPWM * 1.4;
 
 
 

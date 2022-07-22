@@ -138,9 +138,9 @@ void img_process(void)
         }
         barnOut_repairLine();
 #if defined (__BARN_LEFT_OUT__)
-        if (check_yaw_angle() > DEGREE_67)
+        if (check_yaw_angle() > ConstData.kBarnOutDegree)
 #else
-        if (check_yaw_angle() < -DEGREE_67)
+        if (check_yaw_angle() < -ConstData.kBarnOutDegree)
 #endif
         {
             SystemData.isBarnOut = 'T';
@@ -2267,7 +2267,7 @@ void p_detect(void)
 #ifdef DEBUG
             printf("curv: %f\n", curv);
 #endif
-            if(abs(curv) < ConstData.kImageStraightCurvTh || check_yaw_angle() > DEGREE_250)
+            if(abs(curv) < ConstData.kImageStraightCurvTh || check_yaw_angle() > ConstData.kPPassingDegree)
             {
 #if defined (__ON_ROBOT__)
                 stop_interating_angle();
@@ -2283,7 +2283,7 @@ void p_detect(void)
 #ifdef DEBUG
             printf("curv: %f\n", curv);
 #endif
-            if(abs(curv) < ConstData.kImageStraightCurvTh || check_yaw_angle() <= -DEGREE_250)
+            if(abs(curv) < ConstData.kImageStraightCurvTh || check_yaw_angle() <= -ConstData.kPPassingDegree)
             {
 #if defined (__ON_ROBOT__)
                 stop_interating_angle();
@@ -2344,7 +2344,7 @@ void p_detect(void)
                 && variance_m <= ConstData.kImagePOutVarianceTh
                 && downside_check_flag_l)
 #if defined (__ON_ROBOT__)
-                    || check_yaw_angle() <= -DEGREE_67
+                    || check_yaw_angle() <= -ConstData.kPOutDegree
 //                    || (passDis.disL + passDis.disR) / 2.0f >= ConstData.kImagePOutIntegralDis
 #endif
                 )
@@ -2385,7 +2385,7 @@ void p_detect(void)
                 && variance_m <= ConstData.kImagePOutVarianceTh
                 && downside_check_flag_r)
 #if defined (__ON_ROBOT__)
-                    || check_yaw_angle() >= DEGREE_67
+                    || check_yaw_angle() >= ConstData.kPOutDegree
 //                    || (passDis.disL + passDis.disR) / 2.0f >= ConstData.kImagePOutIntegralDis
 #endif
                )
@@ -2816,9 +2816,9 @@ void circle_detect(void)
 
  #if defined (__ON_ROBOT__)
                 ||(
-                        (imgInfo.RoadType == Circle_L && check_yaw_angle() >= DEGREE_45)
+                        (imgInfo.RoadType == Circle_L && check_yaw_angle() >= ConstData.kCircleInDegree)
                         ||
-                        (imgInfo.RoadType == Circle_R && check_yaw_angle() <= -DEGREE_45)
+                        (imgInfo.RoadType == Circle_R && check_yaw_angle() <= -ConstData.kCircleInDegree)
                   )
 #endif
                 // 如果左右两侧交错数都小于等于1, 则说明正在经过环岛
@@ -2910,7 +2910,7 @@ void circle_detect(void)
                 && variance_m <= ConstData.kImageLineVarianceTh
                 && downside_check_flag_r)
 #if defined (__ON_ROBOT__)
-                || check_yaw_angle() >= DEGREE_80
+                || check_yaw_angle() >= ConstData.kCircleOutDegree
 #endif
                 )
             {
@@ -2953,7 +2953,7 @@ void circle_detect(void)
                 && variance_m <= ConstData.kImageLineVarianceTh
                 && downside_check_flag_l)
 #if defined (__ON_ROBOT__)
-                || check_yaw_angle() <= -DEGREE_80
+                || check_yaw_angle() <= -ConstData.kCircleOutDegree
 #endif
                 )
             {
@@ -3247,7 +3247,7 @@ void barnIn_repairLine(void)
     if (SystemData.barnInDetectCnt == 2 && imgInfo.RoadType == Barn_In)
     {
 #if defined (__ON_ROBOT__)
-        if (check_yaw_angle() < -DEGREE_45 || (passDis.disL + passDis.disR) / 2.0 > ConstData.kImageBarnInSecIntegralDis)
+        if (check_yaw_angle() < -ConstData.kBarnInDegree || (passDis.disL + passDis.disR) / 2.0 > ConstData.kImageBarnInSecIntegralDis)
         {
             SystemData.isStop = 'T';
             stop_interating_angle();

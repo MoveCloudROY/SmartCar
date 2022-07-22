@@ -27,6 +27,7 @@
 
 #else
 #include <string.h>
+#include "yawAngle.h"
 #endif
 
 #define SERVO_INTV 150
@@ -66,6 +67,8 @@ typedef struct _ConstDataTypeDef
     float   kImageBarnInFirIntegralDis, kImageBarnInSecIntegralDis;
 
     float   kSlopeUpAngRate, kSlopeDownAngRate, kSlopeIntegralDis;
+
+    float   kBarnOutDegree, kBarnInDegree, kCircleInDegree, kCircleOutDegree, kPOutDegree, kPPassingDegree;
 //    int     kArcman;
     SpeedSubDataTypeDef speed;
 

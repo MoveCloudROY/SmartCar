@@ -53,7 +53,7 @@ void data_set(void)
 
     ConstData.kImagePOutRepairLineK = 0.8;                 // P环出环补线斜率
     ConstData.kImagePOutVarianceTh = 200;                   // P环出环线性方差阈值
-    ConstData.kImagePOutIntegralDis = 0.25;
+    ConstData.kImagePOutIntegralDis = 0.4;
     ConstData.kImagePassingOffset = 10;
 
 //    ConstData.kImageForkInPicCnt = 25;
@@ -71,12 +71,12 @@ void data_set(void)
     // ================= 速度初始化设置 ================= //
 
     ConstData.speed.kMaxSpeed = 200;
-    ConstData.speed.kNormalSpeed = 140;
-    ConstData.speed.kCircleSpeed = 130;
-    ConstData.speed.kPSpeed = 130;
-    ConstData.speed.kForkSpeed = 140;
-    ConstData.speed.kBarnSpeed = 130;
-    ConstData.speed.kTurnSpeed = 130;
+    ConstData.speed.kNormalSpeed = 120;
+    ConstData.speed.kCircleSpeed = 120;
+    ConstData.speed.kPSpeed = 120;
+    ConstData.speed.kForkSpeed = 120;
+    ConstData.speed.kBarnSpeed = 100;
+    ConstData.speed.kTurnSpeed = 100;
 
 //    ConstData.speed.kMaxSpeed = 200;
 //    ConstData.speed.kNormalSpeed = 150;
@@ -88,6 +88,14 @@ void data_set(void)
 
     ConstData.speed.kSlopeSpeed = 80;
     ConstData.speed.kDiffAnglePerPWM = 0.217;
+
+
+    ConstData.kBarnOutDegree = DEGREE_75;
+    ConstData.kBarnInDegree = DEGREE_45;
+    ConstData.kCircleInDegree = DEGREE_45;
+    ConstData.kCircleOutDegree = DEGREE_80;
+    ConstData.kPOutDegree = DEGREE_67;
+    ConstData.kPPassingDegree = DEGREE_250;
 
 
     // ================= 系统初始化设置 ================= //
