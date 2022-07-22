@@ -125,14 +125,23 @@ void differential_speed(int pwm_diff){
     DebugData.SteerR = R;
 #endif
 
+//    if (pwm_diff>=0) {                            //大于0右转
+//        PID_R.targetPoint = (int)(PID_L.theoryTarget*(R-0.0775)/(R+0.0775));
+//        PID_L.targetPoint = PID_L.theoryTarget;
+//    }
+//    else {
+//        PID_L.targetPoint = (int)(PID_R.theoryTarget*(R-0.0775)/(R+0.0775));
+//        PID_R.targetPoint = PID_R.theoryTarget;
+//    }
     if (pwm_diff>=0) {                            //大于0右转
-        PID_R.targetPoint = (int)(PID_L.theoryTarget*(R-0.0775)/(R+0.0775));
-        PID_L.targetPoint = PID_L.theoryTarget;
+        PID_R.targetPoint = (int)(PID_R.theoryTarget*(R-0.0775)/R);
+        PID_L.targetPoint = (int)(PID_L.theoryTarget*R/(R+0.0775));
     }
     else {
-        PID_L.targetPoint = (int)(PID_R.theoryTarget*(R-0.0775)/(R+0.0775));
-        PID_R.targetPoint = PID_R.theoryTarget;
+        PID_L.targetPoint = (int)(PID_R.theoryTarget*(R-0.0775)/R);
+        PID_R.targetPoint = (int)(PID_R.theoryTarget*R/(R+0.0775));
     }
+
 
 }
 

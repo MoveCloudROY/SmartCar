@@ -58,6 +58,7 @@ volatile SystemStatusTypedef Global = {
 long long picCount = 0;
 
 extern DebugDataTypedef DebugData;
+extern char fork_flag_1, fork_flag_2, fork_flag_3;
 
 void car_init(void)
 {
@@ -354,4 +355,13 @@ void car_statusbar(void)
 
     rad = check_pitch_rad();
     VT_OUT("%.2f", rad, 13, 35);
+
+    // 输出三岔标志位
+    VT_OUT("%c", fork_flag_1, 14, 2);
+    VT_OUT("%c", fork_flag_2, 14, 35);
+    VT_OUT("%c", fork_flag_3, 15, 2);
+
+    char stop = SystemData.isStop;
+    VT_OUT("%c", stop, 15, 35);
+
 }

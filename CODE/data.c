@@ -56,7 +56,7 @@ void data_set(void)
     ConstData.kImagePassingOffset = 10;
 
 //    ConstData.kImageForkInPicCnt = 25;
-    ConstData.kImageForkIntegralDis = 0.4;
+    ConstData.kImageForkIntegralDis = 0.7;
 
     ConstData.kImageBarnInFirIntegralDis = 0.6;
     ConstData.kImageBarnInSecIntegralDis = 0.15;
@@ -77,7 +77,7 @@ void data_set(void)
     ConstData.speed.kBarnInSpeed = 120;
     ConstData.speed.kTurnSpeed = 140;
     ConstData.speed.kSlopeSpeed = 80;
-    ConstData.speed.kDiffAnglePerPWM = 0.21;
+    ConstData.speed.kDiffAnglePerPWM = 0.217;
 
 
     // ================= 系统初始化设置 ================= //

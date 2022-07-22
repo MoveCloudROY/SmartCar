@@ -1582,7 +1582,7 @@ void fork_detect()
 
     if (isLostR == 'T')
     {
-        float k_l = (rowInfo[HEIGHT].leftLine - rowInfo[HEIGHT - 6].leftLine) / (7);
+        float k_l = (rowInfo[HEIGHT - 1].leftLine - rowInfo[HEIGHT - 6].leftLine) / (5);
         float b_l = rowInfo[HEIGHT - 3].leftLine - k_l * (HEIGHT - 3);
         PixelTypedef lBlack = {MISS, MISS};
         int col;
@@ -1607,9 +1607,9 @@ void fork_detect()
             }
         }
     }
-    else if (isLostR == 'T')
+    else if (isLostL == 'T')
     {
-        float k_r = (rowInfo[HEIGHT].rightLine - rowInfo[HEIGHT - 6].rightLine) / (7);
+        float k_r = (rowInfo[HEIGHT -1].rightLine - rowInfo[HEIGHT - 6].rightLine) / (5);
         float b_r = rowInfo[HEIGHT - 3].rightLine - k_r * (HEIGHT - 3);
         PixelTypedef rBlack = {MISS, MISS};
         int col;
@@ -1635,12 +1635,17 @@ void fork_detect()
         }
     }
 
+    int variance_l = get_variance(imgInfo.top, HEIGHT - 4, LEFT);
+    int variance_r = get_variance(imgInfo.top, HEIGHT - 4, RIGHT);
 
     // 综合上述信息判断
     if (
-            (fork_flag_1 == 'T' && fork_flag_2 == 'T')
-            ||(fork_flag_1 != 'T' && fork_flag_3 == 'T')
+            (
+                (variance_l > ConstData.kImageLineVarianceTh && variance_r > ConstData.kImageLineVarianceTh)
+                && (  (fork_flag_1 == 'T' && fork_flag_2 == 'T') ||(fork_flag_1 == 'T' && fork_flag_3 == 'T')   )
+            )
             || (fork_flag_tot == 'T' && fork_flag_2 == 'T')
+
        )
     {
         fork_flag_tot = 'T';
@@ -1684,7 +1689,7 @@ void fork_detect()
             }
         }
     }
-    else // fork_in_flag == 'T'
+    else if (fork_in_flag == 'T')
     {
         if(fork_flag_tot == 'T' && imgInfo.RoadType != Fork_Out)
         {
@@ -1700,6 +1705,7 @@ void fork_detect()
             }
             else
             {
+                imgInfo.RoadType = Road_None;
                 passDis.stop(&passDis);
                 fork_in_flag = 'F';
                 isForkOut = 'F';
@@ -3189,15 +3195,15 @@ uint8_t stop_detect(void)
 {
     int blackCount = 0;
 
-    for (int j = HEIGHT; j > HEIGHT - 5; --j)
+    for (int j = HEIGHT - 1; j > HEIGHT - 5; --j)
     {
         for (int i = 0; i <= WIDTH - 1; ++i)
         {
-            if (!imageBin[HEIGHT - 1][i])
+            if (!imageBin[j][i])
                 ++blackCount;
         }
     }
-    return blackCount > WIDTH * 4.5;
+    return blackCount > WIDTH * 3.6f;
 }
 
 // ======================= 170 base ======================== //
