@@ -51,11 +51,11 @@ extern PID PID_L, PID_R;
 
 
 #define MISS                                    255
-#define LEFT_LIMIT                              2 //ÒÔ4×÷Îª×ó±ß½ç
-#define RIGHT_LIMIT                             185 //ÒÔ183×÷Îª×ó±ß½ç
+#define LEFT_LIMIT                              2 //ï¿½ï¿½4ï¿½ï¿½Îªï¿½ï¿½ß½ï¿½
+#define RIGHT_LIMIT                             185 //ï¿½ï¿½183ï¿½ï¿½Îªï¿½ï¿½ß½ï¿½
 #define UP_LIMIT                                2
 #define DOWN_LIMIT                              117
-#define TH_ContinuityDelta                      10 //Á¬ÐøÐÔ²îÖµ
+#define TH_ContinuityDelta                      10 //ï¿½ï¿½ï¿½ï¿½ï¿½Ô²ï¿½Öµ
 #define TH_JumpOfDown                           4
 #define TH_JumpOfUp                             8
 
@@ -76,12 +76,12 @@ typedef enum _DirTypeEnum{BlackToWhite, WhiteToBlack} DirTypeEnum;
 //===================================================================================================================//
 
 // /**
-//  * @brief ×´Ì¬»ú
-//  * @description: ·ÖÎª ½»²æÂ·¿Ú£¬Ð±ÆÂ£¬sÍä£¬´óÍä£¬»·µº£¬ÆðÅÜÏß£¬Èý²íÂ·¿Ú 7ÖÖÔªËØ   +   ¹âÕÕÌõ¼þÅÐ±ð 1ÖÖÌØÊâÔªËØ
+//  * @brief ×´Ì¬ï¿½ï¿½
+//  * @description: ï¿½ï¿½Îª ï¿½ï¿½ï¿½ï¿½Â·ï¿½Ú£ï¿½Ð±ï¿½Â£ï¿½sï¿½ä£¬ï¿½ï¿½ï¿½ä£¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß£ï¿½ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½ 7ï¿½ï¿½Ôªï¿½ï¿½   +   ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð±ï¿½ 1ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ôªï¿½ï¿½
 //  */
 
 /**
- * @brief Í¼Ïñ»ù±¾ÐÅÏ¢
+ * @brief Í¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
  *
  */
 typedef struct _ImgInfoTypedef
@@ -100,13 +100,13 @@ typedef struct _ImgInfoTypedef
     CircleStatusTypeEnum CircleStatus;
     PStatusTypeEnum PStatus;
 
-    /*****µÀÂ·ÀàÐÍÏà¹ØÐÅÏ¢*****/
+    /*****ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢*****/
 
 }ImgInfoTypedef;
 
 typedef struct _RowInfoTypedef
 {
-    uint8_t leftLine, rightLine, midLine, width;//Ã¿¸ö¸ß¶ÈµÄ×ó/ÓÒ/ÖÐÏß¼°¿í¶È
+    uint8_t leftLine, rightLine, midLine, width;//Ã¿ï¿½ï¿½ï¿½ß¶Èµï¿½ï¿½ï¿½/ï¿½ï¿½/ï¿½ï¿½ï¿½ß¼ï¿½ï¿½ï¿½ï¿½ï¿½
     uint8_t fork_L, fork_R;
     int fork_blackWidth;
     float fork_black_k;
@@ -116,8 +116,8 @@ typedef struct _RowInfoTypedef
 }RowInfoTypedef;
 
 /**
- * @brief ÏñËØµã×ø±ê
- * @description: Í¼ÏñÒÔ×óÉÏ·½ÎªÔ­µã£¬xÖáÏòÓÒÑÓÉì£¬yÖáÏòÏÂÑÓÉì
+ * @brief ï¿½ï¿½ï¿½Øµï¿½ï¿½ï¿½ï¿½ï¿½
+ * @description: Í¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï·ï¿½ÎªÔ­ï¿½ã£¬xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ì£¬yï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
  */
 typedef struct _PixelTypedef
 {
@@ -155,13 +155,13 @@ typedef struct _DebugVaribleTypedef
 
 //===================================================================================================================//
 
-//Ö÷µ÷ÓÃº¯Êý
+//ï¿½ï¿½ï¿½ï¿½ï¿½Ãºï¿½ï¿½ï¿½
 void img_process(void);
 
-//³õÊ¼»¯º¯Êý
+//ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 void params_init(void);
 
-// ³£¹æÉ¨Ïß&»ñÈ¡²ÎÊýº¯Êý
+// ï¿½ï¿½ï¿½ï¿½É¨ï¿½ï¿½&ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 void basic_searchLine(int bottom,int top);
 void advance_searchLine(int bottom);
 void advance_repairLine(void);
@@ -172,15 +172,15 @@ void basic_getJumpPointFromDet(uint8_t *row, int L,int R, EdgePointTypedef *Q, L
 void basic_repairLine(void);
 void custom_repairLine(uint8_t select_top, uint8_t select_bottom, uint8_t apply_top, uint8_t apply_bottom, LineTypeEnum type);
 
-// °ËÁÚÓòÉ¨Ïßº¯Êý&»ñÈ¡²ÎÊýº¯Êý
+// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É¨ï¿½ßºï¿½ï¿½ï¿½&ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 void series_searchLine(void);
 void series_getSpecialParams(void);
 
-// ÌØÅÐµÀÂ·ÔªËØ
+// ï¿½ï¿½ï¿½Ðµï¿½Â·Ôªï¿½ï¿½
 void road_judge(void);
 
 
-// ÌØ±ðÔªËØµÄÉ¨Ïß
+// ï¿½Ø±ï¿½Ôªï¿½Øµï¿½É¨ï¿½ï¿½
 void straight_detect(void);
 void straight_speedUpDetect(void);
 void turn_detect(void);
@@ -209,11 +209,11 @@ void barnIn_repairLine(void);
 
 uint8_t stop_detect(void);
 
-// »ñÈ¡Æ«²îÖµ´«ÖÁPID
+// ï¿½ï¿½È¡Æ«ï¿½ï¿½Öµï¿½ï¿½ï¿½ï¿½PID
 void get_error(void);
 void calc_globalError(void);
 
-// ¹¦ÄÜÐÔº¯Êý
+// ï¿½ï¿½ï¿½ï¿½ï¿½Ôºï¿½ï¿½ï¿½
 int get_variance(uint8_t select_top, uint8_t select_bottom, LineTypeEnum type);
 int get_circleTop(void);
 uint8_t judge_lineBeginLost(LineTypeEnum type);
@@ -224,7 +224,7 @@ void add_line(float k, float b, uint8_t select_begin, uint8_t select_end, LineTy
 void least_squares(float * k, float * b, uint8_t select_begin, uint8_t select_end, LineTypeEnum type);
 inline float cosAOB(int xa, int ya, int xo, int yo, int xb, int yb);
 inline void recalc_line(uint8_t select_top, uint8_t select_bottom, LineTypeEnum type);
-// ÔÝÇÒ·ÏÆúµÄ
+// ï¿½ï¿½ï¿½Ò·ï¿½ï¿½ï¿½ï¿½ï¿½
 // void find_RDJump(uint8_t start_point, uint8_t end_point);
 void advanced_regression(int type, int startline1, int endline1, int startline2, int endline2);
 void perspective_transform(int raw, int col, float* xpos, float* ypos);

@@ -74,13 +74,11 @@ int PID_calcInc(PID *pid, int nowPoint)
         pid->para = 0;
     pid->result += pid->para;
 
-    // BANG BANG
-    if(pid->iError > 25){
-        return 950;
-    }
-    else if(pid->iError < -25){
-        return -350;
-    }
+//    if(pid->iError > 25){
+//        return 4500;
+//    }else if(pid->iError < -25){
+//        return -3500;
+//    }
 //    pid->result = pid->alphaOut * (float)pid->result + (1.0f - pid->alphaOut) * pid->lastResult;
     pid->lastResult = pid->result;
     return pid->result;

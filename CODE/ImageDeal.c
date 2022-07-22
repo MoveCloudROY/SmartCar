@@ -3193,7 +3193,7 @@ void barnIn_detect(void)
     uint8_t jumpCnt = 0, isBarnLineCnt = 0;
     static uint8_t detectStartFlag = 'F';
 
-    for (int row = HEIGHT / 3; row <= HEIGHT - 5; ++row)
+    for (int row = HEIGHT / 2; row <= HEIGHT - 5; ++row)
     {
         jumpCnt = 0;
         for (int i = rowInfo[row].leftLine; i <= rowInfo[row].rightLine; ++i)
@@ -3204,7 +3204,7 @@ void barnIn_detect(void)
         if (jumpCnt >= 12)
             ++ isBarnLineCnt;
     }
-    if (SystemData.barnInDetectCnt == 0 && isBarnLineCnt >= 4)
+    if (SystemData.barnInDetectCnt == 0 && isBarnLineCnt >= 10)
     {
         if (detectStartFlag == 'F')
         {
@@ -3225,7 +3225,7 @@ void barnIn_detect(void)
 //            abort();
         }
     }
-    if (SystemData.barnInDetectCnt == 1 && isBarnLineCnt >= 4)
+    if (SystemData.barnInDetectCnt == 1 && isBarnLineCnt >= 10)
     {
         SystemData.barnInDetectCnt = 2;
         imgInfo.RoadType = Barn_In;
@@ -3388,6 +3388,7 @@ void calc_globalError(void)
 {
     static float midline_f = 0.0, midline_ff = 0.0, midline_fff = 0.0;
     int weightSum = 0, lineSum = 0;
+
 
     for (int row = imgInfo.bottom; row > imgInfo.top + 5; --row)
     {
