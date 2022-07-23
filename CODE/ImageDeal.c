@@ -1667,7 +1667,7 @@ void fork_detect()
         float b_r = (float)rowInfo[HEIGHT - 3].rightLine - k_r * (HEIGHT - 3);
         PixelTypedef rBlack = {MISS, MISS};
 
-        for (int row = HEIGHT; row > HEIGHT / 3; --row)
+        for (int row = HEIGHT - 6; row > HEIGHT / 3; --row)
         {
             col = k_r * row + b_r;
             if (imageBin[row][col] != 0 && imageBin[row][col + 7] != 0 && imageBin[row+5][col+7] == 0 && lostRStart == MISS)
