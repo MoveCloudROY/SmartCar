@@ -116,7 +116,7 @@ void img_process(void)
 
 #if defined(__ON_ROBOT__)
 
-    if( imgInfo.RoadType != Circle_L && imgInfo.RoadType != Circle_R && stop_detect())
+    if(stop_detect())
     {
 //        call_buzzer();
         SystemData.isStop = 'T';
@@ -1260,19 +1260,14 @@ void road_judge(void)
     {
         imgInfo.RoadType = Road_None;
     }
-    if (
-        // imgInfo.RoadType != Cross       &&     //赛道类型清0  if里面的情况都需要积分退出 不能在这儿请0
-        imgInfo.RoadType != Circle_L    &&
-        imgInfo.RoadType != Circle_R    &&
-        imgInfo.RoadType != P_L         &&
-        imgInfo.RoadType != P_R         &&
-        imgInfo.RoadType != Slope       &&
-        imgInfo.RoadType != Fork_In     &&
-        imgInfo.RoadType != Fork_Out    &&
-        fork_in_flag != 'T'
-       )
+
+    if (fork_in_flag != 'T')
     {
         barnIn_detect();
+        if (imgInfo.RoadType == Barn_In)
+        {
+            imgInfo.PStatus = P_NOT_FIND;
+        }
     }
 
     if (
@@ -3206,7 +3201,7 @@ void barnIn_detect(void)
             if (imageBin[row][i] != imageBin[row][i + 1])
                 ++ jumpCnt;
         }
-        if (jumpCnt >= 9)
+        if (jumpCnt >= 8)
             ++ isBarnLineCnt;
     }
     if (SystemData.barnInDetectCnt == 0 && isBarnLineCnt >= 8)

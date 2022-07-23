@@ -16,7 +16,7 @@ void speed_control(void)
     static int stoptarget = -60;
     if (SystemData.isStop == 'T')
     {
-        if(stoptarget < 0)stoptarget+=10;
+        if(stoptarget < 0) stoptarget+=10;
         PID_L.targetPoint = stoptarget;
         PID_R.targetPoint = stoptarget;
         PID_L.theoryTarget = stoptarget;
