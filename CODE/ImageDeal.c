@@ -3201,7 +3201,7 @@ void barnIn_detect(void)
     for (int row = HEIGHT / 2; row <= HEIGHT - 5; ++row)
     {
         jumpCnt = 0;
-        for (int i = rowInfo[row].leftLine; i <= rowInfo[row].rightLine; ++i)
+        for (int i = rowInfo[row].leftLine; i < rowInfo[row].rightLine; ++i)
         {
             if (imageBin[row][i] != imageBin[row][i + 1])
                 ++ jumpCnt;

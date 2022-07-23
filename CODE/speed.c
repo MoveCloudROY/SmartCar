@@ -13,12 +13,14 @@ extern SystemDataTypedef SystemData;
 
 void speed_control(void)
 {
+    static int stoptarget = -60;
     if (SystemData.isStop == 'T')
     {
-        PID_L.targetPoint = 0;
-        PID_R.targetPoint = 0;
-        PID_L.theoryTarget = 0;
-        PID_R.theoryTarget = 0;
+        if(stoptarget < 0)stoptarget+=10;
+        PID_L.targetPoint = stoptarget;
+        PID_R.targetPoint = stoptarget;
+        PID_L.theoryTarget = stoptarget;
+        PID_R.theoryTarget = stoptarget;
     }
     else if (imgInfo.straight_needSpeedUP == 'T')
     {

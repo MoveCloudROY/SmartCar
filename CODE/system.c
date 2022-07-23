@@ -108,11 +108,11 @@ void car_backstage(void)
 {
 //    my_shell_run();
     vt_hide_cursor();
-    if (SystemData.isStop == 'T')
-    {
-        motor_stop();
-//        abort();
-    }
+//    if (SystemData.isStop == 'T')
+//    {
+//        motor_stop();
+////        abort();
+//    }
 
     if(cpu0_5ms_flag)
     {
