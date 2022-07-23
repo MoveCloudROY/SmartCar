@@ -1296,6 +1296,10 @@ void road_judge(void)
 #ifdef DEBUG
         PRINT_CIRCLE_DETECT_FLAG_INFO();
 #endif
+        if(imgInfo.RoadType != Circle_L && imgInfo.RoadType != Circle_R)
+        {
+            p_detect();
+        }
         if((imgInfo.RoadType != P_L && imgInfo.RoadType != P_R) || imgInfo.PStatus == P_OUT_1)
         {
             circle_detect();
@@ -1304,10 +1308,7 @@ void road_judge(void)
                 imgInfo.PStatus = P_NOT_FIND;
             }
         }
-        if(imgInfo.RoadType != Circle_L && imgInfo.RoadType != Circle_R)
-        {
-            p_detect();
-        }
+
     }
 
 
