@@ -61,7 +61,7 @@ IFX_INTERRUPT(cc60_pit_ch0_isr, 0, CCU6_0_CH0_ISR_PRIORITY)
 	}
 
 	motor_control();
-//	servo_control_PIDPos();
+	servo_control_PIDPos();
 //	static float time = 0;
 //	time +=0.005;
 //    //¶ÁÈ¡±àÂëÆ÷
