@@ -100,7 +100,7 @@ uint8_t isCircle_flag_1 = 'F', isCircle_flag_2 = 'F', circle_in_flag = 'F';
 BlackBlockTopTypedef blackBlock;
 uint8_t leftDownLost, rightDownLost;
 int bigCircleTop = 0;
-
+uint8_t detectStartFlag = 'F';
 
 /**
  * @description: 图像处理调用函数
@@ -1286,7 +1286,8 @@ void road_judge(void)
         imgInfo.RoadType != Fork_In     &&
         imgInfo.RoadType != Fork_Out    &&
         imgInfo.RoadType != Barn_In     &&
-        fork_in_flag != 'T'
+        fork_in_flag != 'T'             &&
+        detectStartFlag != 'T'
        )
     {
         circle_judge_1(); // 环岛判断函数1
@@ -1295,10 +1296,6 @@ void road_judge(void)
 #ifdef DEBUG
         PRINT_CIRCLE_DETECT_FLAG_INFO();
 #endif
-        if(imgInfo.RoadType != Circle_L && imgInfo.RoadType != Circle_R)
-        {
-            p_detect();
-        }
         if((imgInfo.RoadType != P_L && imgInfo.RoadType != P_R) || imgInfo.PStatus == P_OUT_1)
         {
             circle_detect();
@@ -1306,6 +1303,10 @@ void road_judge(void)
             {
                 imgInfo.PStatus = P_NOT_FIND;
             }
+        }
+        if(imgInfo.RoadType != Circle_L && imgInfo.RoadType != Circle_R)
+        {
+            p_detect();
         }
     }
 
@@ -1332,7 +1333,8 @@ void road_judge(void)
         imgInfo.RoadType != P_R         &&
         imgInfo.RoadType != Circle_L    &&
         imgInfo.RoadType != Circle_R    &&
-        imgInfo.RoadType != Barn_In
+        imgInfo.RoadType != Barn_In     &&
+        detectStartFlag != 'T'
       )
     {
         fork_detect();
@@ -3185,7 +3187,6 @@ void barnOut_repairLine(void)
 void barnIn_detect(void)
 {
     uint8_t jumpCnt = 0, isBarnLineCnt = 0;
-    static uint8_t detectStartFlag = 'F';
 
     for (int row = HEIGHT / 2; row <= HEIGHT - 5; ++row)
     {

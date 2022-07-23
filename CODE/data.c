@@ -41,7 +41,7 @@ void data_set(void)
     ConstData.kImageLineMeanVarianceTh = 30;
 
     ConstData.kImageCircleInRepairLineK = 1.02;             // 环岛入环补线斜率
-    ConstData.kImageCircleOutRepairLineK = 1.02;            // 环岛出环补线斜率
+    ConstData.kImageCircleOutRepairLineK = 1.2;            // 环岛出环补线斜率
     ConstData.kImageCircleInIntegralDis = 0.5;             // 环岛发现到入环路程积分
     ConstData.kImageCircleOffIntegralDis = 0.5;            // 环岛OFF到清空路程积分
 
@@ -71,9 +71,9 @@ void data_set(void)
     // ================= 速度初始化设置 ================= //
 
     ConstData.speed.kMaxSpeed = 200;
-    ConstData.speed.kNormalSpeed = 140;
-    ConstData.speed.kCircleSpeed = 140;
-    ConstData.speed.kPSpeed = 140;
+    ConstData.speed.kNormalSpeed = 135;
+    ConstData.speed.kCircleSpeed = 135;
+    ConstData.speed.kPSpeed = 135;
     ConstData.speed.kForkSpeed = 130;
     ConstData.speed.kBarnSpeed = 130;
     ConstData.speed.kTurnSpeed = 130;

@@ -103,10 +103,10 @@ void servo_control_PIDPos(void)
     steer_pwm = STEER_LIMIT_LOW(steer_pwm);
     steer_pwm = STEER_LIMIT_HIGH(steer_pwm);
 
-//    servo_set(steer_pwm);
+    servo_set(steer_pwm);
 
     // =========  ²îËÙ ========= //
-#if 0
+#if 1
     Outpid = OUTPUT_LIMIE_LOW(Outpid);
     Outpid = OUTPUT_LIMIE_HIGH(Outpid);
     if (Outpid / 15 != 0 && (PID_L.theoryTarget && PID_R.theoryTarget)) {
