@@ -1261,14 +1261,8 @@ void road_judge(void)
         imgInfo.RoadType = Road_None;
     }
 
-    if (fork_in_flag != 'T')
-    {
-        barnIn_detect();
-        if (imgInfo.RoadType == Barn_In)
-        {
-            imgInfo.PStatus = P_NOT_FIND;
-        }
-    }
+    barnIn_detect();
+
 
     if (
         imgInfo.RoadType != Cross       &&
