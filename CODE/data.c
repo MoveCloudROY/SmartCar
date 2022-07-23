@@ -23,7 +23,7 @@ void data_set(void)
 {
 
     // ================= 常数设置 ================ //
-    ConstData.kServoMid = 1480  ;//1496;                    // 舵机左打角限制
+    ConstData.kServoMid = 1476  ;//1496;                    // 舵机左打角限制
     ConstData.kServoLowLimit = ConstData.kServoMid - SERVO_INTV;                        // 舵机右打角限制
     ConstData.kServoHighLimit = ConstData.kServoMid + SERVO_INTV;                       // 舵机中值(大致)
 
