@@ -1311,9 +1311,13 @@ void road_judge(void)
         {
             p_detect();
         }
-        if(imgInfo.RoadType != P_L && imgInfo.RoadType != P_R)
+        if((imgInfo.RoadType != P_L && imgInfo.RoadType != P_R) || imgInfo.PStatus == P_OUT_1)
         {
             circle_detect();
+            if (imgInfo.RoadType == Circle_L || imgInfo.RoadType == Circle_R)
+            {
+                imgInfo.PStatus = P_NOT_FIND;
+            }
         }
     }
 
@@ -2424,45 +2428,45 @@ void p_detect(void)
  */
 void p_repairLine(void)
 {
-    if (imgInfo.PStatus == P_OUT_1)
-    {
-        if(imgInfo.RoadType  == P_L)
-        {
-            float k, b;
-            k = (float)(ConstData.kImagePOutRepairLineK * WIDTH) / (imgInfo.top - (HEIGHT - 1));
-            b = (float)- k * (HEIGHT - 1);
-            add_line(k, b, imgInfo.top, HEIGHT - 1, LEFT);
-            recalc_line(imgInfo.top, HEIGHT - 1, LEFT);
-        }
-        else if (imgInfo.RoadType == P_R)
-        {
-            float k, b;
-            k = (float)(ConstData.kImagePOutRepairLineK * WIDTH) / (HEIGHT - 1 - imgInfo.top);
-            b = (float)WIDTH - 1 - k * (HEIGHT - 1);
-            add_line(k, b, imgInfo.top, HEIGHT - 1, RIGHT);
-            recalc_line(imgInfo.top, HEIGHT - 1, RIGHT);
-        }
-    }
-
 //    if (imgInfo.PStatus == P_OUT_1)
 //    {
 //        if(imgInfo.RoadType  == P_L)
 //        {
-//            float k = 0.0, b = 0.0;
-//            k = (float)(rowInfo[HEIGHT - 1].leftLine - rowInfo[imgInfo.top + 2].leftLine) / (HEIGHT - imgInfo.top - 2);
-//            b = (float)rowInfo[HEIGHT - 1].leftLine - k * (HEIGHT - 1);
-//            add_line(k, b, imgInfo.top + 1, HEIGHT - 1, LEFT);
-//            recalc_line(imgInfo.top + 1, HEIGHT - 1, LEFT);
+//            float k, b;
+//            k = (float)(ConstData.kImagePOutRepairLineK * WIDTH) / (imgInfo.top - (HEIGHT - 1));
+//            b = (float)- k * (HEIGHT - 1);
+//            add_line(k, b, imgInfo.top, HEIGHT - 1, LEFT);
+//            recalc_line(imgInfo.top, HEIGHT - 1, LEFT);
 //        }
 //        else if (imgInfo.RoadType == P_R)
 //        {
-//            float k = 0.0, b = 0.0;
-//            k = (float)(rowInfo[HEIGHT - 1].rightLine - rowInfo[imgInfo.top + 2].rightLine) / (HEIGHT - imgInfo.top - 2);
-//            b = (float)rowInfo[HEIGHT - 1].rightLine - k * (HEIGHT - 1);
-//            add_line(k, b, imgInfo.top + 1, HEIGHT - 1, RIGHT);
-//            recalc_line(imgInfo.top + 1, HEIGHT - 1, RIGHT);
+//            float k, b;
+//            k = (float)(ConstData.kImagePOutRepairLineK * WIDTH) / (HEIGHT - 1 - imgInfo.top);
+//            b = (float)WIDTH - 1 - k * (HEIGHT - 1);
+//            add_line(k, b, imgInfo.top, HEIGHT - 1, RIGHT);
+//            recalc_line(imgInfo.top, HEIGHT - 1, RIGHT);
 //        }
 //    }
+
+    if (imgInfo.PStatus == P_OUT_1)
+    {
+        if(imgInfo.RoadType  == P_L)
+        {
+            float k = 0.0, b = 0.0;
+            k = (float)(rowInfo[HEIGHT - 1].leftLine - rowInfo[imgInfo.top + 2].leftLine) / (HEIGHT - imgInfo.top - 2);
+            b = (float)rowInfo[HEIGHT - 1].leftLine - k * (HEIGHT - 1);
+            add_line(k, b, imgInfo.top + 1, HEIGHT - 1, LEFT);
+            recalc_line(imgInfo.top + 1, HEIGHT - 1, LEFT);
+        }
+        else if (imgInfo.RoadType == P_R)
+        {
+            float k = 0.0, b = 0.0;
+            k = (float)(rowInfo[HEIGHT - 1].rightLine - rowInfo[imgInfo.top + 2].rightLine) / (HEIGHT - imgInfo.top - 2);
+            b = (float)rowInfo[HEIGHT - 1].rightLine - k * (HEIGHT - 1);
+            add_line(k, b, imgInfo.top + 1, HEIGHT - 1, RIGHT);
+            recalc_line(imgInfo.top + 1, HEIGHT - 1, RIGHT);
+        }
+    }
 
 
 }
@@ -2815,7 +2819,7 @@ void circle_detect(void)
                 ))
 
  #if defined (__ON_ROBOT__)
-                ||(
+                &&(
                         (imgInfo.RoadType == Circle_L && check_yaw_angle() >= ConstData.kCircleInDegree)
                         ||
                         (imgInfo.RoadType == Circle_R && check_yaw_angle() <= -ConstData.kCircleInDegree)

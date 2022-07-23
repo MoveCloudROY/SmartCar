@@ -53,9 +53,12 @@ extern DebugDataTypedef DebugData;
  */
 PID PID_Servo = {
     .targetPoint = 0,
-    .P = 3.8,
+//    .P = 3.8,
+//    .I = 0.0,
+//    .D = 1.28,
+    .P = 3.49,
     .I = 0.0,
-    .D = 1.28,
+    .D = 0.42,
     .alphaDev = 0.0,
     .alphaOut = 0.0,
 

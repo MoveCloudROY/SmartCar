@@ -23,7 +23,7 @@ void data_set(void)
 {
 
     // ================= 常数设置 ================ //
-    ConstData.kServoMid = 1475  ;//1496;                    // 舵机左打角限制
+    ConstData.kServoMid = 1480  ;//1496;                    // 舵机左打角限制
     ConstData.kServoLowLimit = ConstData.kServoMid - SERVO_INTV;                        // 舵机右打角限制
     ConstData.kServoHighLimit = ConstData.kServoMid + SERVO_INTV;                       // 舵机中值(大致)
 
@@ -70,10 +70,10 @@ void data_set(void)
 
     // ================= 速度初始化设置 ================= //
 
-    ConstData.speed.kMaxSpeed = 200;
-    ConstData.speed.kNormalSpeed = 120;
-    ConstData.speed.kCircleSpeed = 120;
-    ConstData.speed.kPSpeed = 120;
+    ConstData.speed.kMaxSpeed = 150;
+    ConstData.speed.kNormalSpeed = 130;
+    ConstData.speed.kCircleSpeed = 130;
+    ConstData.speed.kPSpeed = 110;
     ConstData.speed.kForkSpeed = 120;
     ConstData.speed.kBarnSpeed = 100;
     ConstData.speed.kTurnSpeed = 100;
