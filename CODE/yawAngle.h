@@ -34,6 +34,8 @@
 #define DEBGEE_230  (1.28f * PI)
 #define DEGREE_250  (1.39f * PI)
 #define DEGREE_270  (1.5f * PI)
+#define DEGREE_320  (1.78 * PI)
+#define DEGREE_340  (1.89 * PI)
 #define DEGREE_360  (2.0f * PI)
 
 

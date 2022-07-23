@@ -2828,9 +2828,10 @@ void circle_detect(void)
                 // 如果左右两侧交错数都小于等于1, 则说明正在经过环岛
             )
         {
+//            SystemData.isStop = 'T';
             imgInfo.CircleStatus = CIRCLE_PASSING;
 #if defined (__ON_ROBOT__)
-            stop_interating_angle();
+//            stop_interating_angle();
 #endif
         }
     }
@@ -2853,7 +2854,7 @@ void circle_detect(void)
                     {
                         imgInfo.CircleStatus = CIRCLE_OUT;
 #if defined (__ON_ROBOT__)
-                        start_integrating_angle();
+//                        start_integrating_angle();
 #endif
                         break;
                     }
@@ -2876,7 +2877,7 @@ void circle_detect(void)
                     {
                         imgInfo.CircleStatus = CIRCLE_OUT;
 #if defined (__ON_ROBOT__)
-                        start_integrating_angle();
+//                        start_integrating_angle();
 #endif
                         break;
                     }
@@ -3205,10 +3206,10 @@ void barnIn_detect(void)
             if (imageBin[row][i] != imageBin[row][i + 1])
                 ++ jumpCnt;
         }
-        if (jumpCnt >= 12)
+        if (jumpCnt >= 9)
             ++ isBarnLineCnt;
     }
-    if (SystemData.barnInDetectCnt == 0 && isBarnLineCnt >= 10)
+    if (SystemData.barnInDetectCnt == 0 && isBarnLineCnt >= 8)
     {
         if (detectStartFlag == 'F')
         {
@@ -3229,7 +3230,7 @@ void barnIn_detect(void)
 //            abort();
         }
     }
-    if (SystemData.barnInDetectCnt == 1 && isBarnLineCnt >= 10)
+    if (SystemData.barnInDetectCnt == 1 && isBarnLineCnt >= 8)
     {
         SystemData.barnInDetectCnt = 2;
         imgInfo.RoadType = Barn_In;

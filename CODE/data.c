@@ -73,10 +73,10 @@ void data_set(void)
     ConstData.speed.kMaxSpeed = 150;
     ConstData.speed.kNormalSpeed = 130;
     ConstData.speed.kCircleSpeed = 130;
-    ConstData.speed.kPSpeed = 110;
+    ConstData.speed.kPSpeed = 130;
     ConstData.speed.kForkSpeed = 120;
-    ConstData.speed.kBarnSpeed = 100;
-    ConstData.speed.kTurnSpeed = 100;
+    ConstData.speed.kBarnSpeed = 120;
+    ConstData.speed.kTurnSpeed = 120;
 
 //    ConstData.speed.kMaxSpeed = 200;
 //    ConstData.speed.kNormalSpeed = 150;
@@ -93,7 +93,7 @@ void data_set(void)
     ConstData.kBarnOutDegree = DEGREE_75;
     ConstData.kBarnInDegree = DEGREE_45;
     ConstData.kCircleInDegree = DEGREE_45;
-    ConstData.kCircleOutDegree = DEGREE_80;
+    ConstData.kCircleOutDegree = DEGREE_320;
     ConstData.kPOutDegree = DEGREE_67;
     ConstData.kPPassingDegree = DEGREE_250;
 
