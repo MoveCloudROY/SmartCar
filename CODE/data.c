@@ -70,13 +70,13 @@ void data_set(void)
 
     // ================= 速度初始化设置 ================= //
 
-    ConstData.speed.kMaxSpeed = 200;
-    ConstData.speed.kNormalSpeed = 135;
-    ConstData.speed.kCircleSpeed = 135;
-    ConstData.speed.kPSpeed = 135;
+    ConstData.speed.kMaxSpeed = 150;
+    ConstData.speed.kNormalSpeed = 125;
+    ConstData.speed.kCircleSpeed = 125;
+    ConstData.speed.kPSpeed = 125;
     ConstData.speed.kForkSpeed = 130;
     ConstData.speed.kBarnSpeed = 100;
-    ConstData.speed.kTurnSpeed = 130;
+    ConstData.speed.kTurnSpeed = 120;
 
 //        ConstData.speed.kMaxSpeed =     100;
 //        ConstData.speed.kNormalSpeed =  80;

@@ -60,7 +60,7 @@ PID PID_Servo = {
 //    .D = 1.28,
     .P = 3.8,
     .I = 0.0,
-    .D = 1.25,
+    .D = 2.5,
     .alphaDev = 0.0,
     .alphaOut = 0.0,
 

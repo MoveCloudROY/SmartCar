@@ -192,7 +192,7 @@ void params_init(void)
     fork_flag_1 = 'F';
     fork_flag_2 = 'F';
     fork_flag_3 = 'F';
-    imgInfo.top = 2;//UP_LIMIT;
+    imgInfo.top = 8;//UP_LIMIT;
     imgInfo.bottom = HEIGHT - 1;//DOWN_LIMIT;
     for(int i = 0; i  < HEIGHT; ++i)
     {
@@ -2172,7 +2172,7 @@ void p_detect(void)
 #ifdef DEBUG
         PRINT_LINE_VARIANCE_INFO(p_variance_r);
 #endif
-        if (bigCircleTop - 5 <= imgInfo.top && imgInfo.top <= blackBlock.posY && p_variance_r < ConstData.kImageLineVarianceTh)
+        if (bigCircleTop <= imgInfo.top && imgInfo.top <= blackBlock.posY && p_variance_r < ConstData.kImageLineVarianceTh)
         {
             imgInfo.RoadType = P_L;
             imgInfo.PStatus = P_PASSING;
@@ -2195,7 +2195,7 @@ void p_detect(void)
         DebugData.PFlagInRange = (bigCircleTop <= imgInfo.top && imgInfo.top <= blackBlock.posY)? 'T':'F';
         DebugData.PFlagVariOK = (p_variance_l < ConstData.kImageLineVarianceTh)? 'T' : 'F';
 #endif
-        if (bigCircleTop - 5 <= imgInfo.top && imgInfo.top <= blackBlock.posY && p_variance_l < ConstData.kImageLineVarianceTh)
+        if (bigCircleTop <= imgInfo.top && imgInfo.top <= blackBlock.posY && p_variance_l < ConstData.kImageLineVarianceTh)
         {
             imgInfo.RoadType = P_R;
             imgInfo.PStatus = P_PASSING;
@@ -2418,45 +2418,45 @@ void p_detect(void)
  */
 void p_repairLine(void)
 {
-//    if (imgInfo.PStatus == P_OUT_1)
-//    {
-//        if(imgInfo.RoadType  == P_L)
-//        {
-//            float k, b;
-//            k = (float)(ConstData.kImagePOutRepairLineK * WIDTH) / (imgInfo.top - (HEIGHT - 1));
-//            b = (float)- k * (HEIGHT - 1);
-//            add_line(k, b, imgInfo.top, HEIGHT - 1, LEFT);
-//            recalc_line(imgInfo.top, HEIGHT - 1, LEFT);
-//        }
-//        else if (imgInfo.RoadType == P_R)
-//        {
-//            float k, b;
-//            k = (float)(ConstData.kImagePOutRepairLineK * WIDTH) / (HEIGHT - 1 - imgInfo.top);
-//            b = (float)WIDTH - 1 - k * (HEIGHT - 1);
-//            add_line(k, b, imgInfo.top, HEIGHT - 1, RIGHT);
-//            recalc_line(imgInfo.top, HEIGHT - 1, RIGHT);
-//        }
-//    }
-
     if (imgInfo.PStatus == P_OUT_1)
     {
         if(imgInfo.RoadType  == P_L)
         {
-            float k = 0.0, b = 0.0;
-            k = (float)(rowInfo[HEIGHT - 1].leftLine - rowInfo[imgInfo.top + 2].leftLine) / (HEIGHT - imgInfo.top - 2);
-            b = (float)rowInfo[HEIGHT - 1].leftLine - k * (HEIGHT - 1);
-            add_line(k, b, imgInfo.top + 1, HEIGHT - 1, LEFT);
-            recalc_line(imgInfo.top + 1, HEIGHT - 1, LEFT);
+            float k, b;
+            k = (float)(ConstData.kImagePOutRepairLineK * WIDTH) / (imgInfo.top - (HEIGHT - 1));
+            b = (float)- k * (HEIGHT - 1);
+            add_line(k, b, imgInfo.top, HEIGHT - 1, LEFT);
+            recalc_line(imgInfo.top, HEIGHT - 1, LEFT);
         }
         else if (imgInfo.RoadType == P_R)
         {
-            float k = 0.0, b = 0.0;
-            k = (float)(rowInfo[HEIGHT - 1].rightLine - rowInfo[imgInfo.top + 2].rightLine) / (HEIGHT - imgInfo.top - 2);
-            b = (float)rowInfo[HEIGHT - 1].rightLine - k * (HEIGHT - 1);
-            add_line(k, b, imgInfo.top + 1, HEIGHT - 1, RIGHT);
-            recalc_line(imgInfo.top + 1, HEIGHT - 1, RIGHT);
+            float k, b;
+            k = (float)(ConstData.kImagePOutRepairLineK * WIDTH) / (HEIGHT - 1 - imgInfo.top);
+            b = (float)WIDTH - 1 - k * (HEIGHT - 1);
+            add_line(k, b, imgInfo.top, HEIGHT - 1, RIGHT);
+            recalc_line(imgInfo.top, HEIGHT - 1, RIGHT);
         }
     }
+
+//    if (imgInfo.PStatus == P_OUT_1)
+//    {
+//        if(imgInfo.RoadType  == P_L)
+//        {
+//            float k = 0.0, b = 0.0;
+//            k = (float)(rowInfo[HEIGHT - 1].leftLine - rowInfo[imgInfo.top + 2].leftLine) / (HEIGHT - imgInfo.top - 2);
+//            b = (float)rowInfo[HEIGHT - 1].leftLine - k * (HEIGHT - 1);
+//            add_line(k, b, imgInfo.top + 1, HEIGHT - 1, LEFT);
+//            recalc_line(imgInfo.top + 1, HEIGHT - 1, LEFT);
+//        }
+//        else if (imgInfo.RoadType == P_R)
+//        {
+//            float k = 0.0, b = 0.0;
+//            k = (float)(rowInfo[HEIGHT - 1].rightLine - rowInfo[imgInfo.top + 2].rightLine) / (HEIGHT - imgInfo.top - 2);
+//            b = (float)rowInfo[HEIGHT - 1].rightLine - k * (HEIGHT - 1);
+//            add_line(k, b, imgInfo.top + 1, HEIGHT - 1, RIGHT);
+//            recalc_line(imgInfo.top + 1, HEIGHT - 1, RIGHT);
+//        }
+//    }
 
 
 }
@@ -2652,7 +2652,7 @@ void circle_detect(void)
 #ifdef DEBUG
             printf("Circle variance_r: %d\n", variance_r);
 #endif
-            if (variance_r < ConstData.kImageLineVarianceTh && imgInfo.top < bigCircleTop - 3)
+            if (variance_r < ConstData.kImageLineVarianceTh && imgInfo.top < bigCircleTop)
             {
                 imgInfo.CircleStatus = CIRCLE_FIND; // 标记 [发现环岛] 状态
 #if defined (__ON_ROBOT__)
@@ -2669,7 +2669,7 @@ void circle_detect(void)
 #ifdef DEBUG
             printf("Circle variance_l: %d\n", variance_l);
 #endif
-            if (variance_l < ConstData.kImageLineVarianceTh && imgInfo.top < bigCircleTop - 3)
+            if (variance_l < ConstData.kImageLineVarianceTh && imgInfo.top < bigCircleTop)
             {
                 imgInfo.CircleStatus = CIRCLE_FIND; // 标记 [发现环岛] 状态
 #if defined (__ON_ROBOT__)
