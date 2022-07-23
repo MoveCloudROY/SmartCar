@@ -116,8 +116,7 @@ void img_process(void)
 
 #if defined(__ON_ROBOT__)
 
-    if( stop_detect()
-        && imgInfo.RoadType != Circle_L && imgInfo.RoadType != Circle_R)
+    if( imgInfo.RoadType != Circle_L && imgInfo.RoadType != Circle_R && stop_detect())
     {
 //        call_buzzer();
         SystemData.isStop = 'T';
@@ -1667,7 +1666,7 @@ void fork_detect()
         float b_r = (float)rowInfo[HEIGHT - 3].rightLine - k_r * (HEIGHT - 3);
         PixelTypedef rBlack = {MISS, MISS};
 
-        for (int row = HEIGHT; row > HEIGHT / 3; --row)
+        for (int row = HEIGHT - 6; row > HEIGHT / 3; --row)
         {
             col = k_r * row + b_r;
             if (imageBin[row][col] != 0 && imageBin[row][col + 7] != 0 && imageBin[row+5][col+7] == 0 && lostRStart == MISS)
@@ -2182,7 +2181,7 @@ void p_detect(void)
 #ifdef DEBUG
         PRINT_LINE_VARIANCE_INFO(p_variance_r);
 #endif
-        if (bigCircleTop <= imgInfo.top && imgInfo.top <= blackBlock.posY && p_variance_r < ConstData.kImageLineVarianceTh)
+        if (bigCircleTop - 5 <= imgInfo.top && imgInfo.top <= blackBlock.posY && p_variance_r < ConstData.kImageLineVarianceTh)
         {
             imgInfo.RoadType = P_L;
             imgInfo.PStatus = P_PASSING;
@@ -2205,7 +2204,7 @@ void p_detect(void)
         DebugData.PFlagInRange = (bigCircleTop <= imgInfo.top && imgInfo.top <= blackBlock.posY)? 'T':'F';
         DebugData.PFlagVariOK = (p_variance_l < ConstData.kImageLineVarianceTh)? 'T' : 'F';
 #endif
-        if (bigCircleTop <= imgInfo.top && imgInfo.top <= blackBlock.posY && p_variance_l < ConstData.kImageLineVarianceTh)
+        if (bigCircleTop - 5 <= imgInfo.top && imgInfo.top <= blackBlock.posY && p_variance_l < ConstData.kImageLineVarianceTh)
         {
             imgInfo.RoadType = P_R;
             imgInfo.PStatus = P_PASSING;
@@ -3171,6 +3170,7 @@ void barnOut_repairLine(void)
 #if defined (__BARN_LEFT_OUT__)
     for (int row = HEIGHT - 1; row > imgInfo.top + 2; --row)
     {
+//        rowInfo[row].leftLine = 1;
         float k, b;
         k = (ConstData.kImageBarnOutRepairLineK * WIDTH) / (HEIGHT - 1 - imgInfo.top);
         b = WIDTH - 1 - k * (HEIGHT - 1);
@@ -3429,7 +3429,7 @@ void calc_globalError(void)
     midline_f       = tmpError;
 //    imgInfo.error   = midline_fff * 0.50f + midline_ff * 0.30f + midline_f * 0.20f;
     if (SystemData.isBarnIn == 'T')
-        imgInfo.error = -128;
+        imgInfo.error = -300;
     else
         imgInfo.error = tmpError;
 }

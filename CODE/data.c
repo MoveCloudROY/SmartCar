@@ -46,7 +46,7 @@ void data_set(void)
     ConstData.kImageCircleOffIntegralDis = 0.5;            // 环岛OFF到清空路程积分
 
     ConstData.kImageBarnOutRepairLineK = 0.9;
-    ConstData.kImageBarnInRepairLineK = 2.0;
+    ConstData.kImageBarnInRepairLineK = 3.0;
 
     ConstData.kImageCrossIOUth = 0.8;                       // 十字检测左右空白行交并比阈值
     ConstData.kImageStraightCurvTh = 0.001;                 // 直线曲率阈值
@@ -60,7 +60,7 @@ void data_set(void)
     ConstData.kImageForkIntegralDis = 1.0;
 
     ConstData.kImageBarnInFirIntegralDis = 0.6;
-    ConstData.kImageBarnInSecIntegralDis = 0.15;
+    ConstData.kImageBarnInSecIntegralDis = 0.2;
 
     ConstData.kSlopeUpAngRate = 2.0;
     ConstData.kSlopeDownAngRate = -2.0;
@@ -74,24 +74,24 @@ void data_set(void)
     ConstData.speed.kNormalSpeed = 130;
     ConstData.speed.kCircleSpeed = 130;
     ConstData.speed.kPSpeed = 130;
-    ConstData.speed.kForkSpeed = 120;
-    ConstData.speed.kBarnSpeed = 120;
-    ConstData.speed.kTurnSpeed = 120;
+    ConstData.speed.kForkSpeed = 130;
+    ConstData.speed.kBarnSpeed = 130;
+    ConstData.speed.kTurnSpeed = 130;
 
-//    ConstData.speed.kMaxSpeed = 200;
-//    ConstData.speed.kNormalSpeed = 150;
-//    ConstData.speed.kCircleSpeed = 150;
-//    ConstData.speed.kPSpeed = 150;
-//    ConstData.speed.kForkSpeed = 150;
-//    ConstData.speed.kBarnSpeed = 150;
-//    ConstData.speed.kTurnSpeed = 150;
+//        ConstData.speed.kMaxSpeed =     100;
+//        ConstData.speed.kNormalSpeed =  80;
+//        ConstData.speed.kCircleSpeed =  80;
+//        ConstData.speed.kPSpeed =       80;
+//        ConstData.speed.kForkSpeed =    80;
+//        ConstData.speed.kBarnSpeed =    80;
+//        ConstData.speed.kTurnSpeed =    80;
 
     ConstData.speed.kSlopeSpeed = 80;
     ConstData.speed.kDiffAnglePerPWM = 0.217;
 
 
     ConstData.kBarnOutDegree = DEGREE_75;
-    ConstData.kBarnInDegree = DEGREE_45;
+    ConstData.kBarnInDegree = DEGREE_60;
     ConstData.kCircleInDegree = DEGREE_45;
     ConstData.kCircleOutDegree = DEGREE_320;
     ConstData.kPOutDegree = DEGREE_67;
