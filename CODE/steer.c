@@ -15,6 +15,8 @@
 extern ImgInfoTypedef imgInfo;
 extern ConstDataTypeDef ConstData;
 extern DebugDataTypedef DebugData;
+extern SystemDataTypedef SystemData;
+
 
 #define STEER_LIMIT_LOW(pwm) ((pwm)<ConstData.kServoLowLimit?(ConstData.kServoLowLimit):(pwm))
 #define STEER_LIMIT_HIGH(pwm) ((pwm)>ConstData.kServoHighLimit?(ConstData.kServoHighLimit):(pwm))
@@ -103,13 +105,24 @@ void servo_control_PIDPos(void)
     steer_pwm = STEER_LIMIT_LOW(steer_pwm);
     steer_pwm = STEER_LIMIT_HIGH(steer_pwm);
 
-    servo_set(steer_pwm);
-
+    if (SystemData.isBarnIn == 'T')
+    {
+        servo_set(ConstData.kServoHighLimit);
+    }
+    else
+    {
+        servo_set(steer_pwm);
+    }
     // =========  ²îËÙ ========= //
 #if 1
     Outpid = OUTPUT_LIMIE_LOW(Outpid);
     Outpid = OUTPUT_LIMIE_HIGH(Outpid);
-    if (Outpid / 15 != 0 && (PID_L.theoryTarget && PID_R.theoryTarget)) {
+    if (SystemData.isBarnIn == 'T' && SystemData.isStop != 'T')
+    {
+        PID_L.targetPoint = 10;
+        PID_R.targetPoint = 100;
+    }
+    else if (Outpid / 15 != 0 && (PID_L.theoryTarget && PID_R.theoryTarget)) {
          differential_speed(Outpid);
     }
     else {

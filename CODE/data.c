@@ -59,8 +59,8 @@ void data_set(void)
 //    ConstData.kImageForkInPicCnt = 25;
     ConstData.kImageForkIntegralDis = 1.0;
 
-    ConstData.kImageBarnInFirIntegralDis = 0.6;
-    ConstData.kImageBarnInSecIntegralDis = 0.2;
+    ConstData.kImageBarnInFirIntegralDis = 0.8;
+    ConstData.kImageBarnInSecIntegralDis = 0.8;
 
     ConstData.kSlopeUpAngRate = 2.0;
     ConstData.kSlopeDownAngRate = -2.0;
@@ -75,7 +75,7 @@ void data_set(void)
     ConstData.speed.kCircleSpeed = 135;
     ConstData.speed.kPSpeed = 135;
     ConstData.speed.kForkSpeed = 130;
-    ConstData.speed.kBarnSpeed = 130;
+    ConstData.speed.kBarnSpeed = 100;
     ConstData.speed.kTurnSpeed = 130;
 
 //        ConstData.speed.kMaxSpeed =     100;
@@ -91,7 +91,7 @@ void data_set(void)
 
 
     ConstData.kBarnOutDegree = DEGREE_75;
-    ConstData.kBarnInDegree = DEGREE_60;
+    ConstData.kBarnInDegree = DEGREE_80;
     ConstData.kCircleInDegree = DEGREE_45;
     ConstData.kCircleOutDegree = DEGREE_320;
     ConstData.kPOutDegree = DEGREE_67;

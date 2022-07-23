@@ -192,7 +192,7 @@ void params_init(void)
     fork_flag_1 = 'F';
     fork_flag_2 = 'F';
     fork_flag_3 = 'F';
-    imgInfo.top = 8;//UP_LIMIT;
+    imgInfo.top = 2;//UP_LIMIT;
     imgInfo.bottom = HEIGHT - 1;//DOWN_LIMIT;
     for(int i = 0; i  < HEIGHT; ++i)
     {
@@ -2652,7 +2652,7 @@ void circle_detect(void)
 #ifdef DEBUG
             printf("Circle variance_r: %d\n", variance_r);
 #endif
-            if (variance_r < ConstData.kImageLineVarianceTh && imgInfo.top < bigCircleTop)
+            if (variance_r < ConstData.kImageLineVarianceTh && imgInfo.top < bigCircleTop - 3)
             {
                 imgInfo.CircleStatus = CIRCLE_FIND; // 标记 [发现环岛] 状态
 #if defined (__ON_ROBOT__)
@@ -2669,7 +2669,7 @@ void circle_detect(void)
 #ifdef DEBUG
             printf("Circle variance_l: %d\n", variance_l);
 #endif
-            if (variance_l < ConstData.kImageLineVarianceTh && imgInfo.top < bigCircleTop)
+            if (variance_l < ConstData.kImageLineVarianceTh && imgInfo.top < bigCircleTop - 3)
             {
                 imgInfo.CircleStatus = CIRCLE_FIND; // 标记 [发现环岛] 状态
 #if defined (__ON_ROBOT__)
@@ -3188,18 +3188,18 @@ void barnIn_detect(void)
 {
     uint8_t jumpCnt = 0, isBarnLineCnt = 0;
 
-    for (int row = HEIGHT / 2; row <= HEIGHT - 5; ++row)
+    for (int row = HEIGHT / 3; row <= HEIGHT - 20; ++row)
     {
         jumpCnt = 0;
-        for (int i = rowInfo[row].leftLine; i < rowInfo[row].rightLine; ++i)
+        for (int i = 1; i <= WIDTH - 2; ++i)
         {
             if (imageBin[row][i] != imageBin[row][i + 1])
                 ++ jumpCnt;
         }
-        if (jumpCnt >= 8)
+        if (jumpCnt >= 9)
             ++ isBarnLineCnt;
     }
-    if (SystemData.barnInDetectCnt == 0 && isBarnLineCnt >= 8)
+    if (SystemData.barnInDetectCnt == 0 && isBarnLineCnt >= 7)
     {
         if (detectStartFlag == 'F')
         {
@@ -3220,7 +3220,7 @@ void barnIn_detect(void)
 //            abort();
         }
     }
-    if (SystemData.barnInDetectCnt == 1 && isBarnLineCnt >= 8)
+    if (SystemData.barnInDetectCnt == 1 && isBarnLineCnt >= 7)
     {
         SystemData.barnInDetectCnt = 2;
         imgInfo.RoadType = Barn_In;
@@ -3418,10 +3418,10 @@ void calc_globalError(void)
     midline_ff      = midline_f;
     midline_f       = tmpError;
 //    imgInfo.error   = midline_fff * 0.50f + midline_ff * 0.30f + midline_f * 0.20f;
-    if (SystemData.isBarnIn == 'T')
-        imgInfo.error = -300;
-    else
-        imgInfo.error = tmpError;
+//    if (SystemData.isBarnIn == 'T')
+//        imgInfo.error = -300;
+//    else
+    imgInfo.error = tmpError;
 }
 
 
