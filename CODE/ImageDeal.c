@@ -3217,6 +3217,8 @@ void barnIn_detect(void)
             passDis.stop(&passDis);
             detectStartFlag = 'F';
             SystemData.barnInDetectCnt = 1;
+            imgInfo.RoadType = P_L;
+            imgInfo.PStatus = P_PASSING;
 //            SystemData.isStop = 'T';
 //            abort();
         }
